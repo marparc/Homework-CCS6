@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 16,
     alignItems: "center",
-    margin: 10,
+    margin: 5,
   },
   lightButton: {
     backgroundColor: "#FFFFFF",
