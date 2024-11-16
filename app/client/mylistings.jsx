@@ -101,5 +101,6 @@ const styles = StyleSheet.create({
   jobList: {
     padding: 50,
     paddingTop: 10,
+    alignItems: "center",
   },
 });
