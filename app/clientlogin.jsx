@@ -4,7 +4,7 @@ import InputField from "@/components/ui/inputfield";
 import Button from "@/components/ui/buttons";
 import { Link } from "expo-router";
 
-const LoginStudent = () => {
+const LoginClient = () => {
   return (
     <SafeAreaView style={styles.pageContainer}>
       <View style={styles.formContainer}>
@@ -14,15 +14,15 @@ const LoginStudent = () => {
 
       <View style={styles.buttonContainer}>
         {/* Handle the press and then navigate */}
-        <Link href="/(tabs)/student/jobstodo" asChild>
+        <Link href="/client/mylistings" asChild>
           <Button title="Login" type="dark" size="medium" />
         </Link>
       </View>
 
       <View style={styles.footerContainer}>
-        <Text>Not a Student?</Text>
-        <Link href="clientlogin" asChild>
-          <Button title="Client Login" type="light" size="medium" />
+        <Text>Not a Client?</Text>
+        <Link href="studentlogin" asChild>
+          <Button title="Student Login" type="light" size="medium" />
         </Link>
       </View>
 
@@ -34,7 +34,7 @@ const LoginStudent = () => {
   );
 };
 
-export default LoginStudent;
+export default LoginClient;
 
 const styles = StyleSheet.create({
   pageContainer: {
