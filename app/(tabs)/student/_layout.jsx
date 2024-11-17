@@ -15,7 +15,6 @@ export default function Layout() {
           tabBarLabel: "", // Disable label by setting it to an empty string
         }}
       />
-
       {/* Chat List Tab */}
       <Tabs.Screen
         name="chatlist-student"
@@ -30,7 +29,7 @@ export default function Layout() {
 
       {/* Find a Job Tab */}
       <Tabs.Screen
-        name="onsitemap"
+        name="findjob"
         options={{
           title: "Find a Job",
           tabBarIcon: ({ color, size }) => (

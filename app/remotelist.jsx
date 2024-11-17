@@ -1,12 +1,12 @@
 import { View, Text } from "react-native";
 import React from "react";
 
-const jobscompleted = () => {
+const RemoteLists = () => {
   return (
     <View>
-      <Text>jobscompleted</Text>
+      <Text>RemoteLists</Text>
     </View>
   );
 };
 
-export default jobscompleted;
+export default RemoteLists;

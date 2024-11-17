@@ -1,11 +1,11 @@
-import { View, Text, SafeAreaView, ScrollView, StyleSheet } from "react-native";
+import { SafeAreaView, ScrollView, Text, StyleSheet } from "react-native";
 import React, { useState, useEffect } from "react";
 import Button from "@/components/ui/buttons"; // Your custom button
 import JobCard from "@/components/ui/jobcard"; // Your custom job card component
-import { Link } from "expo-router"; // Expo Router's Link
 
 const JobsToDo = () => {
   const [myJobs, setMyJobs] = useState([]);
+  const [isToDoActive, setIsToDoActive] = useState(true); // Track the active button
 
   useEffect(() => {
     const fetchedJobs = [
@@ -23,13 +23,31 @@ const JobsToDo = () => {
     setMyJobs(fetchedJobs);
   }, []);
 
+  // Function to handle button press and deactivate other button
+  const handleToDoClick = () => {
+    setIsToDoActive(true); // Activate "To Do" button
+  };
+
+  const handleCompletedClick = () => {
+    setIsToDoActive(false); // Deactivate "To Do" button
+  };
+
   return (
     <>
       <SafeAreaView style={styles.header}>
-        <Button title="To Do" type="dark" size="small" />
-        <Link href="/student-screens/jobscompleted" asChild>
-          <Button title="Completed" type="light" size="small" />
-        </Link>
+        <Button
+          title="To Do"
+          type={isToDoActive ? "dark" : "light"} // Toggle button type based on state
+          size="small"
+          disabled={!isToDoActive} // Disable "To Do" button if not active
+          onPress={handleToDoClick}
+        />
+        <Button
+          title="Completed"
+          type={isToDoActive ? "light" : "dark"} // Toggle button type based on state
+          size="small"
+          onPress={handleCompletedClick}
+        />
       </SafeAreaView>
       <ScrollView contentContainerStyle={styles.jobList}>
         {myJobs.length > 0 ? (
