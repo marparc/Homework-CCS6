@@ -1,24 +1,13 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, SafeAreaView } from "react-native";
 import { Link } from "expo-router";
+import LoginStudent from "./studentlogin";
 
 const Index = () => {
   return (
-    <View style={styles.container}>
-      {/* Link to the Client's My Listings page */}
-      <Link href="/client/mylistings" asChild>
-        <Pressable style={styles.button}>
-          <Text style={styles.text}>Client</Text>
-        </Pressable>
-      </Link>
-
-      {/* Link to the Client's My Jobs page */}
-      <Link href="/student/jobstodo" asChild>
-        <Pressable style={styles.button}>
-          <Text style={styles.text}>Student</Text>
-        </Pressable>
-      </Link>
-    </View>
+    <SafeAreaView>
+      <LoginStudent></LoginStudent>
+    </SafeAreaView>
   );
 };
 

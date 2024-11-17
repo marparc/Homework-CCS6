@@ -1,7 +1,7 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import React from "react";
+import React, { forwardRef } from "react";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 
-const Button = ({ title, type, size }) => {
+const Button = forwardRef(({ title, type, size, onPress }, ref) => {
   const getSizeStyle = () => {
     switch (size) {
       case "small":
@@ -9,25 +9,29 @@ const Button = ({ title, type, size }) => {
       case "medium":
         return { width: 300, height: 40 };
       default:
-        return { width: 300, height: 40 }; // default size if none provided
+        return { width: 300, height: 40 }; // Default size
     }
   };
 
   const isLight = type === "light";
 
   return (
-    <TouchableOpacity
-      style={[
+    <Pressable
+      ref={ref} // Forward the ref to Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
         styles.button,
         getSizeStyle(),
         isLight ? styles.lightButton : styles.darkButton,
+        pressed && styles.pressedButton,
       ]}
     >
       <Text style={isLight ? styles.lightText : styles.darkText}>{title}</Text>
-    </TouchableOpacity>
+    </Pressable>
   );
-};
+});
 
+// Export the component wrapped in React.forwardRef
 export default Button;
 
 const styles = StyleSheet.create({
@@ -45,6 +49,9 @@ const styles = StyleSheet.create({
   },
   darkButton: {
     backgroundColor: "black",
+  },
+  pressedButton: {
+    opacity: 0.8,
   },
   lightText: {
     color: "black",
