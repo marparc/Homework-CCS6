@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // Center items vertically
     borderBottomWidth: 1, // Correct property for bottom border
     borderBottomColor: "#F5F5F5", // Border color
+    backgroundColor: "white",
   },
   containerHovered: {
     backgroundColor: "#ddd", // Change background color on hover

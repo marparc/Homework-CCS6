@@ -26,9 +26,6 @@ const ChatList = () => {
 
   return (
     <>
-      <SafeAreaView style={styles.header}>
-        <Text style={styles.headerText}>My Messages</Text>
-      </SafeAreaView>
       <ScrollView>
         {chatData.map((chat, index) => (
           <Chat
