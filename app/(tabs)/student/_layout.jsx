@@ -4,51 +4,63 @@ import { Ionicons } from "@expo/vector-icons";
 export default function Layout() {
   return (
     <Tabs>
-      {/* My Listings Tab */}
+      {/* My Jobs Tab */}
       <Tabs.Screen
-        name="mylistings"
+        name="jobstodo"
         options={{
-          title: "My Listings",
-          tabBarLabel: "",
+          title: "My Jobs", // Optional, if you want to set the header title
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="briefcase-outline" color={color} size={size} />
           ),
+          tabBarLabel: "", // Disable label by setting it to an empty string
         }}
       />
 
       {/* Chat List Tab */}
       <Tabs.Screen
-        name="chatlist-client" // Path to chatlist.js at the root level of pages
+        name="chatlist-student"
         options={{
           title: "My Chats",
-          tabBarLabel: "",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubble-outline" color={color} size={size} />
           ),
+          tabBarLabel: "", // Disable label
         }}
       />
 
-      {/* Find Service Tab */}
+      {/* Find a Job Tab */}
       <Tabs.Screen
-        name="findservice"
+        name="onsitemap"
         options={{
-          title: "Find a Service",
-          tabBarLabel: "",
+          title: "Find a Job",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search-outline" color={color} size={size} />
           ),
+          tabBarLabel: "", // Disable label
+        }}
+      />
+
+      {/* Request Services List Tab */}
+      <Tabs.Screen
+        name="reqserviceslist"
+        options={{
+          title: "Service Requests",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="mail-open-outline" color={color} size={size} />
+          ),
+          tabBarLabel: "", // Disable label
         }}
       />
 
       {/* My Profile Tab */}
       <Tabs.Screen
-        name="myprofile-client"
+        name="myprofile-student"
         options={{
           title: "My Profile",
-          tabBarLabel: "",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" color={color} size={size} />
           ),
+          tabBarLabel: "", // Disable label
         }}
       />
     </Tabs>
