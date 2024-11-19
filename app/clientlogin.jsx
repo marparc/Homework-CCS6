@@ -14,7 +14,7 @@ const LoginClient = () => {
 
       <View style={styles.buttonContainer}>
         {/* Handle the press and then navigate */}
-        <Link href="/client/mylistings" asChild>
+        <Link href="/client/myjoblistings" asChild>
           <Button title="Login" type="dark" size="medium" />
         </Link>
       </View>

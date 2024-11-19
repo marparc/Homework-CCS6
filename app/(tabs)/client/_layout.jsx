@@ -6,10 +6,11 @@ export default function Layout() {
     <Tabs>
       {/* My Listings Tab */}
       <Tabs.Screen
-        name="mylistings"
+        name="myjoblistings"
         options={{
           title: "My Listings",
           tabBarLabel: "",
+          headerShown: false, // Hide the header
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="briefcase-outline" color={color} size={size} />
           ),
@@ -18,10 +19,11 @@ export default function Layout() {
 
       {/* Chat List Tab */}
       <Tabs.Screen
-        name="chatlist-client" // Path to chatlist.js at the root level of pages
+        name="chat"
         options={{
           title: "My Chats",
           tabBarLabel: "",
+          headerShown: false, // Hide the header
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubble-outline" color={color} size={size} />
           ),
@@ -34,6 +36,7 @@ export default function Layout() {
         options={{
           title: "Find a Service",
           tabBarLabel: "",
+          headerShown: false, // Hide the header
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search-outline" color={color} size={size} />
           ),
@@ -42,10 +45,11 @@ export default function Layout() {
 
       {/* My Profile Tab */}
       <Tabs.Screen
-        name="myprofile-client"
+        name="profile"
         options={{
           title: "My Profile",
           tabBarLabel: "",
+          headerShown: false, // Hide the header
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" color={color} size={size} />
           ),
