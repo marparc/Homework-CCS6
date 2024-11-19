@@ -1,31 +1,21 @@
 import { Stack } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router"; // Make sure to import useRouter
 
 export default function Layout() {
+  const router = useRouter(); // Get the router instance
+
   return (
     <Stack
       screenOptions={{
-        headerStyle: {
-          backgroundColor: "#f4511e",
-        },
-        headerTintColor: "#fff",
-        headerTitleStyle: {
-          fontWeight: "bold",
-        },
+        headerStyle: { backgroundColor: "white" },
+        headerTintColor: "black",
+        headerTitleAlign: "center",
+        contentStyle: { backgroundColor: "white" },
       }}
     >
-      {/* Optionally configure static options outside the route.*/}
-      <Stack.Screen
-        name="index"
-        options={{
-          title: "Chat List", // Custom title
-        }}
-      />
-      <Stack.Screen
-        name="convo"
-        options={{
-          title: "Conversation", // Custom title
-        }}
-      />
+      <Stack.Screen name="index" options={{ title: "Chats" }} />
     </Stack>
   );
 }

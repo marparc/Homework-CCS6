@@ -1,3 +1,4 @@
+// index.jsx
 import { View, Text, SafeAreaView, ScrollView, StyleSheet } from "react-native";
 import React from "react";
 import Chat from "@/components/ui/chatcard"; // Assuming ChatCard supports `onPress`
@@ -7,7 +8,7 @@ const ChatList = () => {
   // Sample data
   const chatData = [
     {
-      id: "1", // Add unique IDs
+      id: "1",
       receiver: "John Ambistan",
       message:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id imperdiet magna.",
@@ -40,7 +41,7 @@ const ChatList = () => {
             receiver={chat.receiver}
             message={chat.message}
             onPress={() => {
-              router.push(`/student/chat/convo`); // Pass the chat ID as a query param
+              router.push("/screens/convo"); // Full path to navigate
             }}
           />
         ))}

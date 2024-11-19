@@ -4,21 +4,19 @@ export default function Layout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: {
-          backgroundColor: "#f4511e",
-        },
-        headerTintColor: "#fff",
-        headerTitleStyle: {
-          fontWeight: "bold",
+        headerShown: false, // Hide header globally
+        contentStyle: {
+          backgroundColor: "white", // Background color for screen content
         },
       }}
     >
-      {/* Optionally configure static options outside the route.*/}
       <Stack.Screen
         name="index"
-        options={{
-          title: "My Profile", // Custom title
-        }}
+        options={
+          {
+            // No need for header-specific options since the header is hidden globally
+          }
+        }
       />
     </Stack>
   );

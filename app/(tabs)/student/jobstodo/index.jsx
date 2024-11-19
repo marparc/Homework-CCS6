@@ -2,10 +2,12 @@ import { SafeAreaView, ScrollView, Text, StyleSheet } from "react-native";
 import React, { useState, useEffect } from "react";
 import Button from "@/components/ui/buttons"; // Your custom button
 import JobCard from "@/components/ui/jobcard"; // Your custom job card component
+import { useRouter } from "expo-router";
 
 const JobsToDo = () => {
   const [myJobs, setMyJobs] = useState([]);
   const [isToDoActive, setIsToDoActive] = useState(true); // Track the active button
+  const router = useRouter();
 
   useEffect(() => {
     const fetchedJobs = [
@@ -56,6 +58,7 @@ const JobsToDo = () => {
               key={index}
               title={job.title}
               description={job.description}
+              onPress={() => router.push(`/screens/todo`)}
             />
           ))
         ) : (

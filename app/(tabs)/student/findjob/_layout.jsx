@@ -5,12 +5,10 @@ export default function Layout() {
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: "#f4511e",
+          backgroundColor: "white",
         },
-        headerTintColor: "#fff",
-        headerTitleStyle: {
-          fontWeight: "bold",
-        },
+        headerTintColor: "black",
+        headerTitleAlign: "center",
       }}
     >
       {/* Optionally configure static options outside the route.*/}
@@ -18,12 +16,6 @@ export default function Layout() {
         name="index"
         options={{
           title: "Find a Job", // Custom title
-        }}
-      />
-      <Stack.Screen
-        name="viewjob"
-        options={{
-          title: "View Job Listing", // Custom title
         }}
       />
     </Stack>
