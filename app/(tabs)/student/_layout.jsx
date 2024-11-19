@@ -3,12 +3,15 @@ import { Ionicons } from "@expo/vector-icons";
 
 export default function Layout() {
   return (
-    <Tabs>
+    <Tabs
+      screenOptions={{
+        headerShown: false, // Globally hide the header for all tabs
+      }}
+    >
       {/* My Jobs Tab */}
       <Tabs.Screen
         name="jobstodo"
         options={{
-          title: "My Jobs", // Optional, if you want to set the header title
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="briefcase-outline" color={color} size={size} />
           ),
@@ -17,9 +20,8 @@ export default function Layout() {
       />
       {/* Chat List Tab */}
       <Tabs.Screen
-        name="chatlist-student"
+        name="chat"
         options={{
-          title: "My Chats",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubble-outline" color={color} size={size} />
           ),
@@ -31,7 +33,6 @@ export default function Layout() {
       <Tabs.Screen
         name="findjob"
         options={{
-          title: "Find a Job",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search-outline" color={color} size={size} />
           ),
@@ -41,9 +42,8 @@ export default function Layout() {
 
       {/* Request Services List Tab */}
       <Tabs.Screen
-        name="reqserviceslist"
+        name="services"
         options={{
-          title: "Service Requests",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="mail-open-outline" color={color} size={size} />
           ),
@@ -53,9 +53,8 @@ export default function Layout() {
 
       {/* My Profile Tab */}
       <Tabs.Screen
-        name="myprofile-student"
+        name="profile"
         options={{
-          title: "My Profile",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" color={color} size={size} />
           ),

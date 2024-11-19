@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 
-const Chat = ({ receiver, message, chatId }) => {
+const Chat = ({ receiver, message, onPress }) => {
   // Get the first letter of the receiver's name
   const firstLetter = receiver.charAt(0).toUpperCase();
 
@@ -9,14 +9,15 @@ const Chat = ({ receiver, message, chatId }) => {
   const truncatedMessage =
     message.length > 33 ? message.substring(0, 33) + "..." : message;
 
-  // Hover state
+  // Hover state (for web support)
   const [isHovered, setIsHovered] = useState(false);
 
   return (
     <TouchableOpacity
       style={[styles.container, isHovered && styles.containerHovered]} // Change background color on hover
-      onMouseEnter={() => setIsHovered(true)} // When mouse enters, set hover to true
-      onMouseLeave={() => setIsHovered(false)} // When mouse leaves, set hover to false
+      onMouseEnter={() => setIsHovered(true)} // When mouse enters, set hover to true (web only)
+      onMouseLeave={() => setIsHovered(false)} // When mouse leaves, set hover to false (web only)
+      onPress={onPress} // Handle press event
     >
       {/* Left Section */}
       <View style={styles.left}>

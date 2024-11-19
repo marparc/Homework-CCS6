@@ -67,7 +67,7 @@ export default function JobMap() {
   };
 
   const viewJobPress = () => {
-    router.push(`/viewjoblisting`); // Use selectedJob.id for dynamic routing
+    router.push(`/student/findjob/viewjoblisting`); // Use selectedJob.id for dynamic routing
   };
 
   return (

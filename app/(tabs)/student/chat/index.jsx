@@ -1,41 +1,51 @@
 import { View, Text, SafeAreaView, ScrollView, StyleSheet } from "react-native";
 import React from "react";
-import Chat from "@/components/ui/chatcard";
+import Chat from "@/components/ui/chatcard"; // Assuming ChatCard supports `onPress`
+import { useRouter } from "expo-router";
 
 const ChatList = () => {
   // Sample data
   const chatData = [
     {
+      id: "1", // Add unique IDs
       receiver: "John Ambistan",
       message:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id imperdiet magna.",
     },
     {
+      id: "2",
       receiver: "Jane Doe",
       message: "Hey there! How's it going?",
     },
     {
+      id: "3",
       receiver: "Michael Smith",
       message: "Don't forget about our meeting tomorrow at 10 AM.",
     },
     {
+      id: "4",
       receiver: "Emily Clarke",
       message: "Can you send me the document by tonight?",
     },
   ];
 
+  const router = useRouter();
+
   return (
-    <>
-      <ScrollView>
-        {chatData.map((chat, index) => (
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ padding: 16 }}>
+        {chatData.map((chat) => (
           <Chat
-            key={index} // Use index as the key, but consider unique IDs in real data
+            key={chat.id} // Use unique ID as the key
             receiver={chat.receiver}
             message={chat.message}
+            onPress={() => {
+              router.push(`/student/chat/convo`); // Pass the chat ID as a query param
+            }}
           />
         ))}
       </ScrollView>
-    </>
+    </SafeAreaView>
   );
 };
 
