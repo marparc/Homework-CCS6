@@ -1,8 +1,8 @@
 import { View, Text, SafeAreaView, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import Button from "@/components/ui/buttons";
-import JobMap from "../../onsitemap";
-import RemoteLists from "../../remotelist";
+import JobMap from "./onsitemap";
+import RemoteLists from "../../../remotelist";
 
 const FindJob = () => {
   const [isOnsiteActive, setIsOnsiteActive] = useState(true); // Track which button is active
