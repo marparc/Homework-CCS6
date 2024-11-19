@@ -1,6 +1,6 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import React from "react";
-import ListingDetails from "../components/ui/jobdetailsexpanded";
+import ListingDetails from "../../../components/ui/jobdetailsexpanded";
 import { useRouter } from "expo-router"; // Importing useRouter from expo-router
 
 const ViewJobListing = () => {
@@ -8,19 +8,6 @@ const ViewJobListing = () => {
 
   return (
     <View style={styles.container}>
-      {/* Custom Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.canGoBack()}
-          style={styles.backButton}
-        >
-          <Text style={styles.backText}>&lt; Back</Text>
-          {/* Back button symbol */}
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>View Job</Text>
-      </View>
-
-      {/* Job Listing Details */}
       <ListingDetails
         title="Video Editor"
         jobType="Onsite"
@@ -39,6 +26,9 @@ const ViewJobListing = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    display: "flex",
+    alignItems: "center",
+    position: "absolute",
   },
   header: {
     flexDirection: "row",

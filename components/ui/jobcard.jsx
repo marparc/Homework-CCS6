@@ -1,13 +1,22 @@
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import React, { useState } from "react";
+import { useRouter } from "expo-router";
 
 const JobCard = ({ title, description }) => {
   const [isPressed, setIsPressed] = useState(false);
+  const router = useRouter(); // Initialize the router
+
+  // Function to handle the card click and navigate
+  const handlePress = () => {
+    // Add any navigation logic or extra actions here
+    router.push(`/screens/todo`);
+  };
 
   return (
     <Pressable
       onPressIn={() => setIsPressed(true)}
       onPressOut={() => setIsPressed(false)}
+      onPress={handlePress} // Trigger navigation on press
     >
       <View style={[styles.card, isPressed && styles.cardPressed]}>
         <View>

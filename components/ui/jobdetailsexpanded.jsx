@@ -68,14 +68,14 @@ export default ListingDetails;
 const styles = StyleSheet.create({
   detailsContainer: {
     margin: 10,
-    width: 300,
+    width: 330,
     backgroundColor: "#FAF9F9",
     padding: 20,
     borderRadius: 16,
   },
   descriptionContainer: {
     margin: 10,
-    width: 300,
+    width: 330,
     backgroundColor: "#FAF9F9",
     padding: 20,
     borderRadius: 16,

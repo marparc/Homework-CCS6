@@ -49,7 +49,7 @@ export default ProfileCard;
 
 const styles = StyleSheet.create({
   profileCard: {
-    width: 300,
+    width: 330,
     padding: 20,
     backgroundColor: "#FAF9F9",
     margin: 10,
