@@ -6,7 +6,7 @@ const Rating = ({ stars, comment, rateFrom }) => {
   // Create an array of star components based on the `stars` prop
   const renderStars = () => {
     return Array.from({ length: stars }).map((_, index) => (
-      <Ionicons key={index} name="star-outline" size={20} color="black" />
+      <Ionicons key={index} name="star-outline" size={25} color="black" />
     ));
   };
 
@@ -24,8 +24,10 @@ export default Rating;
 const styles = StyleSheet.create({
   container: {
     margin: 10,
-    width: 300,
-    backgroundColor: "#FAF9F9",
+    width: 330,
+    backgroundColor: "white",
+    borderColor: "#555555",
+    borderWidth: 1,
     padding: 20,
     borderRadius: 16,
   },
@@ -34,8 +36,8 @@ const styles = StyleSheet.create({
   },
   comment: {
     marginTop: 10,
-    fontSize: 10,
-    color: "#434242",
+    fontSize: 14,
+    color: "#555555",
     textAlign: "justify",
     color: "#8E8E8E",
     fontStyle: "italic",

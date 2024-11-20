@@ -17,14 +17,15 @@ const styles = StyleSheet.create({
   container: {
     width: 320,
     padding: 20,
-    margin: 10,
     backgroundColor: "#FAF9F9",
     borderRadius: 16,
   },
   header: {
-    fontSize: 24,
+    fontSize: 18,
+    fontWeight: "bold",
   },
   text: {
     fontSize: 14,
+    color: "#555555",
   },
 });

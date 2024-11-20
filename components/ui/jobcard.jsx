@@ -9,7 +9,7 @@ const JobCard = ({ title, description }) => {
   // Function to handle the card click and navigate
   const handlePress = () => {
     // Add any navigation logic or extra actions here
-    router.push(`/screens/todo`);
+    router.push(``);
   };
 
   return (

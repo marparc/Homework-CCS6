@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet } from "react-native";
 import React from "react";
 import JobCard from "@/components/ui/jobcard";
+import { useRouter } from "expo-router";
 
 // Sample data
 const jobData = [
@@ -36,10 +37,18 @@ const jobData = [
 ];
 
 const RequestLists = () => {
+  const router = useRouter();
   // Function to render JobCards based on the list
   const renderJobCards = (jobs) => {
     return jobs.map((job) => (
-      <JobCard key={job.id} title={job.title} description={job.description} />
+      <JobCard
+        key={job.id}
+        title={job.title}
+        description={job.description}
+        onPress={() => {
+          router.push("/screens/viewrequest");
+        }}
+      />
     ));
   };
 

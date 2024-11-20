@@ -7,9 +7,9 @@ const Button = forwardRef(({ title, type, size, onPress }, ref) => {
       case "small":
         return { width: 120, height: 40 };
       case "medium":
-        return { width: 300, height: 40 };
+        return { width: 330, height: 40 };
       default:
-        return { width: 300, height: 40 }; // Default size
+        return { width: 330, height: 40 }; // Default size
     }
   };
 
