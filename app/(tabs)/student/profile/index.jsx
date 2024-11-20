@@ -15,9 +15,15 @@ import Button from "@/components/ui/buttons";
 import ServiceCard from "@/components/ui/servicecard";
 import PortfolioCard from "@/components/ui/portfoliocard";
 import Rating from "@/components/ui/ratings";
-import { useRouter } from "expo-router";
-import DeleteService from "../../screens/deleteservice";
-import axios from "axios";
+
+// Sample user data
+const user = {
+  firstName: "John",
+  lastName: "Doe",
+  bio: "I am not slow, I am fast.",
+  id: "1234",
+  type: "Student Freelancer",
+};
 
 // Sample services data
 const services = [
@@ -191,7 +197,8 @@ const ProfileHeader = () => {
       </View>
       <View style={styles.aboutContainer}>
         <Text style={styles.detailsHeader}>About Me:</Text>
-        <Text style={styles.details}>Birthdate: {birthdate}</Text>
+        <Text style={styles.details}>Birthdate: </Text>
+        <Text style={styles.details}>Location: </Text>
         <Text style={styles.detailsHeader}>Education:</Text>
         <Text style={styles.details}>{education.level}</Text>
         <Text style={styles.details}>{education.degree}</Text>
