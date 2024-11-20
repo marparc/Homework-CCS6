@@ -41,7 +41,7 @@ const ChatList = () => {
             receiver={chat.receiver}
             message={chat.message}
             onPress={() => {
-              router.push("/screens/convo"); // Full path to navigate
+              router.push("/(tabs)/screens/convo"); // Full path to navigate
             }}
           />
         ))}

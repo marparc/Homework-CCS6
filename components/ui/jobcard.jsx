@@ -2,21 +2,14 @@ import { View, Text, StyleSheet, Pressable } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
 
-const JobCard = ({ title, description }) => {
+const JobCard = ({ title, description, onPress }) => {
   const [isPressed, setIsPressed] = useState(false);
-  const router = useRouter(); // Initialize the router
-
-  // Function to handle the card click and navigate
-  const handlePress = () => {
-    // Add any navigation logic or extra actions here
-    router.push(``);
-  };
 
   return (
     <Pressable
       onPressIn={() => setIsPressed(true)}
       onPressOut={() => setIsPressed(false)}
-      onPress={handlePress} // Trigger navigation on press
+      onPress={onPress} // Use the provided `onPress` prop for navigation
     >
       <View style={[styles.card, isPressed && styles.cardPressed]}>
         <View>
@@ -40,7 +33,7 @@ const styles = StyleSheet.create({
     borderColor: "#f8f8f8",
     borderRadius: 16,
     marginVertical: 5,
-    width: 300,
+    width: 330,
   },
   cardPressed: {
     borderWidth: 1,
