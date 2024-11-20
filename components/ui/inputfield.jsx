@@ -8,11 +8,11 @@ const InputField = ({ title, size }) => {
       case "small":
         return { width: 120, height: 40 };
       case "medium":
-        return { width: 320, height: 40 };
+        return { width: 330, height: 40 };
       case "large":
-        return { width: 320, height: 150, multiline: true }; // Add multiline for large size
+        return { width: 330, height: 150, multiline: true }; // Add multiline for large size
       default:
-        return { width: 320, height: 40 }; // Default to medium if no valid size is provided
+        return { width: 330, height: 40 }; // Default to medium if no valid size is provided
     }
   };
 

@@ -5,11 +5,12 @@ export default function Layout() {
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: "#f4511e",
+          backgroundColor: "white", // Header background color
         },
-        headerTintColor: "#fff",
-        headerTitleStyle: {
-          fontWeight: "bold",
+        headerTintColor: "black", // Header text/icon color
+        headerTitleAlign: "center", // Aligns header title to the center
+        contentStyle: {
+          backgroundColor: "white",
         },
       }}
     >
@@ -17,7 +18,7 @@ export default function Layout() {
       <Stack.Screen
         name="index"
         options={{
-          title: "Chat List", // Custom title
+          title: "My Job Listings", // Custom title
         }}
       />
     </Stack>

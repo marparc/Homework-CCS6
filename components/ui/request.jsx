@@ -9,12 +9,6 @@ const ReqCard = (props) => {
 
   const [isPressed, setIsPressed] = useState(false);
 
-  const renderStars = () => {
-    return Array.from({ length: stars }).map((_, index) => (
-      <Ionicons key={index} name="star-outline" size={20} color="black" />
-    ));
-  };
-
   return (
     <Pressable
       onPressIn={() => setIsPressed(true)}
@@ -25,7 +19,6 @@ const ReqCard = (props) => {
           <Text style={styles.header}>{title}</Text>
         </View>
         <View>
-          <View style={styles.stars}>{renderStars()}</View>
           <Text style={styles.name}>{name}</Text>
         </View>
         <View style={styles.details}>
