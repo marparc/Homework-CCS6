@@ -8,13 +8,22 @@ import {
   ScrollView,
   Pressable,
   TouchableWithoutFeedback,
+  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Button from "@/components/ui/buttons";
 import ServiceCard from "@/components/ui/servicecard";
 import PortfolioCard from "@/components/ui/portfoliocard";
 import Rating from "@/components/ui/ratings";
-import axios from "axios"; // Import axios
+
+// Sample user data
+const user = {
+  firstName: "John",
+  lastName: "Doe",
+  bio: "I am not slow, I am fast.",
+  id: "1234",
+  type: "Student Freelancer",
+};
 
 // Sample services data
 const services = [
@@ -56,7 +65,6 @@ const portfolios = [
     link: "https://youtube.com",
   },
 ];
-
 // Sample ratings data
 const ratings = [
   {
@@ -83,7 +91,7 @@ const ProfileHeader = () => {
   const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState(null); // Add state for selected portfolio
   const [activeTab, setActiveTab] = useState("services"); // Track which tab is active
-
+  const router = useRouter();
   // Handle service selection
   const handleServicePress = (serviceId) => {
     setSelectedServiceId((prev) => (prev === serviceId ? null : serviceId));
@@ -189,8 +197,8 @@ const ProfileHeader = () => {
       </View>
       <View style={styles.aboutContainer}>
         <Text style={styles.detailsHeader}>About Me:</Text>
-        <Text style={styles.details}>Birthdate: {birthdate}</Text>
-
+        <Text style={styles.details}>Birthdate: </Text>
+        <Text style={styles.details}>Location: </Text>
         <Text style={styles.detailsHeader}>Education:</Text>
         <Text style={styles.details}>{education.level}</Text>
         <Text style={styles.details}>{education.degree}</Text>
@@ -218,29 +226,51 @@ const ProfileHeader = () => {
         <>
           <View style={styles.iconsContainer}>
             {/* Add Button */}
-            <Pressable>
+            <Pressable
+              onPress={() => {
+                // Only allow navigation when no service is selected
+                if (!selectedServiceId) {
+                  router.push("/screens/addservice");
+                }
+              }}
+              disabled={selectedServiceId !== null} // Disable if a service is selected
+            >
               <Ionicons
                 name="add-circle"
                 size={30}
                 color="black"
-                style={{ opacity: selectedServiceId ? 0.5 : 1 }}
+                style={{ opacity: selectedServiceId ? 0.5 : 1 }} // Reduce opacity when disabled
               />
             </Pressable>
 
             {/* Edit and Delete Buttons */}
             <View style={styles.rightIcons}>
-              <Pressable>
+              <Pressable
+                onPress={() => {
+                  if (selectedServiceId) {
+                    router.push(`/screens/editservice`);
+                  }
+                }}
+                disabled={!selectedServiceId}
+              >
                 <Ionicons
                   name="create-outline"
                   size={30}
-                  color={selectedServiceId ? "black" : "#aaa"}
+                  color={selectedServiceId ? "black" : "#aaa"} // Enable only if a service is selected
                 />
               </Pressable>
-              <Pressable>
+              <Pressable
+                onPress={() => {
+                  if (selectedServiceId) {
+                    router.push("/(tabs)/screens/deleteservice");
+                  }
+                }}
+                disabled={!selectedServiceId}
+              >
                 <Ionicons
                   name="trash-outline"
                   size={30}
-                  color={selectedServiceId ? "black" : "#aaa"}
+                  color={selectedServiceId ? "black" : "#aaa"} // Enable only if a service is selected
                 />
               </Pressable>
             </View>

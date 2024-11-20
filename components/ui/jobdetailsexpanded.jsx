@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   detail: {
-    fontSize: 12,
+    fontSize: 14,
     color: "#575757",
     margin: 2,
   },
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   clientName: {
-    fontSize: 12,
+    fontSize: 14,
     marginLeft: 5,
     color: "black",
     textDecorationLine: "underline",

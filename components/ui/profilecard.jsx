@@ -24,18 +24,23 @@ const ProfileCard = ({ profiletype, company, imageSrc, name }) => {
   return (
     <View style={styles.profileCard}>
       {/* Render Text component only if profileTypeText returns a valid string */}
-      {profileTypeText() && <Text>{profileTypeText()}</Text>}
+      {profileTypeText() && (
+        <Text style={styles.type}>{profileTypeText()}</Text>
+      )}
 
       <View style={styles.detailsContainer}>
-        <Image
-          source={{ uri: imageSrc || "https://via.placeholder.com/50" }}
-          style={styles.image}
-        />
+        {imageSrc ? (
+          <Image source={{ uri: imageSrc }} style={styles.image} />
+        ) : (
+          <View style={styles.imageFallback}>
+            <Text style={styles.initial}>{name?.charAt(0)?.toUpperCase()}</Text>
+          </View>
+        )}
         <View>
           <Text style={styles.name}>{name}</Text>
           {/* Render Text component only if companyText returns a valid string */}
           {companyText() && (
-            <Text style={{ color: "#434242", fontSize: 10 }}>
+            <Text style={{ color: "#434242", fontSize: 14 }}>
               {companyText()}
             </Text>
           )}
@@ -55,6 +60,11 @@ const styles = StyleSheet.create({
     margin: 10,
     borderRadius: 16,
   },
+  type: {
+    fontWeight: "bold",
+    fontSize: 14,
+    textAlign: "center",
+  },
   detailsContainer: {
     marginTop: 20,
     flexDirection: "row",
@@ -66,7 +76,22 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginRight: 10,
   },
+  imageFallback: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "black",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  initial: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
   name: {
     fontWeight: "bold",
+    fontSize: 14,
   },
 });
