@@ -28,7 +28,10 @@ const LoginStudent = () => {
 
       <View style={styles.footerContainer}>
         <Text>No Account? Create one.</Text>
-        <Button title="Register" type="light" size="medium" />
+        {/* Remove onPress from Link, as Link handles the navigation */}
+        <Link href="register" asChild>
+          <Button title="Register" type="light" size="medium" />
+        </Link>
       </View>
     </SafeAreaView>
   );

@@ -5,15 +5,16 @@ export default function Layout() {
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: "#f4511e",
+          backgroundColor: "white", // Header background color
         },
-        headerTintColor: "#fff",
-        headerTitleStyle: {
-          fontWeight: "bold",
+        headerTintColor: "black", // Header text/icon color
+        headerTitleAlign: "center", // Aligns header title to the center
+        contentStyle: {
+          backgroundColor: "white",
         },
       }}
     >
-      {/* Optionally configure static options outside the route.*/}
+      {/* Optionally configure static options outside the route. */}
       <Stack.Screen
         name="index"
         options={{
