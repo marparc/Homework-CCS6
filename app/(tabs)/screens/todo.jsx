@@ -29,17 +29,17 @@ const ToDoDetails = () => {
       />
 
       <Button
-        title="Go to Messages"
-        type="light"
-        size="medium"
-        onPress={() => router.push("/screens/convo")}
-      />
-
-      <Button
         title="Confirm"
         type="dark"
         size="medium"
         onPress={() => console.log("Confirmed")}
+      />
+
+      <Button
+        title="Go to Messages"
+        type="light"
+        size="medium"
+        onPress={() => router.push("/screens/convo")}
       />
     </ScrollView>
   );

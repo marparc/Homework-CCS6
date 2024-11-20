@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Button from "@/components/ui/buttons";
 import ServiceCard from "@/components/ui/servicecard";
 import PortfolioCard from "@/components/ui/portfoliocard";
+import Rating from "@/components/ui/ratings";
 
 // Sample user data
 const user = {
@@ -60,6 +61,28 @@ const portfolios = [
     title: "Portfolio 3",
     description: "Portfolio displaying web development projects.",
     link: "https://youtube.com",
+  },
+];
+
+// Sample ratings data
+const ratings = [
+  {
+    id: 1,
+    stars: 5,
+    comment: "Excellent work! Highly recommended.",
+    rateFrom: "Alice Johnson",
+  },
+  {
+    id: 2,
+    stars: 4,
+    comment: "Great service but there’s room for improvement.",
+    rateFrom: "Bob Smith",
+  },
+  {
+    id: 3,
+    stars: 3,
+    comment: "Average experience. Could be better.",
+    rateFrom: "Chris Lee",
   },
 ];
 
@@ -152,31 +175,37 @@ const ProfileHeader = () => {
       {activeTab === "services" && (
         <>
           <View style={styles.iconsContainer}>
+            {/* Add Button */}
             <Pressable>
               <Ionicons
                 name="add-circle"
-                size={36}
+                size={30}
                 color="black"
                 style={{ opacity: selectedServiceId ? 0.5 : 1 }}
               />
             </Pressable>
-            <Pressable>
-              <Ionicons
-                name="create-outline"
-                size={36}
-                color={selectedServiceId ? "black" : "#aaa"}
-              />
-            </Pressable>
-            <Pressable>
-              <Ionicons
-                name="trash-outline"
-                size={36}
-                color={selectedServiceId ? "red" : "#aaa"}
-              />
-            </Pressable>
+
+            {/* Edit and Delete Buttons */}
+            <View style={styles.rightIcons}>
+              <Pressable>
+                <Ionicons
+                  name="create-outline"
+                  size={30}
+                  color={selectedServiceId ? "black" : "#aaa"}
+                />
+              </Pressable>
+              <Pressable>
+                <Ionicons
+                  name="trash-outline"
+                  size={30}
+                  color={selectedServiceId ? "black" : "#aaa"}
+                />
+              </Pressable>
+            </View>
           </View>
+
           <TouchableWithoutFeedback onPress={handleOutsidePress}>
-            <View style={{ flex: 1 }}>
+            <View style={styles.container}>
               {services.map((service) => (
                 <Pressable
                   key={service.id}
@@ -198,52 +227,74 @@ const ProfileHeader = () => {
         </>
       )}
 
-      {/* Icons for Portfolios */}
       {activeTab === "portfolios" && (
         <>
           <View style={styles.iconsContainer}>
+            {/* Add Button */}
             <Pressable>
               <Ionicons
                 name="add-circle"
-                size={36}
+                size={30}
                 color="black"
                 style={{ opacity: selectedPortfolioId ? 0.5 : 1 }}
               />
             </Pressable>
-            <Pressable>
-              <Ionicons
-                name="create-outline"
-                size={36}
-                color={selectedPortfolioId ? "black" : "#aaa"}
-              />
-            </Pressable>
-            <Pressable>
-              <Ionicons
-                name="trash-outline"
-                size={36}
-                color={selectedPortfolioId ? "red" : "#aaa"}
-              />
-            </Pressable>
+
+            {/* Edit and Delete Buttons */}
+            <View style={styles.rightIcons}>
+              <Pressable>
+                <Ionicons
+                  name="create-outline"
+                  size={30}
+                  color={selectedPortfolioId ? "black" : "#aaa"} // Enable only if a portfolio is selected
+                />
+              </Pressable>
+              <Pressable>
+                <Ionicons
+                  name="trash-outline"
+                  size={30}
+                  color={selectedPortfolioId ? "black" : "#aaa"} // Enable only if a portfolio is selected
+                />
+              </Pressable>
+            </View>
           </View>
-          {portfolios.map((portfolio) => (
-            <Pressable
-              key={portfolio.id}
-              onPress={() => handlePortfolioPress(portfolio.id)} // Toggle selection
-              onLongPress={() => handlePortfolioLongPress(portfolio.id)} // Select on long press
-              style={[
-                styles.serviceCard,
-                isPortfolioSelected(portfolio.id) && styles.selectedCard,
-              ]}
-            >
-              <PortfolioCard
-                title={portfolio.title}
-                description={portfolio.description}
-                link={portfolio.link}
-              />
-            </Pressable>
-          ))}
+
+          <TouchableWithoutFeedback onPress={handleOutsidePress}>
+            <View style={styles.container}>
+              {portfolios.map((portfolio) => (
+                <Pressable
+                  key={portfolio.id}
+                  onPress={() => handlePortfolioPress(portfolio.id)} // Toggle selection
+                  onLongPress={() => handlePortfolioLongPress(portfolio.id)} // Select on long press
+                  style={[
+                    styles.portfolioCard,
+                    isPortfolioSelected(portfolio.id) && styles.selectedCard,
+                  ]}
+                >
+                  <PortfolioCard
+                    title={portfolio.title}
+                    description={portfolio.description}
+                    link={portfolio.link}
+                  />
+                </Pressable>
+              ))}
+            </View>
+          </TouchableWithoutFeedback>
         </>
       )}
+
+      {/* Reviews Section */}
+      <View style={styles.reviewsContainer}>
+        <Text style={styles.reviewsHeader}>Reviews</Text>
+        {ratings.map((rating) => (
+          <Rating
+            key={rating.id}
+            stars={rating.stars.toString()}
+            comment={rating.comment}
+            rateFrom={rating.rateFrom}
+          />
+        ))}
+      </View>
     </ScrollView>
   );
 };
@@ -254,13 +305,14 @@ const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   scrollContainer: {
+    //container for whole page
     flexGrow: 1,
     backgroundColor: "white",
   },
   header: {
+    //main container for circle down to bio
     alignItems: "center",
     backgroundColor: "black",
-    paddingVertical: 20,
   },
   circle: {
     width: 150,
@@ -270,6 +322,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
+    position: "absolute",
+    zIndex: 2,
   },
   circleText: {
     fontSize: 72,
@@ -277,14 +331,19 @@ const styles = StyleSheet.create({
     color: "black",
   },
   infoContainer: {
+    //container
+    backgroundColor: "white",
+    width: "100%",
     alignItems: "center",
-    marginBottom: 16,
-    paddingHorizontal: 16,
+    paddingTop: 40,
+    padding: 20,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    marginTop: 120,
   },
   name: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "white",
   },
   type: {
     fontSize: 16,
@@ -299,39 +358,91 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 16,
     textAlign: "center",
-    color: "white",
-  },
-  aboutContainer: {
-    backgroundColor: "#FAF9F9",
-    borderRadius: 12,
-    padding: 16,
-    margin: 10,
   },
   detailsHeader: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
-    color: "#212121",
-    marginVertical: 5,
+    color: "black",
+    marginBottom: 6,
   },
   details: {
     fontSize: 14,
-    color: "#212121",
+    color: "#555555",
+    marginBottom: 4,
+  },
+  aboutContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: "#F7F7F7",
+    display: "flex",
+    alignItems: "center", // Centers horizontally
+    justifyContent: "center", // Centers vertically
+    borderRadius: 12, // Optional: Add a nice rounded border effect
+    width: "90%", // Optional: Make the width responsive
+    alignSelf: "center", // Center the container within its parent
   },
   tabsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 10,
-    paddingHorizontal: 10,
+    flexDirection: "row", // Arrange items in a row
+    justifyContent: "center", // Center items horizontally
+    alignItems: "center", // Align items vertically
+    gap: 10, // Adds space between button
+    marginVertical: 10, // Space above and below the container
   },
   iconsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 10,
+    flexDirection: "row", // Arrange items in a row
+    justifyContent: "space-between", // Space between Add and the other buttons
+    alignItems: "center", // Align items vertically
+    marginVertical: 10, // Add vertical spacing
+    paddingHorizontal: 70, // Add space on the left and right
+  },
+  rightIcons: {
+    flexDirection: "row", // Arrange Edit and Delete side by side
+    gap: 15, // Add spacing between the Edit and Delete buttons
+  },
+  container: {
+    flex: 1,
+    justifyContent: "center", // Vertically center content
+    alignItems: "center", // Horizontally center content
+    paddingHorizontal: 20, // Add horizontal padding for spacing from screen edges
   },
   serviceCard: {
-    marginBottom: 10,
+    maxWidth: 350, // Set a max width for the cards to avoid stretching too much on large screen
+    backgroundColor: "red", // Card background color
+    margin: 10,
+    borderRadius: 16, // Rounded corners
+    shadowColor: "#000", // Shadow effect for iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1, // Subtle shadow
+    shadowRadius: 4,
+  },
+
+  portfolioCard: {
+    maxWidth: 350, // Set a max width for the cards to avoid stretching too much on large screen
+    backgroundColor: "red", // Card background color
+    margin: 10,
+    borderRadius: 16, // Rounded corners
+    shadowColor: "#000", // Shadow effect for iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1, // Subtle shadow
+    shadowRadius: 4,
   },
   selectedCard: {
-    backgroundColor: "#e0e0e0",
+    borderWidth: 2, // Highlight the card when selected
+    borderColor: "black", // Blue color for selected state
+  },
+  reviewsContainer: {
+    marginTop: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    backgroundColor: "white",
+    borderRadius: 12,
+    alignItems: "center", // Centers the child components (ratings) horizontally
+  },
+  reviewsHeader: {
+    fontSize: 18,
+    color: "black",
+    marginBottom: 10,
+    textAlign: "center",
+    fontWeight: "bold",
   },
 });
