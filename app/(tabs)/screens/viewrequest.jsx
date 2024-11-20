@@ -1,44 +1,71 @@
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet, ScrollView } from "react-native";
 import React from "react";
-import JobDetails from "@/components/ui/jobdetails";
-import { useRouter } from "expo-router"; // Importing useRouter from expo-router
+import ListingDetails from "../../../components/ui/jobdetailsexpanded";
+import { useRouter } from "expo-router";
+import Button from "@/components/ui/buttons";
+import ProfileCard from "@/components/ui/profilecard";
+import TextCard from "@/components/ui/textcard";
 
-const ViewJobListing = () => {
+const ViewRequest = () => {
   const router = useRouter();
 
   return (
-    <>
-      <View style={styles.container}>
-        <JobDetails
-          title="Video Editor"
-          jobType="Onsite"
-          posted="December 3, 2024"
-          status="Open"
-          location="Silliman University, Dumaguete City"
-          pay="5500"
-          description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id imperdiet magna, a finibus magna. Sed sodales et nisl at ultrices. Sed nec ante ornare, tempor quam in, eleifend velit. Duis ut accumsan libero, a consectetur velit. Integer at tempor lectus, ut laoreet neque. "
-        />
-      </View>
-    </>
+    <ScrollView contentContainerStyle={styles.contentContainer}>
+      <ListingDetails
+        title="Video Editor"
+        jobType="Onsite"
+        posted="November 21, 2024"
+        status="Open"
+        client="Marc Warren"
+        stars="5"
+        location="Dumaguete City"
+        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras placerat arcu nunc. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus."
+        pay="5000"
+      />
+
+      <ProfileCard
+        profiletype="C"
+        name="Marc Partosa"
+        company="Silliman University"
+      />
+
+      <TextCard
+        type="light"
+        text="Once you click 'Accept,' a conversation will be created between you and the client to ensure the job goes smoothly."
+      ></TextCard>
+
+      <Button
+        title="Approve"
+        type="dark"
+        size="medium"
+        onPress={() => console.log("Confirmed")}
+      />
+
+      <Button
+        title="Decline"
+        type="light"
+        size="medium"
+        onPress={() => router.push("")}
+      />
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    display: "flex",
+  contentContainer: {
+    flexGrow: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
     alignItems: "center",
-    position: "absolute",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingTop: 40, // For spacing if you have a status bar
+    paddingTop: 40,
     paddingBottom: 10,
-    paddingLeft: 15,
-    paddingRight: 15,
+    paddingHorizontal: 15,
     backgroundColor: "#f8f8f8",
-    elevation: 4, // To give shadow for Android
+    elevation: 4, // Shadow for Android
     zIndex: 1,
   },
   backButton: {
@@ -58,4 +85,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ViewJobListing;
+export default ViewRequest;
