@@ -1,28 +1,38 @@
 import { SafeAreaView, ScrollView, Text, StyleSheet } from "react-native";
 import React, { useState, useEffect } from "react";
-import Button from "@/components/ui/buttons"; // Your custom button
-import JobCard from "@/components/ui/jobcard"; // Your custom job card component
+import Button from "@/components/ui/buttons";
+import JobCard from "@/components/ui/jobcard";
 import { useRouter } from "expo-router";
+import { supabase } from "../../../../lib/supabase";
 
 const JobsToDo = () => {
-  const [myJobs, setMyJobs] = useState([]);
-  const [isToDoActive, setIsToDoActive] = useState(true); // Track the active button
+  const [isToDoActive, setIsToDoActive] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchedJobs = [
-      {
-        title: "Video Editing Job",
-        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      },
-      {
-        title: "Graphic Design Job",
-        description: "Cras placerat arcu nunc.",
-      },
-      // More jobs here...
-    ];
+  const [myJobs, setMyJobs] = useState([]);
+  const [error, setError] = useState(null);
 
-    setMyJobs(fetchedJobs);
+  useEffect(() => {
+    const fetchJobDetails = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("job_listing")
+          .select("*")
+          .eq("jobstatus", "In Progress");
+        if (error) {
+          throw error;
+        }
+
+        console.log("Fetched Data:", data);
+        setMyJobs(data);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching job data:", err.message);
+        setError(err.message);
+      }
+    };
+
+    fetchJobDetails();
   }, []);
 
   // Function to handle button press and deactivate other button
@@ -39,14 +49,14 @@ const JobsToDo = () => {
       <SafeAreaView style={styles.header}>
         <Button
           title="To Do"
-          type={isToDoActive ? "dark" : "light"} // Toggle button type based on state
+          type={isToDoActive ? "dark" : "light"}
           size="small"
-          disabled={!isToDoActive} // Disable "To Do" button if not active
+          disabled={!isToDoActive}
           onPress={handleToDoClick}
         />
         <Button
           title="Completed"
-          type={isToDoActive ? "light" : "dark"} // Toggle button type based on state
+          type={isToDoActive ? "light" : "dark"}
           size="small"
           onPress={handleCompletedClick}
         />
@@ -56,8 +66,8 @@ const JobsToDo = () => {
           myJobs.map((job, index) => (
             <JobCard
               key={index}
-              title={job.title}
-              description={job.description}
+              title={job.jobtitle}
+              description={job.jobdescription}
               onPress={() => router.push(`/screens/todo`)}
             />
           ))

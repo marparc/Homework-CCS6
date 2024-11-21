@@ -17,7 +17,7 @@ import PortfolioCard from "@/components/ui/portfoliocard";
 import Rating from "@/components/ui/ratings";
 import { useRouter } from "expo-router";
 import DeleteService from "../../screens/deleteservice";
-import { supabase } from "../../../../lib/supabase"; // Adjust the path as needed
+import { supabase } from "../../../../lib/supabase";
 
 // Sample user data
 const user = {
@@ -97,27 +97,17 @@ const ProfileHeader = () => {
   const [activeTab, setActiveTab] = useState("services"); // Track which tab is active
   const router = useRouter();
 
-  const [userData, setUserData] = useState(null); // State for user data
-  const [error, setError] = useState(null); // State for any errors
+  const [userData, setUserData] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchAccountData = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("student") // Correctly specify the schema and table
-          .select("*");
-        console.log("Fetched Data:", data); // Log the fetched data
-        if (error) {
-          console.log("error");
-        }
-        if (data) {
-          setUserData(data[0]);
-          setError(null);
-        }
-        //setUserData(data[0]); // Assuming you want the first record
-      } catch (err) {
-        console.error("Error fetching data:", err.message);
-        setError(err.message); // Set the error message if there's an error
+      const { data, error } = await supabase.from("student").select("*");
+      console.log("Fetched Data:", data);
+
+      if (data) {
+        setUserData(data[0]);
+        setError(null);
       }
     };
 
@@ -180,7 +170,7 @@ const ProfileHeader = () => {
         <Text style={styles.detailsHeader}>About Me:</Text>
         <Text style={styles.details}>Birthdate: </Text>
         <Text style={styles.detailsHeader}>Education:</Text>
-        <Text style={styles.details}>Level: {userData.educationlevel}</Text>
+        <Text style={styles.details}>{userData.educationlevel}</Text>
         <Text style={styles.details}>{userData.degree}</Text>
         <Text style={styles.details}>Studies at {userData.currentschool}</Text>
       </View>
