@@ -6,6 +6,7 @@ import { Link } from "expo-router";
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LoginStudent = () => {
   const [accountId, setAccountId] = useState("");
@@ -38,9 +39,13 @@ const LoginStudent = () => {
         const userType = userTypeData.usertype;
         if (userType === "Student") {
           console.log("Login successful. STUDENT");
+          await AsyncStorage.setItem("accountId", accountId);
+          await AsyncStorage.setItem("password", password);
           router.push("/(tabs)/student/jobstodo");
         } else {
           console.log("Login successful. CLIENT");
+          await AsyncStorage.setItem("accountId", accountId);
+          await AsyncStorage.setItem("password", password);
           router.push("/(tabs)/client/myjoblistings");
         }
       }

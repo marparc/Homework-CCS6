@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"; // Import useEffect here
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View,
   Text,
@@ -18,15 +18,6 @@ import Rating from "@/components/ui/ratings";
 import { useRouter } from "expo-router";
 import DeleteService from "../../screens/deleteservice";
 import { supabase } from "../../../../lib/supabase";
-
-// Sample user data
-const user = {
-  firstName: "John",
-  lastName: "Doe",
-  bio: "I am not slow, I am fast.",
-  id: "1234",
-  type: "Student Freelancer",
-};
 
 // Sample services data
 const services = [
@@ -91,28 +82,92 @@ const ratings = [
 ];
 
 const ProfileHeader = () => {
-  const firstLetter = user.firstName.charAt(0).toUpperCase();
+  const [firstLetter, setFirstLetter] = useState("");
   const [selectedServiceId, setSelectedServiceId] = useState(null);
-  const [selectedPortfolioId, setSelectedPortfolioId] = useState(null); // Add state for selected portfolio
-  const [activeTab, setActiveTab] = useState("services"); // Track which tab is active
+  const [selectedPortfolioId, setSelectedPortfolioId] = useState(null);
+  const [activeTab, setActiveTab] = useState("services");
   const router = useRouter();
 
-  const [userData, setUserData] = useState([]);
-  const [error, setError] = useState(null);
+  const [userData, setUserData] = useState({
+    firstname: "",
+    lastname: "",
+    birthdate: "",
+  });
+  const [userEducation, setUserEducation] = useState({
+    educationlevel: "",
+    degree: "",
+    currentschool: "",
+    yearlevel: "",
+  });
+  const [accountId, setAccountId] = useState(null);
+  const [password, setPassword] = useState(null); //later to use
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const storedAccountId = await AsyncStorage.getItem("accountId");
+        const storedPassword = await AsyncStorage.getItem("password");
+        setAccountId(storedAccountId);
+        setPassword(storedPassword);
+      } catch (err) {
+        console.error("Failed to retrieve data from AsyncStorage:", err);
+      }
+    };
+
+    getData();
+  }, []);
 
   useEffect(() => {
     const fetchAccountData = async () => {
-      const { data, error } = await supabase.from("student").select("*");
-      console.log("Fetched Data:", data);
+      const { data: studentData, error: studentError } = await supabase
+        .from("student")
+        .select("educationlevel, degree, currentschool, yearlevel, userid")
+        .eq("studentid", accountId)
+        .single();
 
-      if (data) {
-        setUserData(data[1]);
-        setError(null);
+      if (studentError) {
+        console.log(inputData);
+        console.log(accountId);
+        console.log("error1");
+        console.error("Error fetching student data:", studentError.message);
+        return;
+      }
+      if (studentData) {
+        setUserEducation({
+          educationlevel: studentData.educationlevel,
+          degree: studentData.degree,
+          currentschool: studentData.currentschool,
+          yearlevel: studentData.yearlevel,
+        });
+
+        const { userid } = studentData;
+
+        const { data: userData, error: userError } = await supabase
+          .from("user_table")
+          .select("firstname, lastname, birthdate")
+          .eq("userid", userid)
+          .single();
+
+        if (userError) {
+          console.log("error2");
+          console.error("Error fetching user data:", userError.message);
+        } else {
+          setUserData({
+            firstname: userData.firstname,
+            lastname: userData.lastname,
+            birthdate: userData.birthdate,
+          });
+          const firstLetter = userData.firstname.charAt(0).toUpperCase();
+          setFirstLetter(firstLetter);
+        }
+      } else {
+        console.log("No student found with the given student ID.");
       }
     };
 
     fetchAccountData();
-  }, []);
+  }, [accountId]);
+
   // Handle service selection
   const handleServicePress = (serviceId) => {
     setSelectedServiceId((prev) => (prev === serviceId ? null : serviceId));
@@ -160,9 +215,11 @@ const ProfileHeader = () => {
           <Text style={styles.circleText}>{firstLetter}</Text>
         </View>
         <View style={styles.infoContainer}>
-          <Text style={styles.name}>Dummy Name</Text>
+          <Text style={styles.name}>
+            {userData.firstname} {userData.lastname}
+          </Text>
           <Text style={styles.type}>Student Freelancer</Text>
-          <Text style={styles.id}>Account ID:</Text>
+          <Text style={styles.id}>Account ID: {accountId}</Text>
           <Text style={styles.bio}>Dummy Bio</Text>
         </View>
       </View>
@@ -184,11 +241,16 @@ const ProfileHeader = () => {
       </View>
       <View style={styles.aboutContainer}>
         <Text style={styles.detailsHeader}>About Me:</Text>
-        <Text style={styles.details}>Birthdate: </Text>
+
+        <Text style={styles.details}>Birthdate: {userData.birthdate}</Text>
         <Text style={styles.detailsHeader}>Education:</Text>
-        <Text style={styles.details}>{userData.educationlevel}</Text>
-        <Text style={styles.details}>{userData.degree}</Text>
-        <Text style={styles.details}>Studies at {userData.currentschool}</Text>
+        <Text style={styles.details}>
+          {userEducation.educationlevel} ({userEducation.yearlevel})
+        </Text>
+        <Text style={styles.details}>{userEducation.degree}</Text>
+        <Text style={styles.details}>
+          Studies at {userEducation.currentschool}
+        </Text>
       </View>
 
       <View style={styles.tabsContainer}>
