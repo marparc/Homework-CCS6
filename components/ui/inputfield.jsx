@@ -1,8 +1,7 @@
 import { View, Text, TextInput, StyleSheet } from "react-native";
 import React from "react";
 
-const InputField = ({ title, size }) => {
-  // Determine the size based on the size prop
+const InputField = ({ title, size, value, onChangeText }) => {
   const inputStyle = () => {
     switch (size) {
       case "small":
@@ -10,9 +9,9 @@ const InputField = ({ title, size }) => {
       case "medium":
         return { width: 330, height: 40 };
       case "large":
-        return { width: 330, height: 150, multiline: true }; // Add multiline for large size
+        return { width: 330, height: 150, multiline: true };
       default:
-        return { width: 330, height: 40 }; // Default to medium if no valid size is provided
+        return { width: 330, height: 40 };
     }
   };
 
@@ -23,10 +22,12 @@ const InputField = ({ title, size }) => {
       </View>
       <View>
         <TextInput
-          style={[styles.input, inputStyle()]} // Apply dynamic size based on size prop
-          multiline={size === "large"} // Add multiline only if size is large
-          textAlignVertical={size === "large" ? "top" : "center"} // Start cursor at the top for large inputs
-          textAlign="left" // Ensure left-alignment of text
+          style={[styles.input, inputStyle()]}
+          multiline={size === "large"}
+          textAlignVertical={size === "large" ? "top" : "center"}
+          textAlign="left"
+          value={value} // Controlled by parent
+          onChangeText={onChangeText} // Updates parent when changed
         />
       </View>
     </View>
