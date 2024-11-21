@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -15,6 +14,8 @@ import Button from "@/components/ui/buttons";
 import ServiceCard from "@/components/ui/servicecard";
 import PortfolioCard from "@/components/ui/portfoliocard";
 import Rating from "@/components/ui/ratings";
+import { useRouter } from "expo-router";
+import DeleteService from "../../screens/deleteservice";
 
 // Sample user data
 const user = {
@@ -88,6 +89,7 @@ const ratings = [
 ];
 
 const ProfileHeader = () => {
+  const firstLetter = user.firstName.charAt(0).toUpperCase();
   const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState(null); // Add state for selected portfolio
   const [activeTab, setActiveTab] = useState("services"); // Track which tab is active
@@ -132,54 +134,6 @@ const ProfileHeader = () => {
     setSelectedPortfolioId(null);
   };
 
-  // States for fetched data
-  const [education, setEducation] = useState({
-    level: "",
-    degree: "",
-    school: "",
-    yearLevel: "",
-  });
-  const [birthdate, setBirthdate] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [userType, setUserType] = useState("");
-  const [bio, setBio] = useState(""); // Added state for bio
-  const [accountId, setAccountId] = useState(""); // Added state for accountId
-
-  const firstLetter = firstName.charAt(0).toUpperCase(); //FOR PROFILE PICTURE
-  // AXIOS magic (para ni mo fetch data sa mysql)
-  useEffect(() => {
-    axios
-      .get("http://10.0.2.2:3000/data") // (supposedly the default IP address of emulator)
-      .then((response) => {
-        const userData = response.data; // The response data is now an object
-        if (userData) {
-          // Set state for basic information
-          setFirstName(userData.firstname || "Not Available");
-          setLastName(userData.lastname || "Not Available");
-          setBirthdate(userData.birthdate || "Not Available");
-          setUserType(userData.usertype || "Not Available");
-          setAccountId(userData.accountid || "Not Available");
-          setBirthdate(userData.birthdate || "Not Available");
-
-          // Set education details
-          setEducation({
-            level: userData.educationlevel || "Not Available",
-            degree: userData.degree || "Not Available",
-            school: userData.currentschool || "Not Available",
-            yearLevel: userData.yearlevel || "Not Available",
-          });
-
-          // Set bio data
-          setBio(userData.bio || "Not Available"); // Update bio state
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-        alert("Failed to fetch data. Please check the network and try again.");
-      });
-  }, []);
-
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.header}>
@@ -198,12 +152,10 @@ const ProfileHeader = () => {
       <View style={styles.aboutContainer}>
         <Text style={styles.detailsHeader}>About Me:</Text>
         <Text style={styles.details}>Birthdate: </Text>
-        <Text style={styles.details}>Location: </Text>
         <Text style={styles.detailsHeader}>Education:</Text>
-        <Text style={styles.details}>{education.level}</Text>
-        <Text style={styles.details}>{education.degree}</Text>
-        <Text style={styles.details}>{education.school}</Text>
-        <Text style={styles.details}>{education.yearLevel}</Text>
+        <Text style={styles.details}>First Year College Student</Text>
+        <Text style={styles.details}>BS in Information Technology</Text>
+        <Text style={styles.details}>Studies at Silliman University</Text>
       </View>
 
       <View style={styles.tabsContainer}>
