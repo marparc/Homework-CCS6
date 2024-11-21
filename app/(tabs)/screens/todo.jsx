@@ -4,9 +4,18 @@ import ListingDetails from "../../../components/ui/jobdetailsexpanded";
 import { useRouter } from "expo-router";
 import Button from "@/components/ui/buttons";
 import ProfileCard from "@/components/ui/profilecard";
+import { useLocalSearchParams } from "expo-router";
 
 const ToDoDetails = () => {
   const router = useRouter();
+  //const [jobtitle, setBirthdate] = useState("");
+
+  //const { jobtitle } = router.query;
+  //const { jobtitle } = useLocalSearchParams();
+  //console.log("Received jobtitle:", jobtitle);
+
+  //const { jobtitle = "undefined" } = params;
+  //console.log(params.jobtitle);
 
   return (
     <ScrollView contentContainerStyle={styles.contentContainer}>

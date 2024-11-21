@@ -4,10 +4,64 @@ import InputField from "@/components/ui/inputfield";
 import Button from "@/components/ui/buttons";
 import { Link } from "expo-router";
 import { useState } from "react";
+import { supabase } from "../lib/supabase";
+import { useRouter } from "expo-router";
 
 const LoginStudent = () => {
   const [accountId, setAccountId] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
+
+  const VerifyLogin = async () => {
+    if (!accountId || !password) {
+      console.log("Please enter both account ID and password.");
+      return;
+    }
+    const { data, error } = await supabase
+      .from("user_account")
+      .select("accountid, account_password, account_status, userid")
+      .eq("accountid", accountId)
+      .eq("account_password", password)
+      .eq("account_status", "Verified");
+
+    if (error) {
+      console.error("Login failed:", error);
+    } else if (data.length > 0) {
+      const userid = data[0].userid;
+
+      const { data: userTypeData, error: userTypeError } = await supabase
+        .from("user_table")
+        .select("usertype")
+        .eq("userid", userid)
+        .single();
+      if (userTypeData) {
+        const userType = userTypeData.usertype;
+        if (userType === "Student") {
+          console.log("Login successful. STUDENT");
+          router.push("/(tabs)/student/jobstodo");
+        } else {
+          console.log("Login successful. CLIENT");
+          router.push("/(tabs)/client/myjoblistings");
+        }
+      }
+    } else {
+      // ingna marc nga mo create ug ui for this
+      if (data.length === 0) {
+        console.log("Login failed. Please check the following:");
+
+        if (data.some((item) => item.account_status !== "Verified")) {
+          console.log("Account status is not Verified.");
+        }
+        if (data.some((item) => item.accountid !== inputtedid)) {
+          console.log("Account ID does not match.");
+        }
+        if (data.some((item) => item.account_password !== inputtedpassword)) {
+          console.log("Password does not match.");
+        }
+      }
+      console.log("Invalid credentials or account not verified");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.pageContainer}>
@@ -27,10 +81,7 @@ const LoginStudent = () => {
       </View>
 
       <View style={styles.buttonContainer}>
-        {/* Handle the press and then navigate */}
-        <Link href="/(tabs)/student/jobstodo" asChild>
-          <Button title="Login" type="dark" size="medium" />
-        </Link>
+        <Button title="Login" type="dark" size="medium" onPress={VerifyLogin} />
       </View>
 
       <View style={styles.footerContainer}>
@@ -42,7 +93,6 @@ const LoginStudent = () => {
 
       <View style={styles.footerContainer}>
         <Text>No Account? Create one.</Text>
-        {/* Remove onPress from Link, as Link handles the navigation */}
         <Link href="register" asChild>
           <Button title="Register" type="light" size="medium" />
         </Link>

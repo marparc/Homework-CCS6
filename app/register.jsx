@@ -14,7 +14,7 @@ const Register = () => {
   const router = useRouter();
 
   // Pass the state via router.push()
-  const handleRegisterClick = () => {
+  const handleRegisterStudent = () => {
     router.push({
       pathname: "/registerstudent",
       params: {
@@ -25,7 +25,17 @@ const Register = () => {
       },
     });
   };
-
+  const handleRegisterClient = () => {
+    router.push({
+      pathname: "/registerclient",
+      params: {
+        firstName,
+        lastName,
+        contactNumber,
+        birthdate,
+      },
+    });
+  };
   return (
     <SafeAreaView style={styles.pageContainer}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -68,7 +78,7 @@ const Register = () => {
               title="I'm a Student Freelancer"
               type="dark"
               size="medium"
-              onPress={handleRegisterClick}
+              onPress={handleRegisterStudent}
             />
           </View>
           <View style={styles.btnContainer}>
@@ -76,7 +86,7 @@ const Register = () => {
               title="I'm a Client"
               type="dark"
               size="medium"
-              onPress={handleRegisterClick}
+              onPress={handleRegisterClient}
             />
           </View>
         </View>

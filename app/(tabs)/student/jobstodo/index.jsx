@@ -11,7 +11,15 @@ const JobsToDo = () => {
 
   const [myJobs, setMyJobs] = useState([]);
   const [error, setError] = useState(null);
+  //const [jobtitle, setJobTitle] = useState("");
 
+  // Pass the state via router.push()
+  const JobListingDetails = (jobtitle) => {
+    router.push({
+      pathname: "/screens/todo", // Target page
+      query: { jobtitle: jobtitle }, // Passing the jobtitle as a query parameter
+    });
+  };
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
@@ -23,7 +31,7 @@ const JobsToDo = () => {
           throw error;
         }
 
-        console.log("Fetched Data:", data);
+        //console.log("Fetched Data:", data);
         setMyJobs(data);
         setError(null);
       } catch (err) {
@@ -68,7 +76,10 @@ const JobsToDo = () => {
               key={index}
               title={job.jobtitle}
               description={job.jobdescription}
-              onPress={() => router.push(`/screens/todo`)}
+              onPress={() => {
+                console.log(job.jobtitle); // Logs the job title
+                JobListingDetails(job.jobtitle); // Pass the jobtitle to the navigation function
+              }}
             />
           ))
         ) : (
