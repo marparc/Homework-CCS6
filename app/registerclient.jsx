@@ -1,17 +1,28 @@
 import { View, Text, SafeAreaView, StyleSheet, ScrollView } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import InputField from "@/components/ui/inputfield";
 import Button from "@/components/ui/buttons";
 import { Link } from "expo-router";
 
 const Register = () => {
+  const [organization, setOrganization] = useState("");
   return (
     <SafeAreaView style={styles.pageContainer}>
       <View style={styles.formContainer}>
-        <InputField title="Organization" size="medium" />
+        <InputField
+          title="Organization"
+          size="medium"
+          value={organization}
+          onChangeText={setOrganization}
+        />
 
         <Link href="/registersuccess" asChild>
-          <Button title="Register" type="dark" size="medium" />
+          <Button
+            title="Register"
+            type="dark"
+            size="medium"
+            onPress={() => {}}
+          />
         </Link>
       </View>
     </SafeAreaView>
@@ -24,7 +35,7 @@ const styles = StyleSheet.create({
   pageContainer: {
     display: "flex",
     alignItems: "center", // Center content horizontally
-    padding: 20, // Optional padding to prevent content from touching edges
+    padding: 10, // Optional padding to prevent content from touching edges
   },
   formContainer: {
     width: "100%", // Take up the full width available

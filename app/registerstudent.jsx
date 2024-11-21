@@ -1,11 +1,4 @@
-import {
-  View,
-  Text,
-  SafeAreaView,
-  StyleSheet,
-  FlatList,
-  Link,
-} from "react-native";
+import { View, Text, SafeAreaView, StyleSheet, Link } from "react-native";
 import React, { useState } from "react"; // Added useState hook
 import DropDownPicker from "react-native-dropdown-picker";
 import InputField from "@/components/ui/inputfield";
@@ -21,41 +14,39 @@ const RegisterStudent = () => {
   const [educationOpen, setEducationOpen] = useState(false);
   const [yearOpen, setYearOpen] = useState(false);
 
+  const [degree, setDegree] = useState("");
+  const [school, setSchool] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [bankAccountNo, setBankAccountNo] = useState("");
+
   const router = useRouter();
 
-  const formData = [
-    {
-      key: "educationLevel",
-      label: "Education Level",
-      component: (
-        <DropDownPicker
-          open={educationOpen}
-          value={educationLevel}
-          items={[
-            { label: "High School", value: "highSchool" },
-            { label: "Undergraduate", value: "undergraduate" },
-            { label: "Postgraduate", value: "postgraduate" },
-          ]}
-          setOpen={setEducationOpen}
-          setValue={setEducationLevel}
-          containerStyle={styles.dropdownContainer}
-          dropDownStyle={styles.dropdownStyle}
-          zIndex={3000}
-        />
-      ),
-    },
-    {
-      key: "yearLevel",
-      label: "Year Level",
-      component: (
+  return (
+    <SafeAreaView style={styles.pageContainer}>
+      <Text style={styles.label}>Education Level</Text>
+      <DropDownPicker
+        open={educationOpen}
+        value={educationLevel}
+        items={[
+          { label: "Senior High", value: "Senior High" },
+          { label: "College", value: "College" },
+        ]}
+        setOpen={setEducationOpen}
+        setValue={setEducationLevel}
+        containerStyle={styles.dropdownContainer}
+        dropDownStyle={styles.dropdownStyle}
+        zIndex={3000}
+      />
+      <Text style={styles.label}>Year Level</Text>
+      {educationLevel === "College" ? (
         <DropDownPicker
           open={yearOpen}
           value={yearLevel}
           items={[
-            { label: "1st Year", value: "1" },
-            { label: "2nd Year", value: "2" },
-            { label: "3rd Year", value: "3" },
-            { label: "4th Year", value: "4" },
+            { label: "1st Year", value: "1st Year" },
+            { label: "2nd Year", value: "2nd Year" },
+            { label: "3rd Year", value: "3rd Year" },
+            { label: "4th Year", value: "4th Year" },
           ]}
           setOpen={setYearOpen}
           setValue={setYearLevel}
@@ -63,52 +54,57 @@ const RegisterStudent = () => {
           dropDownStyle={styles.dropdownStyle}
           zIndex={2000}
         />
-      ),
-    },
-    {
-      key: "degree",
-      component: <InputField title="Degree" size="medium" />,
-    },
-    {
-      key: "school",
-      component: <InputField title="School" size="medium" />,
-    },
-    {
-      key: "bankName",
-      component: <InputField title="Bank Name" size="medium" />,
-    },
-    {
-      key: "bankAccount",
-      component: <InputField title="Bank Account No." size="medium" />,
-    },
-    {
-      key: "register",
-      component: (
-        <Button
-          title="Register"
-          type="dark"
-          size="medium"
-          onPress={() => {
-            router.push("/registersuccess");
-          }}
+      ) : (
+        <DropDownPicker
+          open={yearOpen}
+          value={yearLevel}
+          items={[
+            { label: "Grade 11", value: "Grade 11" },
+            { label: "Grade 12", value: "Grade 12" },
+          ]}
+          setOpen={setYearOpen}
+          setValue={setYearLevel}
+          containerStyle={styles.dropdownContainer}
+          dropDownStyle={styles.dropdownStyle}
+          zIndex={2000}
         />
-      ),
-    },
-  ];
+      )}
 
-  return (
-    <SafeAreaView style={styles.pageContainer}>
-      {/* Use FlatList instead of ScrollView */}
-      <FlatList
-        data={formData}
-        keyExtractor={(item) => item.key}
-        renderItem={({ item }) => (
-          <View style={styles.formContainer}>
-            <Text style={styles.label}>{item.label}</Text>
-            {item.component}
-          </View>
-        )}
-        contentContainerStyle={styles.scrollViewContainer}
+      <InputField
+        title="Stand/Degree"
+        size="medium"
+        value={degree}
+        onChangeText={setDegree}
+      />
+
+      <InputField
+        title="School / University"
+        size="medium"
+        value={school}
+        onChangeText={setSchool}
+      />
+
+      <InputField
+        title="Bank Name"
+        size="medium"
+        value={bankName}
+        onChangeText={setBankName}
+      />
+
+      <InputField
+        title="Bank Account No."
+        size="medium"
+        value={bankAccountNo}
+        onChangeText={setBankAccountNo}
+      />
+
+      <Button
+        title="Register"
+        type="dark"
+        size="medium"
+        onPress={() => {
+          router.push("/registersuccess");
+        }}
       />
     </SafeAreaView>
   );
@@ -121,8 +117,8 @@ const styles = StyleSheet.create({
     display: "flex",
     flex: 1,
     alignItems: "center", // Centers content horizontally
+    paddingVertical: 10,
   },
-  scrollViewContainer: { paddingVertical: 20 },
   formContainer: {
     width: "100%",
     justifyContent: "center", // Ensures the form is centered vertically
@@ -130,15 +126,15 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    marginBottom: 10,
+    marginBottom: 5,
     textAlign: "left", // Align labels to the left
     width: "100%", // Ensures label spans full width
     marginLeft: 35,
   },
   dropdownContainer: {
     height: 40,
-    width: 320, // Make the dropdown take up the full width of the container
-    marginBottom: 25,
+    width: 330, // Make the dropdown take up the full width of the container
+    marginBottom: 20,
   },
   dropdownStyle: {
     backgroundColor: "#fafafa",
