@@ -15,22 +15,35 @@ const AddService = () => {
     setPopUpVisible(true);
   };
 
+  const [serviceName, setServiceName] = useState("");
+  const [serviceDesc, setServiceDesc] = useState("");
+
   return (
     <>
       <View style={styles.container}>
         <View>
-          <InputField title="Service Title" size="medium" />
-          <InputField title="Description" size="large" />
+          <InputField
+            title="Service Title"
+            size="medium"
+            value={serviceName}
+            onChangeText={setServiceName}
+          />
+          <InputField
+            title="Service Description"
+            size="large"
+            value={serviceDesc}
+            onChangeText={setServiceDesc}
+          />
         </View>
-      </View>
 
-      <View style={styles.buttonContainer}>
-        <Button
-          title="Add Service"
-          type="dark"
-          size="small"
-          onPress={handleAddService} // Call the handleAddService function on button press
-        />
+        <View style={styles.buttonContainer}>
+          <Button
+            title="Add Service"
+            type="dark"
+            size="small"
+            onPress={handleAddService} // Call the handleAddService function on button press
+          />
+        </View>
       </View>
 
       {isPopUpVisible && (
@@ -48,13 +61,13 @@ export default AddService;
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
+    flex: 1, // Makes the container take up the full screen height
+    alignItems: "center", // Centers the content horizontally
     padding: 30,
   },
   buttonContainer: {
     width: "100%",
-    paddingHorizontal: 30,
-    flexDirection: "row", // Ensure the button is placed horizontally
-    justifyContent: "flex-end", // Align the button to the right
+    display: "flex",
+    alignItems: "flex-end",
   },
 });

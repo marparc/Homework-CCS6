@@ -5,40 +5,48 @@ import Button from "@/components/ui/buttons";
 import { useRouter } from "expo-router";
 import PopUp from "@/components/ui/popup";
 
-const EditService = () => {
+const EditPorfolio = () => {
   const [isPopUpVisible, setPopUpVisible] = useState(false); // State to control the visibility of the PopUp
   const router = useRouter();
 
-  const handleEditService = () => {
-    // Here, you would usually add the logic for editing the service
-    // After editing the service, show the PopUp
+  const handleEditPorfolio = () => {
+    // Here, you would usually add the logic for editing the Porfolio
+    // After editing the Porfolio, show the PopUp
     setPopUpVisible(true);
   };
 
-  const service = {
-    id: 1,
-    title: "Graphic Design",
-    description: "Creating logos, banners, and flyers.",
+  const portfolio = {
+    id: 3,
+    title: "Portfolio 3",
+    description: "Portfolio displaying web development projects.",
+    link: "https://youtube.com",
   };
 
-  const [serviceName, setServiceName] = useState(service.title);
-  const [serviceDesc, setServiceDesc] = useState(service.description);
+  const [portfolioName, setPortfolioName] = useState(portfolio.title);
+  const [portfolioDesc, setPortfolioDesc] = useState(portfolio.description);
+  const [portfolioLink, setPortfolioLink] = useState(portfolio.link);
 
   return (
     <>
       <View style={styles.container}>
         <View>
           <InputField
-            title="Service Title"
+            title="Portfolio Name"
             size="medium"
-            value={serviceName}
-            onChangeText={setServiceName}
+            value={portfolioName}
+            onChangeText={setPortfolioName}
           />
           <InputField
             title="Description"
             size="large"
-            value={serviceDesc}
-            onChangeText={setServiceDesc}
+            value={portfolioDesc}
+            onChangeText={setPortfolioDesc}
+          />
+          <InputField
+            title="External Link"
+            size="medium"
+            value={portfolioLink}
+            onChangeText={setPortfolioLink}
           />
         </View>
         <View style={styles.buttonContainer}>
@@ -46,7 +54,7 @@ const EditService = () => {
             title="Save Changes"
             type="dark"
             size="small"
-            onPress={handleEditService} // Call the handleEditService function on button press
+            onPress={handleEditPorfolio}
           />
         </View>
       </View>
@@ -54,7 +62,7 @@ const EditService = () => {
       {isPopUpVisible && (
         <PopUp
           icon="checkmark-circle-outline"
-          text="Service Edited Successfully!"
+          text="Portfolio Edited Successfully!"
           route="/student/profile" // Navigate to this route when the modal is closed
         />
       )}
@@ -62,7 +70,7 @@ const EditService = () => {
   );
 };
 
-export default EditService;
+export default EditPorfolio;
 
 const styles = StyleSheet.create({
   container: {

@@ -253,7 +253,15 @@ const ProfileHeader = () => {
         <>
           <View style={styles.iconsContainer}>
             {/* Add Button */}
-            <Pressable>
+            <Pressable
+              onPress={() => {
+                // Only allow navigation when no service is selected
+                if (!selectedPortfolioId) {
+                  router.push("/screens/addportfolio");
+                }
+              }}
+              disabled={selectedPortfolioId !== null} // Disable if a service is selected
+            >
               <Ionicons
                 name="add-circle"
                 size={30}
@@ -264,14 +272,28 @@ const ProfileHeader = () => {
 
             {/* Edit and Delete Buttons */}
             <View style={styles.rightIcons}>
-              <Pressable>
+              <Pressable
+                onPress={() => {
+                  if (selectedPortfolioId) {
+                    router.push("/screens/editportfolio");
+                  }
+                }}
+                disabled={!selectedPortfolioId}
+              >
                 <Ionicons
                   name="create-outline"
                   size={30}
                   color={selectedPortfolioId ? "black" : "#aaa"} // Enable only if a portfolio is selected
                 />
               </Pressable>
-              <Pressable>
+              <Pressable
+                onPress={() => {
+                  if (selectedPortfolioId) {
+                    router.push("/screens/deleteportfolio");
+                  }
+                }}
+                disabled={!selectedPortfolioId}
+              >
                 <Ionicons
                   name="trash-outline"
                   size={30}
