@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Import useEffect here
+
 import {
   View,
   Text,
@@ -16,6 +17,7 @@ import PortfolioCard from "@/components/ui/portfoliocard";
 import Rating from "@/components/ui/ratings";
 import { useRouter } from "expo-router";
 import DeleteService from "../../screens/deleteservice";
+import { supabase } from "../../../../lib/supabase"; // Adjust the path as needed
 
 // Sample user data
 const user = {
@@ -94,6 +96,33 @@ const ProfileHeader = () => {
   const [selectedPortfolioId, setSelectedPortfolioId] = useState(null); // Add state for selected portfolio
   const [activeTab, setActiveTab] = useState("services"); // Track which tab is active
   const router = useRouter();
+
+  const [userData, setUserData] = useState(null); // State for user data
+  const [error, setError] = useState(null); // State for any errors
+
+  useEffect(() => {
+    const fetchAccountData = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("student") // Correctly specify the schema and table
+          .select("*");
+        console.log("Fetched Data:", data); // Log the fetched data
+        if (error) {
+          console.log("error");
+        }
+        if (data) {
+          setUserData(data[0]);
+          setError(null);
+        }
+        //setUserData(data[0]); // Assuming you want the first record
+      } catch (err) {
+        console.error("Error fetching data:", err.message);
+        setError(err.message); // Set the error message if there's an error
+      }
+    };
+
+    fetchAccountData();
+  }, []);
   // Handle service selection
   const handleServicePress = (serviceId) => {
     setSelectedServiceId((prev) => (prev === serviceId ? null : serviceId));
@@ -141,21 +170,19 @@ const ProfileHeader = () => {
           <Text style={styles.circleText}>{firstLetter}</Text>
         </View>
         <View style={styles.infoContainer}>
-          <Text style={styles.name}>
-            {firstName} {lastName}
-          </Text>
-          <Text style={styles.type}>{userType} freelancer</Text>
-          <Text style={styles.id}>Account ID: {accountId}</Text>
-          <Text style={styles.bio}>{bio}</Text>
+          <Text style={styles.name}></Text>
+          <Text style={styles.type}>freelancer</Text>
+          <Text style={styles.id}>Account ID:</Text>
+          <Text style={styles.bio}></Text>
         </View>
       </View>
       <View style={styles.aboutContainer}>
         <Text style={styles.detailsHeader}>About Me:</Text>
         <Text style={styles.details}>Birthdate: </Text>
         <Text style={styles.detailsHeader}>Education:</Text>
-        <Text style={styles.details}>First Year College Student</Text>
-        <Text style={styles.details}>BS in Information Technology</Text>
-        <Text style={styles.details}>Studies at Silliman University</Text>
+        <Text style={styles.details}>Level: {userData.educationlevel}</Text>
+        <Text style={styles.details}>{userData.degree}</Text>
+        <Text style={styles.details}>Studies at {userData.currentschool}</Text>
       </View>
 
       <View style={styles.tabsContainer}>
