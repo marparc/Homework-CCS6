@@ -2,7 +2,7 @@ import { View, Text, SafeAreaView, StyleSheet, ScrollView } from "react-native";
 import React, { useState } from "react";
 import InputField from "@/components/ui/inputfield";
 import Button from "@/components/ui/buttons";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import DatePick from "@/components/ui/pickdate";
 
 const Register = () => {
@@ -10,6 +10,21 @@ const Register = () => {
   const [lastName, setLastName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [birthdate, setBirthdate] = useState("");
+
+  const router = useRouter();
+
+  // Pass the state via router.push()
+  const handleRegisterClick = () => {
+    router.push({
+      pathname: "/registerstudent",
+      params: {
+        firstName,
+        lastName,
+        contactNumber,
+        birthdate,
+      },
+    });
+  };
 
   return (
     <SafeAreaView style={styles.pageContainer}>
@@ -49,18 +64,27 @@ const Register = () => {
           />
 
           {/* "I am" Section */}
+          {/* Register button */}
           <View style={styles.btnContainer}>
-            <Link href="/registerstudent" asChild>
-              <Button
-                title="I'm a Student Freelancer"
-                type="dark"
-                size="medium"
-              />
-            </Link>
-
-            <Link href="/registerclient" asChild>
-              <Button title="I'm a Client" type="light" size="medium" />
-            </Link>
+            <Button
+              title="I'm a Student Freelancer"
+              type="dark"
+              size="medium"
+              onPress={handleRegisterClick}
+            />
+          </View>
+          <View style={styles.logButtonContainer}>
+            <Button
+              title="Log Data"
+              type="dark"
+              size="medium"
+              onPress={() => {
+                console.log("First Name:", firstName);
+                console.log("Last Name:", lastName);
+                console.log("Contact Number:", contactNumber);
+                console.log("Birthdate:", birthdate);
+              }}
+            />
           </View>
         </View>
       </ScrollView>

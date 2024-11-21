@@ -1,16 +1,125 @@
 import { View, Text, SafeAreaView, StyleSheet, Link } from "react-native";
-import React, { useState } from "react"; // Added useState hook
+import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import InputField from "@/components/ui/inputfield";
-import Button from "@/components/ui/buttons"; // Assuming Button is imported correctly
+import Button from "@/components/ui/buttons";
 import { useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { supabase } from "../lib/supabase";
+
+const registerUser = async (userData, studentData, accountData) => {
+  const date = new Date();
+  const utcDate = date.toISOString();
+  try {
+    // to get user id last added primary key
+    const { data: lastUser, error: fetchError } = await supabase
+      .from("user_table")
+      .select("userid")
+      .order("userid", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (fetchError) {
+      console.log("error1");
+      throw fetchError;
+    }
+
+    const newUserId = lastUser ? lastUser.userid + 1 : 1;
+    // insert into user table
+    const { data: user, error: userError } = await supabase
+      .from("user_table")
+      .insert([
+        {
+          userid: newUserId,
+          firstname: userData.firstName,
+          lastname: userData.lastName,
+          contactnumber: userData.contactNumber,
+          birthdate: utcDate,
+          usertype: userData.userType,
+        },
+      ])
+      .select()
+      .single();
+
+    if (userError) {
+      console.log("error2");
+      throw userError;
+    }
+
+    // to get student id last added primary key
+    const { data: lastStudent, error: studentError } = await supabase
+      .from("student")
+      .select("studentid")
+      .order("studentid", { ascending: false })
+      .limit(1)
+      .single();
+
+    const newStudentId = lastStudent ? lastStudent.studentid + 1 : 1;
+    // insert into student table
+    const { error: insertError } = await supabase.from("student").insert([
+      {
+        studentid: newStudentId,
+        educationlevel: studentData.educationLevel,
+        degree: studentData.degree,
+        currentschool: studentData.currentSchool,
+        yearlevel: studentData.yearLevel,
+        bankname: studentData.bankName,
+        accountnumber: studentData.accountNumber,
+        userid: newUserId,
+      },
+    ]);
+
+    if (insertError) {
+      console.log("error3");
+      console.log(newStudentId);
+      throw studentError;
+    }
+
+    // to get user account id last added primary key
+    const { data: lastAccount, error: AccountError } = await supabase
+      .from("user_account")
+      .select("accountid")
+      .order("accountid", { ascending: false })
+      .limit(1)
+      .single();
+
+    const newAccountId = lastAccount ? lastAccount.accountid + 1 : 1;
+    // insert into user account table
+    const { error: accountError } = await supabase.from("user_account").insert([
+      {
+        accountid: newAccountId,
+        account_name: accountData.accountName,
+        account_status: "Pending",
+        account_password: "db2admin",
+        bio: "",
+        userid: newUserId,
+      },
+    ]);
+
+    if (accountError) {
+      console.log("error4");
+      throw accountError;
+    }
+
+    console.log("User account data inserted for user:", user.id);
+  } catch (error) {
+    console.error("Error inserting data:", error.message);
+  }
+};
 
 const RegisterStudent = () => {
-  // State to hold the selected value of each dropdown
+  const params = useLocalSearchParams();
+
+  const {
+    firstName = "undefined",
+    lastName = "undefined",
+    contactNumber = "undefined",
+    birthdate = "undefined",
+  } = params;
+
   const [educationLevel, setEducationLevel] = useState(null);
   const [yearLevel, setYearLevel] = useState(null);
 
-  // State to control the dropdown open/close for each dropdown
   const [educationOpen, setEducationOpen] = useState(false);
   const [yearOpen, setYearOpen] = useState(false);
 
@@ -23,7 +132,6 @@ const RegisterStudent = () => {
 
   return (
     <SafeAreaView style={styles.pageContainer}>
-      <Text style={styles.label}>Education Level</Text>
       <DropDownPicker
         open={educationOpen}
         value={educationLevel}
@@ -103,6 +211,29 @@ const RegisterStudent = () => {
         type="dark"
         size="medium"
         onPress={() => {
+          const userData = {
+            firstName,
+            lastName,
+            contactNumber,
+            birthdate,
+            userType: "student",
+          };
+
+          const studentData = {
+            educationLevel,
+            degree,
+            currentSchool: school,
+            yearLevel,
+            bankName,
+            accountNumber: bankAccountNo,
+          };
+
+          const accountData = {
+            accountName: `${firstName}_${lastName}`,
+          };
+
+          registerUser(userData, studentData, accountData);
+
           router.push("/registersuccess");
         }}
       />
