@@ -106,7 +106,7 @@ const ProfileHeader = () => {
       console.log("Fetched Data:", data);
 
       if (data) {
-        setUserData(data[0]);
+        setUserData(data[1]);
         setError(null);
       }
     };
@@ -160,11 +160,27 @@ const ProfileHeader = () => {
           <Text style={styles.circleText}>{firstLetter}</Text>
         </View>
         <View style={styles.infoContainer}>
-          <Text style={styles.name}></Text>
-          <Text style={styles.type}>freelancer</Text>
+          <Text style={styles.name}>Dummy Name</Text>
+          <Text style={styles.type}>Student Freelancer</Text>
           <Text style={styles.id}>Account ID:</Text>
-          <Text style={styles.bio}></Text>
+          <Text style={styles.bio}>Dummy Bio</Text>
         </View>
+      </View>
+      <View
+        style={{
+          marginBottom: 5,
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        <Button
+          title="Edit Bio"
+          type="light"
+          size="small"
+          onPress={() => {
+            router.push("/screens/editbio");
+          }}
+        ></Button>
       </View>
       <View style={styles.aboutContainer}>
         <Text style={styles.detailsHeader}>About Me:</Text>
