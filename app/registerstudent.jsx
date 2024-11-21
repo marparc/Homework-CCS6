@@ -132,6 +132,7 @@ const RegisterStudent = () => {
 
   return (
     <SafeAreaView style={styles.pageContainer}>
+      <Text style={styles.label}>Education Level</Text>
       <DropDownPicker
         open={educationOpen}
         value={educationLevel}
@@ -229,7 +230,7 @@ const RegisterStudent = () => {
           };
 
           const accountData = {
-            accountName: `${firstName}_${lastName}`,
+            accountName: `${firstName} ${lastName}`,
           };
 
           registerUser(userData, studentData, accountData);

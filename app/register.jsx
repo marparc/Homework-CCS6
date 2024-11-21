@@ -63,8 +63,6 @@ const Register = () => {
             onDateChange={(date) => setBirthdate(date)}
           />
 
-          {/* "I am" Section */}
-          {/* Register button */}
           <View style={styles.btnContainer}>
             <Button
               title="I'm a Student Freelancer"
@@ -73,17 +71,12 @@ const Register = () => {
               onPress={handleRegisterClick}
             />
           </View>
-          <View style={styles.logButtonContainer}>
+          <View style={styles.btnContainer}>
             <Button
-              title="Log Data"
+              title="I'm a Client"
               type="dark"
               size="medium"
-              onPress={() => {
-                console.log("First Name:", firstName);
-                console.log("Last Name:", lastName);
-                console.log("Contact Number:", contactNumber);
-                console.log("Birthdate:", birthdate);
-              }}
+              onPress={handleRegisterClick}
             />
           </View>
         </View>
