@@ -3,13 +3,27 @@ import React from "react";
 import InputField from "@/components/ui/inputfield";
 import Button from "@/components/ui/buttons";
 import { Link } from "expo-router";
+import { useState } from "react";
 
 const LoginStudent = () => {
+  const [accountId, setAccountId] = useState("");
+  const [password, setPassword] = useState("");
+
   return (
     <SafeAreaView style={styles.pageContainer}>
       <View style={styles.formContainer}>
-        <InputField title="Account ID" size="medium" />
-        <InputField title="Password" size="medium" />
+        <InputField
+          title="Account ID"
+          size="medium"
+          value={accountId}
+          onChangeText={setAccountId}
+        />
+        <InputField
+          title="Password"
+          size="medium"
+          value={password}
+          onChangeText={setPassword}
+        />
       </View>
 
       <View style={styles.buttonContainer}>

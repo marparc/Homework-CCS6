@@ -2,10 +2,13 @@ import { View, Text, SafeAreaView, ScrollView, StyleSheet } from "react-native";
 import React, { useState, useEffect } from "react";
 import Button from "@/components/ui/buttons";
 import JobCard from "@/components/ui/jobcard";
+import { useRouter } from "expo-router";
 
 const MyListings = () => {
   // Simulate fetching job listings from a database
   const [jobListings, setJobListings] = useState([]);
+
+  const router = useRouter();
 
   useEffect(() => {
     // Simulate fetching jobs from an API or database
@@ -70,7 +73,12 @@ const MyListings = () => {
         <Button title="Applications" type="light" size="small" />
       </SafeAreaView>
       <View style={{ marginLeft: 20 }}>
-        <Button title="Create +" type="light" size="small" />
+        <Button
+          title="Create +"
+          type="light"
+          size="small"
+          onPress={() => router.push("/screens/postjoblisting")}
+        />
       </View>
       {/* Make the job listings scrollable */}
       <ScrollView contentContainerStyle={styles.jobList}>

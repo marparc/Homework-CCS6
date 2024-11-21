@@ -244,6 +244,50 @@ const Layout = () => {
           ),
         }}
       />
+
+      <Stack.Screen
+        name="editbio"
+        options={{
+          title: "Edit Bio",
+          headerTitleAlign: "center", // Center the header title
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => {
+                router.push("/student/profile"); // Navigate back when pressed
+              }}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color="black"
+                style={{ marginLeft: 10 }}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+
+      <Stack.Screen
+        name="postjoblisting"
+        options={{
+          title: "Post a Job Listing",
+          headerTitleAlign: "center", // Center the header title
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => {
+                router.push("/student/profile"); // Navigate back when pressed
+              }}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color="black"
+                style={{ marginLeft: 10 }}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
     </Stack>
   );
 };
