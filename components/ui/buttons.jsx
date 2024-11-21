@@ -5,7 +5,7 @@ const Button = forwardRef(({ title, type, size, onPress }, ref) => {
   const getSizeStyle = () => {
     switch (size) {
       case "small":
-        return { width: 120, height: 40 };
+        return { width: 150, height: 40 };
       case "medium":
         return { width: 330, height: 40 };
       default:
