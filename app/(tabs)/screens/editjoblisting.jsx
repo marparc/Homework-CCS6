@@ -167,7 +167,7 @@ const EditJobListing = () => {
         {isPopUpVisible && (
           <PopUp
             icon="checkmark-circle-outline"
-            text="Published Successfully!"
+            text="Listing Edited Successfully!"
             route="/(tabs)/client/myjoblistings" // Navigate to this route when the modal is closed
             onClose={() => setPopUpVisible(false)} // Assuming PopUp accepts an `onClose` prop
           />

@@ -1,11 +1,17 @@
-import { View, TextInput, StyleSheet } from "react-native";
 import React from "react";
+import { View, TextInput, StyleSheet } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-const SearchBox = () => {
+const SearchBox = ({ value, onChangeText, placeholder }) => {
   return (
     <View style={styles.container}>
-      <TextInput style={styles.searchField} placeholder="Search..." />
+      <TextInput
+        style={styles.searchField}
+        placeholder={placeholder || "Search..."}
+        value={value}
+        onChangeText={onChangeText}
+        returnKeyType="search" // Enables "search" on keyboard
+      />
       <Ionicons name="search-outline" size={20} color="#434242" />
     </View>
   );
@@ -16,7 +22,7 @@ export default SearchBox;
 const styles = StyleSheet.create({
   container: {
     margin: 10,
-    width: 300,
+    width: "90%",
     height: 40,
     flexDirection: "row",
     borderColor: "#000",
