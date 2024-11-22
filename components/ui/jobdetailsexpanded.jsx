@@ -31,16 +31,22 @@ const ListingDetails = (props) => {
         )}
 
         {/* Client Information */}
-        <View style={styles.clientContainer}>
-          <Ionicons name="person-outline" size={12} color="#575757" />
-          <Text style={[styles.detail, styles.clientName]}>{props.client}</Text>
-        </View>
+        {props.client && (
+          <View style={styles.clientContainer}>
+            <Ionicons name="person-outline" size={12} color="#575757" />
+            <Text style={[styles.detail, styles.clientName]}>
+              {props.client}
+            </Text>
+          </View>
+        )}
 
         {/* Client Ratings */}
-        <View style={styles.ratingsContainer}>
-          <Text style={styles.detail}>Client Ratings:</Text>
-          {renderStars()}
-        </View>
+        {props.stars && (
+          <View style={styles.ratingsContainer}>
+            <Text style={styles.detail}>Client Ratings:</Text>
+            {renderStars()}
+          </View>
+        )}
       </View>
 
       {/* Description Section */}

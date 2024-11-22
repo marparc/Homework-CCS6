@@ -24,11 +24,14 @@ const PostJobListing = () => {
   const [errorMsg, setErrorMsg] = useState(""); // To handle location errors
   const [deadline, setDeadline] = useState("");
   const router = useRouter();
+  const [btnLocationType, setBtnLocationType] = useState("light");
+  const [btnLocationTitle, setBtnLocationTitle] = useState("Get My Location");
   const [isPopUpVisible, setPopUpVisible] = useState(false);
   const handleGetLocation = async () => {
     try {
       // Request location permission
       let { status } = await Location.requestForegroundPermissionsAsync();
+
       if (status !== "granted") {
         setErrorMsg("Permission to access location was denied");
         return;
@@ -58,6 +61,8 @@ const PostJobListing = () => {
       setErrorMsg("Failed to retrieve location. Please try again.");
       console.error("Location Error:", error);
     }
+    setBtnLocationType("dark");
+    setBtnLocationTitle("Location Retrieved");
   };
 
   return (
@@ -134,9 +139,9 @@ const PostJobListing = () => {
 
             <View style={styles.locationContainer}>
               <Button
-                type="dark"
+                type={btnLocationType}
                 size="medium"
-                title="Get My Location"
+                title={btnLocationTitle}
                 onPress={handleGetLocation}
               />
             </View>
