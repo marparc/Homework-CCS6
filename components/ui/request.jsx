@@ -37,7 +37,7 @@ export default ReqCard;
 
 const styles = StyleSheet.create({
   card: {
-    width: 300,
+    width: 350,
     padding: 20,
     borderWidth: 1,
     borderColor: "#f8f8f8",
