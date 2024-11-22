@@ -3,32 +3,39 @@ import { View, Text, ScrollView, StyleSheet } from "react-native";
 import SearchBox from "@/components/ui/searchbox"; // Updated SearchBox
 import JobCard from "@/components/ui/jobcard"; // Assuming this is your custom component
 import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 const RemoteLists = () => {
   const [search, setSearch] = useState("");
   const router = useRouter();
+  const [jobData, setJobData] = useState([]);
 
-  // Sample job data with IDs
-  const myJobs = [
-    {
-      id: 1,
-      jobtitle: "Remote Frontend Developer",
-      jobdescription: "Build responsive user interfaces using React.",
-    },
-    {
-      id: 2,
-      jobtitle: "Backend Developer",
-      jobdescription: "Develop APIs and database integrations.",
-    },
-    {
-      id: 3,
-      jobtitle: "Content Writer",
-      jobdescription: "Create engaging blog posts and articles.",
-    },
-  ];
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        //get jobs from job_listing table from database
+        const { data, error } = await supabase
+          .from("job_listing")
+          .select("jobid, jobtitle, jobdescription")
+          .eq("jobtype", "Remote");
+
+        if (error) {
+          console.error("Error fetching jobs:", error.message);
+        } else {
+          console.log("Fetched Jobs:", data); //data is the array where the fetched jobs are stored
+          setJobData(data); //transfer data to another array
+        }
+      } catch (fetchError) {
+        console.error("Unexpected error fetching jobs:", fetchError);
+      }
+    };
+
+    fetchJobs();
+  }, []);
 
   // Filter jobs based on the search
-  const filteredJobs = myJobs.filter((job) =>
+  const filteredJobs = jobData.filter((job) =>
     job.jobtitle.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -59,7 +66,7 @@ const RemoteLists = () => {
         {filteredJobs.length > 0 ? (
           filteredJobs.map((job) => (
             <JobCard
-              key={job.id} // Use unique ID for key
+              key={job.jobid} // Use unique ID for key
               title={job.jobtitle}
               description={job.jobdescription}
               onPress={() => openJobListing(job)} // Pass a function reference
