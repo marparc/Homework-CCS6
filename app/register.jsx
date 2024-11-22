@@ -10,6 +10,7 @@ const Register = () => {
   const [lastName, setLastName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [birthdate, setBirthdate] = useState("");
+  const [password, setPassword] = useState("");
 
   const router = useRouter();
 
@@ -62,6 +63,13 @@ const Register = () => {
             size="medium"
             value={contactNumber}
             onChangeText={setContactNumber}
+          />
+
+          <InputField
+            title="Password"
+            size="medium"
+            value={password}
+            onChangeText={setPassword}
           />
 
           {/* Birthdate Selector */}
@@ -117,6 +125,6 @@ const styles = StyleSheet.create({
     marginLeft: 15,
   },
   btnContainer: {
-    marginVertical: 20,
+    marginVertical: 5,
   },
 });
