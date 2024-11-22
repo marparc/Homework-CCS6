@@ -31,8 +31,6 @@ const PostJobListing = () => {
   const [btnLocationTitle, setBtnLocationTitle] = useState("Get My Location");
   const [isPopUpVisible, setPopUpVisible] = useState(false);
 
-  const [latestId, setLatestId] = useState(0);
-
   function formatDateToYYYYMMDD(date) {
     const selectedDate = new Date(date);
 
@@ -98,9 +96,9 @@ const PostJobListing = () => {
 
       if (error) {
         console.error("Error fetching latest jobid:", error.message);
-      } else {
-        setLatestId(data[0].jobid + 1); // Set latest jobid
       }
+
+      const latestId = data && data.length > 0 ? data[0].jobid + 1 : 1;
 
       console.log("Inserting job with the following values:");
       console.log({
