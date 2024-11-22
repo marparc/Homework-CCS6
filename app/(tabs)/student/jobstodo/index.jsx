@@ -4,6 +4,7 @@ import Button from "@/components/ui/buttons";
 import JobCard from "@/components/ui/jobcard";
 import { useRouter } from "expo-router";
 import { supabase } from "../../../../lib/supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const JobsToDo = () => {
   const [isToDoActive, setIsToDoActive] = useState(true);
@@ -11,45 +12,82 @@ const JobsToDo = () => {
 
   const [myJobs, setMyJobs] = useState([]);
   const [error, setError] = useState(null);
-  //const [jobtitle, setJobTitle] = useState("");
 
-  // Pass the state via router.push()
-  const JobListingDetails = (jobtitle) => {
-    router.push({
-      pathname: "/screens/todo", // Target page
-      query: { jobtitle: jobtitle }, // Passing the jobtitle as a query parameter
-    });
-  };
+  const [accountId, setAccountId] = useState(null);
+  const [password, setPassword] = useState(null);
+
   useEffect(() => {
-    const fetchJobDetails = async () => {
+    const getData = async () => {
       try {
-        const { data, error } = await supabase
-          .from("job_listing")
-          .select("*")
-          .eq("jobstatus", "In Progress");
-        if (error) {
-          throw error;
-        }
-
-        //console.log("Fetched Data:", data);
-        setMyJobs(data);
-        setError(null);
+        const storedAccountId = await AsyncStorage.getItem("accountId");
+        const storedPassword = await AsyncStorage.getItem("password");
+        setAccountId(storedAccountId);
+        setPassword(storedPassword);
       } catch (err) {
-        console.error("Error fetching job data:", err.message);
-        setError(err.message);
+        console.error("Failed to retrieve data from AsyncStorage:", err);
       }
     };
 
-    fetchJobDetails();
+    getData();
   }, []);
 
-  // Function to handle button press and deactivate other button
+  const fetchFilteredJobs = async (inputid) => {
+    try {
+      console.log("Fetching jobs with inputid:", inputid);
+
+      const { data, error } = await supabase
+        .from("job_listing")
+        .select(
+          `
+          *,
+          application (
+            applicationmessage,
+            applicationstatus,
+            studentid
+          )
+        `
+        )
+        .eq("jobstatus", "In Progress");
+
+      if (error) {
+        console.error("Error fetching data:", error);
+        return null;
+      }
+      const filteredJobs = data.filter((job) =>
+        job.application.some((app) => app.studentid === inputid)
+      );
+
+      console.log("Filtered Jobs:", filteredJobs);
+      setMyJobs(filteredJobs);
+    } catch (err) {
+      console.error("Error fetching jobs:", err.message);
+      setError(err.message);
+    }
+  };
+
+  useEffect(() => {
+    if (accountId) {
+      //console.log("accountId from AsyncStorage:", accountId);
+      const parsedAccountId = parseInt(accountId, 10);
+      fetchFilteredJobs(parsedAccountId);
+    }
+  }, [accountId]);
+
   const handleToDoClick = () => {
-    setIsToDoActive(true); // Activate "To Do" button
+    setIsToDoActive(true);
+    const inputid = 2;
+    fetchFilteredJobs(inputid);
   };
 
   const handleCompletedClick = () => {
-    setIsToDoActive(false); // Deactivate "To Do" button
+    setIsToDoActive(false);
+  };
+
+  const JobListingDetails = (jobtitle) => {
+    router.push({
+      pathname: "/screens/todo",
+      query: { jobtitle: jobtitle },
+    });
   };
 
   return (
@@ -69,16 +107,17 @@ const JobsToDo = () => {
           onPress={handleCompletedClick}
         />
       </SafeAreaView>
+
       <ScrollView contentContainerStyle={styles.jobList}>
         {myJobs.length > 0 ? (
           myJobs.map((job, index) => (
             <JobCard
               key={index}
-              title={job.jobtitle}
-              description={job.jobdescription}
+              title={job.jobtitle} // Access job title from the job object
+              description={job.jobdescription} // Access job description from the job object
               onPress={() => {
-                console.log(job.jobtitle); // Logs the job title
-                JobListingDetails(job.jobtitle); // Pass the jobtitle to the navigation function
+                // Navigate to JobListingDetails screen and pass the job title as a parameter
+                JobListingDetails(job.jobtitle); // Pass job.title to navigate
               }}
             />
           ))
