@@ -99,6 +99,9 @@ const ProfileHeader = () => {
     currentschool: "",
     yearlevel: "",
   });
+  const [userBio, setuserBio] = useState({
+    bio: ""
+  });
   const [accountId, setAccountId] = useState(null);
   const [password, setPassword] = useState(null); //later to use
 
@@ -159,6 +162,15 @@ const ProfileHeader = () => {
           });
           const firstLetter = userData.firstname.charAt(0).toUpperCase();
           setFirstLetter(firstLetter);
+
+          const { data: userBio, error: bioError } = await supabase
+          .from("user_account")
+          .select("bio")
+          .eq("accountid", accountId)
+          .single();
+          setuserBio({
+            bio: userBio.bio
+          })
         }
       } else {
         console.log("No student found with the given student ID.");
@@ -220,7 +232,7 @@ const ProfileHeader = () => {
           </Text>
           <Text style={styles.type}>Student Freelancer</Text>
           <Text style={styles.id}>Account ID: {accountId}</Text>
-          <Text style={styles.bio}>Dummy Bio</Text>
+          <Text style={styles.bio}>{userBio.bio}</Text>
         </View>
       </View>
       <View

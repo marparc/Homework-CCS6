@@ -2,19 +2,46 @@ import { View, Text, StyleSheet } from "react-native";
 import React from "react";
 import Button from "@/components/ui/buttons";
 import InputField from "@/components/ui/inputfield";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import PopUp from "@/components/ui/popup";
-
+import { supabase } from "../../../lib/supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const EditBio = () => {
   const [isPopUpVisible, setPopUpVisible] = useState(false); // State to control the visibility of the PopUp
 
-  const handleEditBio = () => {
-    // add the logic for editing the Porfolio
+  const [accountId, setAccountId] = useState(null);
 
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const storedAccountId = await AsyncStorage.getItem("accountId");
+        const storedPassword = await AsyncStorage.getItem("password");
+        setAccountId(storedAccountId);
+        setPassword(storedPassword);
+      } catch (err) {
+        console.error("Failed to retrieve data from AsyncStorage:", err);
+      }
+    };
+
+    getData();
+  }, []);
+
+  const handleEditBio= async () => {
+    const { biodata, error } = await supabase
+      .from('user_account')
+      .update({ bio: bio })
+      .eq('accountid', accountId)
+    
+      if(biodata){
+        console.log(biodata)
+      }
+      else{
+        console.log(error)
+      }
     setPopUpVisible(true);
   };
-  const [bio, setBio] = useState("Initial Bio");
+  const [bio, setBio] = useState("Enter New Bio");
 
   const router = useRouter();
   return (
