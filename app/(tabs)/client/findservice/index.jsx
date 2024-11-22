@@ -5,8 +5,9 @@ import ReqCard from "@/components/ui/request";
 import SearchBox from "@/components/ui/searchbox";
 
 const ServiceListings = () => {
-  // Simulate fetching service requests from a database
-  const [serviceRequests, setServiceRequests] = useState([]);
+  const [serviceRequests, setServiceRequests] = useState([]); // Full list of service requests
+  const [search, setSearch] = useState(""); // Search text input
+  const [filteredRequests, setFilteredRequests] = useState([]); // Filtered list
 
   useEffect(() => {
     // Simulate fetching services from an API or database
@@ -34,19 +35,35 @@ const ServiceListings = () => {
       },
     ];
 
-    // Update the state with fetched service requests
     setServiceRequests(fetchedRequests);
+    setFilteredRequests(fetchedRequests); // Initialize filtered requests
   }, []);
+
+  // Update filtered requests when the search value changes
+  useEffect(() => {
+    const lowercasedSearch = search.toLowerCase();
+    const filtered = serviceRequests.filter(
+      (request) =>
+        request.title.toLowerCase().includes(lowercasedSearch) ||
+        request.description.toLowerCase().includes(lowercasedSearch) ||
+        request.name.toLowerCase().includes(lowercasedSearch)
+    );
+    setFilteredRequests(filtered);
+  }, [search, serviceRequests]);
 
   return (
     <>
       <SafeAreaView style={styles.header}>
-        <SearchBox />
+        <SearchBox
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Search for a service..."
+        />
       </SafeAreaView>
-      {/* Make the service requests scrollable */}
+
       <ScrollView contentContainerStyle={styles.serviceList}>
-        {serviceRequests.length > 0 ? (
-          serviceRequests.map((request, index) => (
+        {filteredRequests.length > 0 ? (
+          filteredRequests.map((request, index) => (
             <ReqCard
               key={index}
               title={request.title}
@@ -56,7 +73,7 @@ const ServiceListings = () => {
             />
           ))
         ) : (
-          <Text>No service requests available.</Text>
+          <Text style={styles.noResultsText}>No service requests found.</Text>
         )}
       </ScrollView>
     </>
@@ -75,5 +92,11 @@ const styles = StyleSheet.create({
     padding: 50,
     paddingTop: 10,
     alignItems: "center",
+  },
+  noResultsText: {
+    fontSize: 16,
+    color: "#888",
+    marginTop: 20,
+    textAlign: "center",
   },
 });

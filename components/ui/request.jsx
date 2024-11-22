@@ -2,11 +2,12 @@ import { View, Text, StyleSheet, Pressable } from "react-native";
 import React, { useState } from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Button from "./buttons";
+import { useRouter } from "expo-router";
 
 const ReqCard = (props) => {
   // Destructure stars from props
   const { title, name, description, stars } = props;
-
+  const router = useRouter();
   const [isPressed, setIsPressed] = useState(false);
 
   return (
@@ -25,7 +26,14 @@ const ReqCard = (props) => {
           <Text>{description}</Text>
         </View>
         <View style={styles.btnContainer}>
-          <Button title="Request" type="dark" size="small" />
+          <Button
+            title="Request"
+            type="dark"
+            size="small"
+            onPress={() => {
+              router.push("/(tabs)/screens/requestservice");
+            }}
+          />
           <Button title="View" type="light" size="small" />
         </View>
       </View>

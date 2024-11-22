@@ -7,6 +7,7 @@ const SubmittedApp = () => {
     <SuccessPage
       header="Application Sent Successfully!"
       icon="checkmark-circle"
+      route="/(tabs)/student/findjob"
       content="The application will be sent to the client for review. Once accepted, a conversation will be initiated between you and the client."
     />
   );

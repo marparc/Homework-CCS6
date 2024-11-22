@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Button from "./buttons";
 import { useRouter } from "expo-router";
 
-const SuccessPage = ({ header, icon, content }) => {
+const SuccessPage = ({ header, route, icon, content }) => {
   const router = useRouter();
   return (
     <View style={styles.container}>
@@ -17,7 +17,7 @@ const SuccessPage = ({ header, icon, content }) => {
         type="light"
         size="medium"
         onPress={() => {
-          router.push("/(tabs)/student/findjob");
+          router.push(route);
         }}
       />
     </View>

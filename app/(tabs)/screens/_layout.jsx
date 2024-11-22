@@ -114,6 +114,13 @@ const Layout = () => {
       />
 
       <Stack.Screen
+        name="requestsent"
+        options={{
+          headerShown: false, // Hide the header for this screen
+        }}
+      />
+
+      <Stack.Screen
         name="addservice"
         options={{
           title: "Add a Service",
@@ -320,6 +327,28 @@ const Layout = () => {
             <TouchableOpacity
               onPress={() => {
                 router.push("/(tabs)/client/myjoblistings"); // Navigate back when pressed
+              }}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color="black"
+                style={{ marginLeft: 10 }}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+
+      <Stack.Screen
+        name="requestservice"
+        options={{
+          title: "Request Service",
+          headerTitleAlign: "center", // Center the header title
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => {
+                router.push("/client/findservice"); // Navigate back when pressed
               }}
             >
               <Ionicons

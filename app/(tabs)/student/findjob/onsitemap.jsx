@@ -1,73 +1,75 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Text } from "react-native"; // Import Button here
+import { StyleSheet, View, Text } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
-import Button from "@/components/ui/buttons"; // Assuming the Button component is correctly imported
-import { useRouter } from "expo-router"; // Importing useRouter from expo-router
+import Button from "@/components/ui/buttons";
+import { useRouter } from "expo-router";
+import { supabase } from "../../../../lib/supabase";
 
 export default function JobMap() {
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [selectedJob, setSelectedJob] = useState(null); // State to track selected job
+  const [jobData, setJobData] = useState([]);
+  const [selectedJob, setSelectedJob] = useState(null);
   const router = useRouter();
 
-  // Sample job data
-  const jobData = [
-    {
-      id: "job-1",
-      title: "Junior Software Developer",
-      description: "Develop software applications and systems.",
-      latitude: 9.3073,
-      longitude: 123.303,
-    },
-    {
-      id: "job-2",
-      title: "Graphic Designer",
-      description: "Create marketing materials and designs.",
-      latitude: 9.308,
-      longitude: 123.304,
-    },
-    {
-      id: "job-3",
-      title: "Marketing Assistant",
-      description: "Assist with marketing campaigns and strategy.",
-      latitude: 9.309,
-      longitude: 123.305,
-    },
-  ];
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        //get jobs from job_listing table from database
+        const { data, error } = await supabase
+          .from("job_listing")
+          .select("jobid, jobtitle, jobdescription, locationlat, locationlong")
+          .eq("jobtype", "Onsite");
+
+        if (error) {
+          console.error("Error fetching jobs:", error.message);
+        } else {
+          console.log("Fetched Jobs:", data); //data is the array where the fetched jobs are stored
+          setJobData(data); //transfer data to another array
+        }
+      } catch (fetchError) {
+        console.error("Unexpected error fetching jobs:", fetchError);
+      }
+    };
+
+    fetchJobs();
+  }, []);
 
   useEffect(() => {
     const getLocation = async () => {
-      // Request permission to access location
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setErrorMsg("Permission to access location was denied");
-        return;
-      }
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          setErrorMsg("Permission to access location was denied");
+          return;
+        }
 
-      // Get current position
-      let currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation({
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      });
+        //get user location
+        const currentLocation = await Location.getCurrentPositionAsync({});
+        setLocation({
+          latitude: currentLocation.coords.latitude,
+          longitude: currentLocation.coords.longitude,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        });
+      } catch (locationError) {
+        setErrorMsg("Failed to fetch location. Please try again.");
+        console.error(locationError);
+      }
     };
 
     getLocation();
   }, []);
 
-  const handleMarkerPress = (job) => {
-    setSelectedJob(job); // Set the clicked job as selected
-  };
+  const handleMarkerPress = (job) => setSelectedJob(job);
 
-  const handleMapPress = () => {
-    setSelectedJob(null); // Deselect the job if the user clicks anywhere on the map
-  };
+  const handleMapPress = () => setSelectedJob(null);
 
   const viewJobPress = () => {
-    router.push(`/screens/viewjoblisting`); // Use selectedJob.id for dynamic routing
+    if (selectedJob?.id) {
+      router.push(`/screens/viewjoblisting/${selectedJob.id}`);
+    }
   };
 
   return (
@@ -78,37 +80,45 @@ export default function JobMap() {
           region={location}
           showsUserLocation={true}
           loadingEnabled={true}
-          onPress={handleMapPress} // Deselect job when map is clicked
+          onPress={handleMapPress}
         >
-          {/* Marker at the current location */}
-          <Marker coordinate={location} title="You are here" />
-
-          {/* Render markers for job listings */}
-          {jobData.map((job) => (
-            <Marker
-              key={job.id}
-              coordinate={{
-                latitude: job.latitude,
-                longitude: job.longitude,
-              }}
-              title={job.title}
-              description={job.description}
-              onPress={() => handleMarkerPress(job)} // Set selected job on marker press
-            />
-          ))}
+          <Marker
+            coordinate={location}
+            title="You are here"
+            onPress={() => {
+              console.log(jobData);
+            }}
+          />
+          {/**this displays the onsite job listings */}
+          {jobData.length > 0 ? (
+            jobData.map((job) => (
+              //job is an object for the jobData array
+              <Marker
+                key={job.jobid}
+                coordinate={{
+                  latitude: job.locationlat,
+                  longitude: job.locationlong,
+                }}
+                title={job.jobtitle}
+                description={job.jobdescription}
+                onPress={() => handleMarkerPress(job)}
+              />
+            ))
+          ) : (
+            <Text style={styles.noJobsText}>Loading jobs...</Text>
+          )}
         </MapView>
       ) : (
         <Text>{errorMsg || "Getting your location..."}</Text>
       )}
 
-      {/* Show Button only if a job is selected */}
       {selectedJob && (
         <View style={styles.buttonContainer}>
           <Button
             title="View Job Listing"
             type="dark"
             size="small"
-            onPress={viewJobPress} // Pass function reference
+            onPress={viewJobPress}
           />
         </View>
       )}
@@ -127,9 +137,15 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   buttonContainer: {
-    position: "absolute", // Use absolute to keep button at the bottom
-    zIndex: 2,
+    position: "absolute",
     bottom: 40,
     backgroundColor: "transparent",
+    zIndex: 2,
+  },
+  noJobsText: {
+    position: "absolute",
+    top: 10,
+    color: "black",
+    fontSize: 16,
   },
 });

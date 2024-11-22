@@ -12,40 +12,19 @@ import Button from "@/components/ui/buttons";
 import DatePick from "@/components/ui/pickdate";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import PopUp from "@/components/ui/popup";
-import { supabase } from "@/lib/supabase";
 
-const PostJobListing = () => {
+const RequestServiceJob = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [pay, setPay] = useState(0);
+  const [pay, setPay] = useState("");
   const [jobType, setJobType] = useState(""); // To track the selected job type
-  const [lat, setLat] = useState(0.0);
-  const [long, setLong] = useState(0.0);
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState(""); // To store city or town name
   const [isLocationRetrieved, setIsLocationRetrieved] = useState(false);
   const [errorMsg, setErrorMsg] = useState(""); // To handle location errors
   const [deadline, setDeadline] = useState("");
   const router = useRouter();
   const [btnLocationType, setBtnLocationType] = useState("light");
   const [btnLocationTitle, setBtnLocationTitle] = useState("Get My Location");
-  const [isPopUpVisible, setPopUpVisible] = useState(false);
-
-  const [latestId, setLatestId] = useState(0);
-
-  function formatDateToYYYYMMDD(date) {
-    const selectedDate = new Date(date);
-
-    // Format the date to YYYY-MM-DD format
-    const year = selectedDate.getFullYear(); // Full year (e.g., 2024)
-    const month = (selectedDate.getMonth() + 1).toString().padStart(2, "0"); // Months are 0-indexed, pad with leading zero
-    const day = selectedDate.getDate().toString().padStart(2, "0"); // Ensure day is 2 digits, pad with leading zero
-
-    return `${year}-${month}-${day}`; // Return in the format YYYY-MM-DD
-  }
-
-  const formattedDeadline = formatDateToYYYYMMDD(deadline);
-  const formattedCurrentDate = formatDateToYYYYMMDD(new Date());
 
   const handleGetLocation = async () => {
     try {
@@ -58,9 +37,7 @@ const PostJobListing = () => {
       }
 
       // Get current location
-      const currentLocation = await Location.getCurrentPositionAsync({});
-      setLat(currentLocation.coords.latitude);
-      setLong(currentLocation.coords.longitude);
+      let currentLocation = await Location.getCurrentPositionAsync({});
 
       // Reverse geocoding to get city or town
       let geocode = await Location.reverseGeocodeAsync({
@@ -85,70 +62,6 @@ const PostJobListing = () => {
     }
     setBtnLocationType("dark");
     setBtnLocationTitle("Location Retrieved");
-  };
-
-  const insertJob = async () => {
-    try {
-      // Fetch the most recent jobid
-      const { data, error } = await supabase
-        .from("job_listing")
-        .select("jobid")
-        .order("jobid", { ascending: false }) // Order by jobid in descending order
-        .limit(1); // Limit to the most recent record
-
-      if (error) {
-        console.error("Error fetching latest jobid:", error.message);
-      } else {
-        setLatestId(data[0].jobid + 1); // Set latest jobid
-      }
-
-      console.log("Inserting job with the following values:");
-      console.log({
-        jobid: latestId,
-        jobtitle: title,
-        jobpay: pay,
-        jobdescription: description,
-        jobtype: jobType,
-        locationlat: lat,
-        locationlong: long,
-        duedate: formattedDeadline,
-        dateposted: formattedCurrentDate,
-        jobstatus: "Open",
-        clientid: 3,
-      });
-
-      // Insert new job listing
-      const { data: insertData, error: insertError } = await supabase
-        .from("job_listing")
-        .insert([
-          {
-            jobid: latestId,
-            jobtitle: title,
-            jobpay: pay,
-            jobdescription: description,
-            jobtype: jobType,
-            locationlat: lat,
-            locationlong: long,
-            duedate: formattedDeadline,
-            dateposted: formattedCurrentDate,
-            jobstatus: "Open",
-            clientid: 3,
-          },
-        ]);
-
-      if (insertError) {
-        console.error("Error inserting job:", insertError.message);
-      } else {
-        console.log("Job inserted successfully:", insertData);
-      }
-    } catch (insertError) {
-      console.error("Unexpected error inserting job:", insertError);
-    }
-  };
-
-  const publishListing = () => {
-    setPopUpVisible(true);
-    insertJob();
   };
 
   return (
@@ -199,11 +112,7 @@ const PostJobListing = () => {
           {/* Radio Button for Remote */}
           <TouchableOpacity
             style={styles.radioContainer}
-            onPress={() => {
-              setJobType("Remote");
-              setLat(null);
-              setLong(null);
-            }}
+            onPress={() => setJobType("Remote")}
           >
             <View
               style={[
@@ -243,7 +152,7 @@ const PostJobListing = () => {
         <DatePick
           label="MM/DD/YY"
           mode="date"
-          minDate={new Date()} // Ensure dates are only in the past
+          minDate={new Date()} // Ensure dates are not in the past
           onDateChange={(date) => setDeadline(date)}
         />
 
@@ -251,24 +160,16 @@ const PostJobListing = () => {
           type="dark"
           size="medium"
           title="Publish"
-          onPress={publishListing}
+          onPress={() => {
+            router.push("/(tabs)/screens/requestsent");
+          }}
         />
-
-        {isPopUpVisible && (
-          <PopUp
-            icon="checkmark-circle-outline"
-            text="Published Successfully!"
-            route="/(tabs)/client/myjoblistings" // Navigate to this route when the modal is closed
-            onClose={() => setPopUpVisible(false)} // Assuming PopUp accepts an `onClose` prop
-          />
-        )}
       </View>
     </ScrollView>
   );
 };
 
-export default PostJobListing;
-
+export default RequestServiceJob;
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
