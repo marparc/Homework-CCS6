@@ -88,6 +88,9 @@ const MyListings = () => {
               key={index}
               title={job.title}
               description={job.description}
+              onPress={() => {
+                router.push("/(tabs)/screens/managejoblisting");
+              }}
             />
           ))
         ) : (
