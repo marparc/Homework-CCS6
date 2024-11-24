@@ -19,74 +19,17 @@ import { useRouter } from "expo-router";
 import DeleteService from "../../screens/deleteservice";
 import { supabase } from "../../../../lib/supabase";
 
-// Sample services data
-const services = [
-  {
-    id: 1,
-    title: "Graphic Design",
-    description: "Creating logos, banners, and flyers.",
-  },
-  {
-    id: 2,
-    title: "Video Editing",
-    description: "Editing short films and advertisements.",
-  },
-  {
-    id: 3,
-    title: "Web Development",
-    description: "Building responsive websites.",
-  },
-];
-
-// Sample portfolios data
-const portfolios = [
-  {
-    id: 1,
-    title: "Portfolio 1",
-    description: "Portfolio showcasing graphic design work.",
-    link: "https://youtube.com",
-  },
-  {
-    id: 2,
-    title: "Portfolio 2",
-    description: "Portfolio featuring video editing projects.",
-    link: "https://youtube.com",
-  },
-  {
-    id: 3,
-    title: "Portfolio 3",
-    description: "Portfolio displaying web development projects.",
-    link: "https://youtube.com",
-  },
-];
-// Sample ratings data
-const ratings = [
-  {
-    id: 1,
-    stars: 5,
-    comment: "Excellent work! Highly recommended.",
-    rateFrom: "Alice Johnson",
-  },
-  {
-    id: 2,
-    stars: 4,
-    comment: "Great service but there’s room for improvement.",
-    rateFrom: "Bob Smith",
-  },
-  {
-    id: 3,
-    stars: 3,
-    comment: "Average experience. Could be better.",
-    rateFrom: "Chris Lee",
-  },
-];
-
 const ProfileHeader = () => {
   const [firstLetter, setFirstLetter] = useState("");
   const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState(null);
   const [activeTab, setActiveTab] = useState("services");
+  const [ratings, setRatings] = useState([]);
+  const [services, setServices] = useState([]);
+  const [portfolio, setPortfolio] = useState([]);
   const router = useRouter();
+  const [accountId, setAccountId] = useState(null);
+  const [password, setPassword] = useState(null); //later to use
 
   const [userData, setUserData] = useState({
     firstname: "",
@@ -100,10 +43,8 @@ const ProfileHeader = () => {
     yearlevel: "",
   });
   const [userBio, setuserBio] = useState({
-    bio: ""
+    bio: "",
   });
-  const [accountId, setAccountId] = useState(null);
-  const [password, setPassword] = useState(null); //later to use
 
   useEffect(() => {
     const getData = async () => {
@@ -112,6 +53,8 @@ const ProfileHeader = () => {
         const storedPassword = await AsyncStorage.getItem("password");
         setAccountId(storedAccountId);
         setPassword(storedPassword);
+        console.log("Stored accountId:", storedAccountId); // Check the value
+        console.log("Stored password:", storedPassword); // Check the password value
       } catch (err) {
         console.error("Failed to retrieve data from AsyncStorage:", err);
       }
@@ -119,6 +62,38 @@ const ProfileHeader = () => {
 
     getData();
   }, []);
+
+  useEffect(() => {
+    // Check if accountId is valid before making the database call
+    if (!accountId) {
+      console.error("Invalid accountId");
+      return;
+    }
+    const fetchEvaluationData = async () => {
+      const { data: evaluationData, error: evaluationError } = await supabase
+        .from("stud_evaluation")
+        .select("rating, usercomment, clientid, studentid")
+        .eq("studentid", accountId);
+
+      if (evaluationError) {
+        console.error("Error fetching evaluations:", evaluationError);
+        return;
+      }
+      console.log("Fetched Evaluation Data:", evaluationData);
+
+      // Transform the fetched data into the format needed for rendering
+      const transformedRatings = evaluationData.map((evaluation) => ({
+        id: evaluation.clientid, // Assuming clientid is unique
+        stars: evaluation.rating,
+        comment: evaluation.usercomment,
+        rateFrom: evaluation.clientid,
+      }));
+
+      setRatings(transformedRatings);
+    };
+
+    fetchEvaluationData();
+  }, [accountId]);
 
   useEffect(() => {
     const fetchAccountData = async () => {
@@ -164,13 +139,13 @@ const ProfileHeader = () => {
           setFirstLetter(firstLetter);
 
           const { data: userBio, error: bioError } = await supabase
-          .from("user_account")
-          .select("bio")
-          .eq("accountid", accountId)
-          .single();
+            .from("user_account")
+            .select("bio")
+            .eq("accountid", accountId)
+            .single();
           setuserBio({
-            bio: userBio.bio
-          })
+            bio: userBio.bio,
+          });
         }
       } else {
         console.log("No student found with the given student ID.");
@@ -178,6 +153,64 @@ const ProfileHeader = () => {
     };
 
     fetchAccountData();
+  }, [accountId]);
+
+  useEffect(() => {
+    // Check if accountId is valid before making the database call
+    if (!accountId) {
+      console.error("Invalid accountId");
+      return;
+    }
+
+    const fetchServicesData = async () => {
+      try {
+        const { data: servicesData, error: servicesError } = await supabase
+          .from("services")
+          .select("serviceid, servicedesc, studentid") // Adjust columns as per your table structure
+          .eq("studentid", accountId);
+
+        if (servicesError) {
+          console.error("Error fetching services:", servicesError);
+          return;
+        }
+
+        // Store the fetched services in the state
+        setServices(servicesData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchServicesData();
+  }, [accountId]);
+
+  useEffect(() => {
+    // Check if accountId is valid before making the database call
+    if (!accountId) {
+      console.error("Invalid accountId");
+      return;
+    }
+
+    const fetchPortfolioData = async () => {
+      try {
+        const { data: portfolioData, error: portfolioError } = await supabase
+          .from("portfolio")
+          .select("portfolioname, portfoliodesc, link, studentid")
+          .eq("studentid", accountId);
+
+        if (portfolioError) {
+          console.error("Error fetching portfolio:", portfolioError);
+          return;
+        }
+
+        // Store the fetched portfolio data in the state
+        setPortfolio(portfolioData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchPortfolioData();
   }, [accountId]);
 
   // Handle service selection
@@ -265,6 +298,7 @@ const ProfileHeader = () => {
         </Text>
       </View>
 
+      {/* Buttons for Services and Portfolios */}
       <View style={styles.tabsContainer}>
         <Button
           title="Services"
@@ -336,23 +370,31 @@ const ProfileHeader = () => {
           </View>
 
           <TouchableWithoutFeedback onPress={handleOutsidePress}>
+            {/* Service Cards */}
             <View style={styles.container}>
-              {services.map((service) => (
-                <Pressable
-                  key={service.id}
-                  onPress={() => handleServicePress(service.id)} // Toggle selection
-                  onLongPress={() => handleServiceLongPress(service.id)} // Select on long press
-                  style={[
-                    styles.serviceCard,
-                    isServiceSelected(service.id) && styles.selectedCard,
-                  ]}
-                >
-                  <ServiceCard
-                    title={service.title}
-                    description={service.description}
-                  />
-                </Pressable>
-              ))}
+              {services.length > 0 ? (
+                services.map((service) => (
+                  <Pressable
+                    key={service.serviceid} // Ensure each service has a unique key
+                    onPress={() => handleServicePress(service.serviceid)}
+                    onLongPress={() =>
+                      handleServiceLongPress(service.serviceid)
+                    }
+                    style={[
+                      styles.serviceCard,
+                      isServiceSelected(service.serviceid) &&
+                        styles.selectedCard,
+                    ]}
+                  >
+                    <ServiceCard
+                      title={service.servicedesc}
+                      description={service.servicedesc}
+                    />
+                  </Pressable>
+                ))
+              ) : (
+                <Text>No services available for this account.</Text>
+              )}
             </View>
           </TouchableWithoutFeedback>
         </>
@@ -413,21 +455,27 @@ const ProfileHeader = () => {
           </View>
 
           <TouchableWithoutFeedback onPress={handleOutsidePress}>
+            {/* Portfoli Cards */}
             <View style={styles.container}>
-              {portfolios.map((portfolio) => (
+              {portfolio.map((portfolioItem) => (
                 <Pressable
-                  key={portfolio.id}
-                  onPress={() => handlePortfolioPress(portfolio.id)} // Toggle selection
-                  onLongPress={() => handlePortfolioLongPress(portfolio.id)} // Select on long press
+                  key={portfolioItem.portfolioid} // Ensure each portfolio has a unique key
+                  onPress={() =>
+                    handlePortfolioPress(portfolioItem.portfolioid)
+                  }
+                  onLongPress={() =>
+                    handlePortfolioLongPress(portfolioItem.portfolioid)
+                  }
                   style={[
                     styles.portfolioCard,
-                    isPortfolioSelected(portfolio.id) && styles.selectedCard,
+                    isPortfolioSelected(portfolioItem.portfolioid) &&
+                      styles.selectedCard,
                   ]}
                 >
                   <PortfolioCard
-                    title={portfolio.title}
-                    description={portfolio.description}
-                    link={portfolio.link}
+                    title={portfolioItem.portfolioname}
+                    description={portfolioItem.portfoliodesc}
+                    link={portfolioItem.link}
                   />
                 </Pressable>
               ))}
@@ -439,14 +487,19 @@ const ProfileHeader = () => {
       {/* Reviews Section */}
       <View style={styles.reviewsContainer}>
         <Text style={styles.reviewsHeader}>Reviews</Text>
-        {ratings.map((rating) => (
-          <Rating
-            key={rating.id}
-            stars={rating.stars.toString()}
-            comment={rating.comment}
-            rateFrom={rating.rateFrom}
-          />
-        ))}
+
+        {/* Check if there are any ratings */}
+        {ratings.length === 0 ? (
+          <Text style={styles.noReviewsText}>No reviews made yet.</Text> // Show message if no reviews
+        ) : (
+          ratings.map((rating) => (
+            <Rating
+              key={rating.id}
+              stars={rating.stars.toString()} // Ensure stars are passed as a string
+              comment={rating.comment}
+            />
+          ))
+        )}
       </View>
     </ScrollView>
   );

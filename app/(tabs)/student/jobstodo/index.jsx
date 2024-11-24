@@ -84,9 +84,10 @@ const JobsToDo = () => {
   };
 
   const JobListingDetails = (jobtitle) => {
+    console.log("Navigating with jobtitle:", jobtitle); // Log the jobtitle
     router.push({
-      pathname: "/screens/todo",
-      query: { jobtitle: jobtitle },
+      pathname: "/screens/todo", // Ensure the correct path
+      state: { jobtitle }, // Pass jobtitle in the state object
     });
   };
 

@@ -18,7 +18,8 @@ const RemoteLists = () => {
         const { data, error } = await supabase
           .from("job_listing")
           .select("jobid, jobtitle, jobdescription")
-          .eq("jobtype", "Remote");
+          .eq("jobtype", "Remote")
+          .eq("jobstatus", "Open");
 
         if (error) {
           console.error("Error fetching jobs:", error.message);

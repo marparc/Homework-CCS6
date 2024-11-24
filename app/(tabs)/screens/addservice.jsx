@@ -1,47 +1,140 @@
 import { View, StyleSheet } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import InputField from "@/components/ui/inputfield";
 import Button from "@/components/ui/buttons";
 import { useRouter } from "expo-router";
 import PopUp from "@/components/ui/popup";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "@/lib/supabase";
 
 const AddService = () => {
-  const [isPopUpVisible, setPopUpVisible] = useState(false); // State to control the visibility of the PopUp
-  const router = useRouter();
-
-  const handleAddService = () => {
-    // Here, you would usually add the logic for adding the service
-    // After adding the service, show the PopUp
-    setPopUpVisible(true);
-  };
-
+  const [isPopUpVisible, setPopUpVisible] = useState(false);
+  const [accountId, setAccountId] = useState(null);
   const [serviceName, setServiceName] = useState("");
   const [serviceDesc, setServiceDesc] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const storedAccountId = await AsyncStorage.getItem("accountId");
+        setAccountId(storedAccountId);
+      } catch (err) {
+        console.error("Failed to retrieve data from AsyncStorage:", err);
+      }
+    };
+
+    getData();
+  }, []);
+
+  const checkExistingServices = async (accountId) => {
+    try {
+      const { data, error } = await supabase
+        .from("services")
+        .select("serviceid")
+        .eq("studentid", accountId);
+
+      if (error) {
+        console.error("Error fetching existing services:", error);
+        return 0;
+      }
+
+      return data.length;
+    } catch (err) {
+      console.error("Error checking existing services:", err);
+      return 0;
+    }
+  };
+
+  const insertService = async (servicedesc) => {
+    if (!servicedesc || !accountId) {
+      console.log("Missing service description or account ID.");
+      return;
+    }
+
+    const existingServicesCount = await checkExistingServices(accountId);
+
+    if (existingServicesCount >= 3) {
+      console.log("You cannot add more than 3 services.");
+      alert("You cannot add more than 3 services.");
+      return;
+    }
+
+    try {
+      const { data: maxServiceIdData, error: maxServiceIdError } =
+        await supabase
+          .from("services")
+          .select("serviceid")
+          .order("serviceid", { ascending: false })
+          .limit(1);
+
+      if (maxServiceIdError) {
+        console.error("Error fetching max serviceid:", maxServiceIdError);
+        return;
+      }
+
+      const newServiceId =
+        maxServiceIdData && maxServiceIdData.length > 0
+          ? maxServiceIdData[0].serviceid + 1
+          : 1;
+
+      const { error } = await supabase.from("services").insert([
+        {
+          serviceid: newServiceId,
+          servicedesc: servicedesc,
+          studentid: accountId,
+          price: 0,
+        },
+      ]);
+
+      if (error) {
+        console.error("Error inserting service:", error);
+      } else {
+        console.log("Service inserted successfully");
+        setPopUpVisible(true);
+        setServiceName("");
+        setServiceDesc("");
+      }
+    } catch (err) {
+      console.error("Error inserting service:", err);
+    }
+  };
+
+  const handleAddService = () => {
+    if (serviceName && serviceDesc) {
+      insertService(serviceDesc);
+    } else {
+      console.log("Please fill in both service title and description");
+    }
+  };
+
+  const handlePopUpClose = () => {
+    setPopUpVisible(false);
+    router.push("/student/profile");
+  };
 
   return (
     <>
       <View style={styles.container}>
-        <View>
-          <InputField
-            title="Service Title"
-            size="medium"
-            value={serviceName}
-            onChangeText={setServiceName}
-          />
-          <InputField
-            title="Service Description"
-            size="large"
-            value={serviceDesc}
-            onChangeText={setServiceDesc}
-          />
-        </View>
+        <InputField
+          title="Service Title"
+          size="medium"
+          value={serviceName}
+          onChangeText={setServiceName}
+        />
+        <InputField
+          title="Service Description"
+          size="large"
+          value={serviceDesc}
+          onChangeText={setServiceDesc}
+        />
 
         <View style={styles.buttonContainer}>
           <Button
             title="Add Service"
             type="dark"
             size="small"
-            onPress={handleAddService} // Call the handleAddService function on button press
+            onPress={handleAddService}
           />
         </View>
       </View>
@@ -50,19 +143,17 @@ const AddService = () => {
         <PopUp
           icon="checkmark-circle-outline"
           text="Service Added Successfully!"
-          route="/student/profile" // Navigate to this route when the modal is closed
+          onClose={handlePopUpClose}
         />
       )}
     </>
   );
 };
 
-export default AddService;
-
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // Makes the container take up the full screen height
-    alignItems: "center", // Centers the content horizontally
+    flex: 1,
+    alignItems: "center",
     padding: 30,
   },
   buttonContainer: {
@@ -71,3 +162,5 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
 });
+
+export default AddService;
