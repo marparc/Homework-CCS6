@@ -19,80 +19,9 @@ import DeleteService from "../../screens/deleteservice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { supabase } from "../../../../lib/supabase";
-// Sample user data
-const user = {
-  firstName: "John",
-  lastName: "Doe",
-  bio: "I am not slow, I am fast.",
-  id: "1234",
-  type: "Student Freelancer",
-};
-// Sample services data
-const services = [
-  {
-    id: 1,
-    title: "Graphic Design",
-    description: "Creating logos, banners, and flyers.",
-  },
-  {
-    id: 2,
-    title: "Video Editing",
-    description: "Editing short films and advertisements.",
-  },
-  {
-    id: 3,
-    title: "Web Development",
-    description: "Building responsive websites.",
-  },
-];
-
-// Sample portfolios data
-const portfolios = [
-  {
-    id: 1,
-    title: "Portfolio 1",
-    description: "Portfolio showcasing graphic design work.",
-    link: "https://youtube.com",
-  },
-  {
-    id: 2,
-    title: "Portfolio 2",
-    description: "Portfolio featuring video editing projects.",
-    link: "https://youtube.com",
-  },
-  {
-    id: 3,
-    title: "Portfolio 3",
-    description: "Portfolio displaying web development projects.",
-    link: "https://youtube.com",
-  },
-];
-// Sample ratings data
-const ratings = [
-  {
-    id: 1,
-    stars: 5,
-    comment: "Excellent work! Highly recommended.",
-    rateFrom: "Alice Johnson",
-  },
-  {
-    id: 2,
-    stars: 4,
-    comment: "Great service but there’s room for improvement.",
-    rateFrom: "Bob Smith",
-  },
-  {
-    id: 3,
-    stars: 3,
-    comment: "Average experience. Could be better.",
-    rateFrom: "Chris Lee",
-  },
-];
 
 const MyClientProfile = () => {
-  const firstLetter = userData?.firstname
-    ? userData.firstname.charAt(0).toUpperCase()
-    : "";
+  const [firstLetter, setFirstLetter] = useState("");
 
   const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState(null); // Add state for selected portfolio
@@ -196,7 +125,10 @@ const MyClientProfile = () => {
             .select("firstname, lastname, birthdate, usertype")
             .eq("userid", clientData.userid)
             .single();
-
+          //console.log(userData);
+          //const firstLetter = userData.firstname.charAt(0).toUpperCase();
+          const firstLetter = userData.firstname.charAt(0).toUpperCase();
+          setFirstLetter(firstLetter);
           if (userError) {
             console.error("Error fetching user data:", userError.message);
           } else {

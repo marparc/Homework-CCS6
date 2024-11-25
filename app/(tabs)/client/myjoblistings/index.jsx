@@ -3,68 +3,91 @@ import React, { useState, useEffect } from "react";
 import Button from "@/components/ui/buttons";
 import JobCard from "@/components/ui/jobcard";
 import { useRouter } from "expo-router";
+import { supabase } from "../../../../lib/supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const MyListings = () => {
-  // Simulate fetching job listings from a database
   const [jobListings, setJobListings] = useState([]);
+  const [accountId, setAccountId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const router = useRouter();
 
   useEffect(() => {
-    // Simulate fetching jobs from an API or database
-    const fetchedJobs = [
-      {
-        title: "Video Editing Job",
-        description:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id imperdiet magna, a finibus magna.",
-      },
-      {
-        title: "Graphic Design Job",
-        description:
-          "Cras placerat arcu nunc. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.",
-      },
-      {
-        title: "Web Development Job",
-        description:
-          "Integer at tempor lectus, ut laoreet neque. Duis ut accumsan libero, a consectetur velit.",
-      },
+    const fetchAccountId = async () => {
+      try {
+        const storedAccountId = await AsyncStorage.getItem("accountId");
+        setAccountId(storedAccountId);
+      } catch (err) {
+        console.error("Failed to retrieve account ID from AsyncStorage:", err);
+      }
+    };
 
-      {
-        title: "Video Editing Job",
-        description:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id imperdiet magna, a finibus magna.",
-      },
-      {
-        title: "Graphic Design Job",
-        description:
-          "Cras placerat arcu nunc. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.",
-      },
-      {
-        title: "Web Development Job",
-        description:
-          "Integer at tempor lectus, ut laoreet neque. Duis ut accumsan libero, a consectetur velit.",
-      },
-
-      {
-        title: "Video Editing Job",
-        description:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id imperdiet magna, a finibus magna.",
-      },
-      {
-        title: "Graphic Design Job",
-        description:
-          "Cras placerat arcu nunc. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.",
-      },
-      {
-        title: "Web Development Job",
-        description:
-          "Integer at tempor lectus, ut laoreet neque. Duis ut accumsan libero, a consectetur velit.",
-      },
-    ];
-
-    // Update the state with fetched job listings
-    setJobListings(fetchedJobs);
+    fetchAccountId();
   }, []);
+
+  useEffect(() => {
+    if (accountId) {
+      fetchJobsByClient(accountId);
+    }
+  }, [accountId]);
+
+  const fetchJobsByClient = async (accountId) => {
+    setLoading(true);
+    try {
+      console.log("Account ID:", accountId);
+      const { data: userAccountData, error: userAccountError } = await supabase
+        .from("user_account")
+        .select("userid")
+        .eq("accountid", accountId)
+        .single();
+      if (userAccountError || !userAccountData) {
+        console.error(
+          "Error fetching user account:",
+          userAccountError?.message || "No user found"
+        );
+        setJobListings([]);
+        return;
+      }
+
+      const userId = userAccountData.userid;
+      console.log("User ID:", userId);
+
+      const { data: clientData, error: clientError } = await supabase
+        .from("client_table")
+        .select("clientid")
+        .eq("userid", userId)
+        .single();
+      if (clientError || !clientData) {
+        console.error(
+          "Error fetching client data:",
+          clientError?.message || "No client found"
+        );
+        setJobListings([]);
+        return;
+      }
+
+      const clientId = clientData.clientid;
+      console.log("Client ID:", clientId);
+
+      const { data: jobListingsData, error: jobListingsError } = await supabase
+        .from("job_listing")
+        .select("jobtitle, jobdescription, jobid")
+        .eq("clientid", clientId);
+
+      if (jobListingsError) {
+        console.error("Error fetching job listings:", jobListingsError.message);
+        setJobListings([]);
+      } else {
+        setJobListings(jobListingsData || []);
+      }
+    } catch (err) {
+      console.error("Error fetching jobs:", err.message);
+      setJobListings([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -72,7 +95,7 @@ const MyListings = () => {
         <Button title="My Listings" type="dark" size="small" />
         <Button title="Applications" type="light" size="small" />
       </SafeAreaView>
-      <View style={{ marginLeft: 20 }}>
+      <View style={{ marginLeft: 20, marginBottom: 10 }}>
         <Button
           title="Create +"
           type="light"
@@ -80,23 +103,30 @@ const MyListings = () => {
           onPress={() => router.push("/screens/postjoblisting")}
         />
       </View>
-      {/* Make the job listings scrollable */}
-      <ScrollView contentContainerStyle={styles.jobList}>
-        {jobListings.length > 0 ? (
-          jobListings.map((job, index) => (
-            <JobCard
-              key={index}
-              title={job.title}
-              description={job.description}
-              onPress={() => {
-                router.push("/(tabs)/screens/managejoblisting");
-              }}
-            />
-          ))
-        ) : (
-          <Text>No job listings available.</Text>
-        )}
-      </ScrollView>
+
+      {loading ? (
+        <Text style={styles.loadingText}>Loading job listings...</Text>
+      ) : (
+        <ScrollView contentContainerStyle={styles.jobList}>
+          {jobListings.length > 0 ? (
+            jobListings.map((job) => (
+              <JobCard
+                key={job.jobid}
+                title={job.jobtitle}
+                description={job.jobdescription}
+                onPress={() => {
+                  router.push({
+                    pathname: "/(tabs)/screens/managejoblisting",
+                    params: { jobId: job.jobid },
+                  });
+                }}
+              />
+            ))
+          ) : (
+            <Text style={styles.noJobsText}>No job listings available.</Text>
+          )}
+        </ScrollView>
+      )}
     </>
   );
 };
@@ -110,8 +140,7 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   jobList: {
-    padding: 50,
-    paddingTop: 10,
-    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingBottom: 30,
   },
 });
