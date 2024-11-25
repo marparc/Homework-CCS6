@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -16,7 +16,9 @@ import PortfolioCard from "@/components/ui/portfoliocard";
 import Rating from "@/components/ui/ratings";
 import { useRouter } from "expo-router";
 import DeleteService from "../../screens/deleteservice";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { supabase } from "../../../../lib/supabase";
 // Sample user data
 const user = {
   firstName: "John",
@@ -88,11 +90,155 @@ const ratings = [
 ];
 
 const MyClientProfile = () => {
-  const firstLetter = user.firstName.charAt(0).toUpperCase();
+  const firstLetter = userData?.firstname
+    ? userData.firstname.charAt(0).toUpperCase()
+    : "";
+
   const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState(null); // Add state for selected portfolio
   const [activeTab, setActiveTab] = useState("services"); // Track which tab is active
   const router = useRouter();
+
+  const [accountId, setAccountId] = useState(null);
+  const [password, setPassword] = useState(null);
+
+  const [ratings, setRatings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [clientInfo, setClientInfo] = useState(null);
+  const [userData, setUserData] = useState(null);
+
+  // to get account id
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const storedAccountId = await AsyncStorage.getItem("accountId");
+        const storedPassword = await AsyncStorage.getItem("password");
+        setAccountId(storedAccountId);
+        setPassword(storedPassword);
+      } catch (err) {
+        console.error("Failed to retrieve data from AsyncStorage:", err);
+      }
+    };
+
+    getData();
+  }, []);
+
+  //to get client personal details
+  useEffect(() => {
+    const fetchAccountData = async () => {
+      try {
+        const accountIdInt = parseInt(accountId, 10);
+
+        // Fetch client data from client_table
+        const { data: clientData, error: clientError } = await supabase
+          .from("client_table")
+          .select("client_organization, clientid, userid")
+          .eq("userid", accountIdInt)
+          .single();
+
+        if (clientData) {
+          setClientInfo(clientData); // Set client data
+
+          // Fetch reviews from client_evaluation table based on clientid
+          const { data: evaluationData, error: evaluationError } =
+            await supabase
+              .from("client_evaluation")
+              .select("clientevalid, rating, usercomment, studentid, clientid")
+              .eq("clientid", clientData.clientid);
+
+          if (evaluationError) {
+            console.error(
+              "Error fetching evaluations:",
+              evaluationError.message
+            );
+          } else {
+            // Map the evaluation data and ensure unique keys
+            const transformedRatings = evaluationData.map((evaluation) => ({
+              id: `${evaluation.clientevalid}_${evaluation.studentid}`, // Ensure unique key
+              stars: evaluation.rating,
+              comment: evaluation.usercomment,
+            }));
+
+            setRatings(transformedRatings); // Set the ratings data
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAccountData();
+  }, [accountId]);
+
+  //for reviews
+  useEffect(() => {
+    const fetchAccountData = async () => {
+      setLoading(true);
+
+      try {
+        const accountIdInt = parseInt(accountId, 10);
+
+        // Fetch client data from client_table
+        const { data: clientData, error: clientError } = await supabase
+          .from("client_table")
+          .select("client_organization, clientid, userid")
+          .eq("userid", accountIdInt)
+          .single();
+
+        if (clientData) {
+          setClientInfo(clientData); // Set client data
+
+          // Fetch user data from user_table using clientData.userid
+          const { data: userData, error: userError } = await supabase
+            .from("user_table")
+            .select("firstname, lastname, birthdate, usertype")
+            .eq("userid", clientData.userid)
+            .single();
+
+          if (userError) {
+            console.error("Error fetching user data:", userError.message);
+          } else {
+            setUserData(userData); // Set user data
+          }
+
+          // Fetch reviews from client_evaluation table based on clientid
+          const { data: evaluationData, error: evaluationError } =
+            await supabase
+              .from("client_evaluation")
+              .select("clientevalid, rating, usercomment, studentid, clientid")
+              .eq("clientid", clientData.clientid);
+
+          if (evaluationError) {
+            console.error(
+              "Error fetching evaluations:",
+              evaluationError.message
+            );
+          } else {
+            // Map the evaluation data to match your desired format
+            const transformedRatings = evaluationData.map((evaluation) => {
+              const id = evaluation.clientevalid; // Access clientevalid from each evaluation
+              //console.log("Generated ID:", id); // Log the id
+              return {
+                id,
+                stars: evaluation.rating,
+                comment: evaluation.usercomment,
+              };
+            });
+
+            //console.log("Final Transformed Ratings:", transformedRatings); // Log the entire array for verification
+            setRatings(transformedRatings); // Set the ratings data
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error.message);
+      }
+    };
+
+    fetchAccountData();
+  }, [accountId]);
+
   // Handle service selection
   const handleServicePress = (serviceId) => {
     setSelectedServiceId((prev) => (prev === serviceId ? null : serviceId));
@@ -140,12 +286,18 @@ const MyClientProfile = () => {
           <Text style={styles.circleText}>{firstLetter}</Text>
         </View>
         <View style={styles.infoContainer}>
-          <Text
-            style={styles.name}
-          >{`${user.firstName} ${user.lastName}`}</Text>
-          <Text style={styles.type}>{user.type}</Text>
-          <Text style={styles.id}>Account ID: {user.id}</Text>
-          <Text style={styles.bio}>{user.bio}</Text>
+          <Text style={styles.name}>
+            {userData
+              ? `${userData.firstname} ${userData.lastname}`
+              : "Name not available"}
+          </Text>
+          <Text style={styles.type}>
+            {userData?.usertype || "User type not available"}
+          </Text>
+          <Text style={styles.id}>
+            Account ID: {clientInfo?.clientid || "Not Available"}
+          </Text>
+          <Text style={styles.bio}>{userData?.bio || ""}</Text>
         </View>
       </View>
 
@@ -154,22 +306,30 @@ const MyClientProfile = () => {
       </View>
       <View style={styles.aboutContainer}>
         <Text style={styles.detailsHeader}>About Me:</Text>
-        <Text style={styles.details}>Birthdate: </Text>
+        <Text style={styles.details}>
+          Birthdate: {userData?.birthdate ? userData.birthdate : "N/A"}
+        </Text>
+
         <Text style={styles.detailsHeader}>Company/Organization:</Text>
-        <Text style={styles.details}>First Year College Student</Text>
+        <Text style={styles.details}>
+          {clientInfo?.client_organization || "None"}
+        </Text>
       </View>
 
       {/* Reviews Section */}
       <View style={styles.reviewsContainer}>
         <Text style={styles.reviewsHeader}>Reviews</Text>
-        {ratings.map((rating) => (
-          <Rating
-            key={rating.id}
-            stars={rating.stars.toString()}
-            comment={rating.comment}
-            rateFrom={rating.rateFrom}
-          />
-        ))}
+        {ratings.length > 0 ? (
+          ratings.map((rating) => (
+            <Rating
+              key={rating.id} // Ensure unique key
+              stars={rating.stars.toString()} // Ensure stars is a string
+              comment={rating.comment}
+            />
+          ))
+        ) : (
+          <Text style={styles.noReviewsText}>No reviews available</Text>
+        )}
       </View>
     </ScrollView>
   );
