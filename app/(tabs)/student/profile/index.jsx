@@ -18,6 +18,7 @@ import Rating from "@/components/ui/ratings";
 import { useRouter } from "expo-router";
 import DeleteService from "../../screens/deleteservice";
 import { supabase } from "../../../../lib/supabase";
+import { Link } from "expo-router";
 
 const ProfileHeader = () => {
   const [firstLetter, setFirstLetter] = useState("");
@@ -30,6 +31,8 @@ const ProfileHeader = () => {
   const router = useRouter();
   const [accountId, setAccountId] = useState(null);
   const [password, setPassword] = useState(null); //later to use
+
+  const { push } = useRouter();
 
   const [userData, setUserData] = useState({
     firstname: "",
@@ -46,6 +49,7 @@ const ProfileHeader = () => {
     bio: "",
   });
 
+  // to get account id
   useEffect(() => {
     const getData = async () => {
       try {
@@ -53,8 +57,8 @@ const ProfileHeader = () => {
         const storedPassword = await AsyncStorage.getItem("password");
         setAccountId(storedAccountId);
         setPassword(storedPassword);
-        console.log("Stored accountId:", storedAccountId); // Check the value
-        console.log("Stored password:", storedPassword); // Check the password value
+        //console.log("Stored accountId:", storedAccountId); // Check the value
+        //console.log("Stored password:", storedPassword); // Check the password value
       } catch (err) {
         console.error("Failed to retrieve data from AsyncStorage:", err);
       }
@@ -63,38 +67,7 @@ const ProfileHeader = () => {
     getData();
   }, []);
 
-  useEffect(() => {
-    // Check if accountId is valid before making the database call
-    if (!accountId) {
-      console.error("Invalid accountId");
-      return;
-    }
-    const fetchEvaluationData = async () => {
-      const { data: evaluationData, error: evaluationError } = await supabase
-        .from("stud_evaluation")
-        .select("rating, usercomment, clientid, studentid")
-        .eq("studentid", accountId);
-
-      if (evaluationError) {
-        console.error("Error fetching evaluations:", evaluationError);
-        return;
-      }
-      console.log("Fetched Evaluation Data:", evaluationData);
-
-      // Transform the fetched data into the format needed for rendering
-      const transformedRatings = evaluationData.map((evaluation) => ({
-        id: evaluation.clientid, // Assuming clientid is unique
-        stars: evaluation.rating,
-        comment: evaluation.usercomment,
-        rateFrom: evaluation.clientid,
-      }));
-
-      setRatings(transformedRatings);
-    };
-
-    fetchEvaluationData();
-  }, [accountId]);
-
+  //to get student details
   useEffect(() => {
     const fetchAccountData = async () => {
       const { data: studentData, error: studentError } = await supabase
@@ -155,59 +128,64 @@ const ProfileHeader = () => {
     fetchAccountData();
   }, [accountId]);
 
+  //for reviews
   useEffect(() => {
-    // Check if accountId is valid before making the database call
-    if (!accountId) {
-      console.error("Invalid accountId");
-      return;
-    }
+    const fetchEvaluationData = async () => {
+      const { data: evaluationData, error: evaluationError } = await supabase
+        .from("stud_evaluation")
+        .select("rating, usercomment, clientid, studentid")
+        .eq("studentid", accountId);
 
+      console.log("Fetched Evaluation Data:", evaluationData);
+
+      const transformedRatings = evaluationData.map((evaluation) => ({
+        id: evaluation.clientid, // Assuming clientid is unique
+        stars: evaluation.rating,
+        comment: evaluation.usercomment,
+        rateFrom: evaluation.clientid,
+      }));
+
+      setRatings(transformedRatings);
+    };
+
+    fetchEvaluationData();
+  }, [accountId]);
+
+  //for services
+  useEffect(() => {
     const fetchServicesData = async () => {
-      try {
-        const { data: servicesData, error: servicesError } = await supabase
-          .from("services")
-          .select("serviceid, servicedesc, studentid") // Adjust columns as per your table structure
-          .eq("studentid", accountId);
+      const { data: servicesData, error: servicesError } = await supabase
+        .from("services")
+        .select("serviceid, servicedesc, studentid") // Adjust columns as per your table structure
+        .eq("studentid", accountId);
 
-        if (servicesError) {
-          console.error("Error fetching services:", servicesError);
-          return;
-        }
-
-        // Store the fetched services in the state
-        setServices(servicesData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      if (servicesError) {
+        //console.error("Error fetching services:", servicesError);
+        return;
       }
+      console.log("Fetched services data:", servicesData); // Log the fetched data
+      // Store the fetched services in the state
+      setServices(servicesData);
     };
 
     fetchServicesData();
   }, [accountId]);
 
+  //for portfolio
   useEffect(() => {
-    // Check if accountId is valid before making the database call
-    if (!accountId) {
-      console.error("Invalid accountId");
-      return;
-    }
-
     const fetchPortfolioData = async () => {
-      try {
-        const { data: portfolioData, error: portfolioError } = await supabase
-          .from("portfolio")
-          .select("portfolioname, portfoliodesc, link, studentid")
-          .eq("studentid", accountId);
+      const { data: portfolioData, error: portfolioError } = await supabase
+        .from("portfolio")
+        .select("portfolioid, portfolioname, portfoliodesc, link, studentid")
+        .eq("studentid", accountId);
 
-        if (portfolioError) {
-          console.error("Error fetching portfolio:", portfolioError);
-          return;
-        }
-
-        // Store the fetched portfolio data in the state
-        setPortfolio(portfolioData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      if (portfolioError) {
+        //console.error("Error fetching portfolio:", portfolioError);
+        return;
       }
+
+      // Store the fetched portfolio data in the state
+      setPortfolio(portfolioData);
     };
 
     fetchPortfolioData();
@@ -251,6 +229,17 @@ const ProfileHeader = () => {
     // Reset selection when switching tabs
     setSelectedServiceId(null);
     setSelectedPortfolioId(null);
+  };
+
+  const handlePress = () => {
+    console.log("THIS IS THE ID: ", selectedPortfolioId); // Log before navigation
+    console.log("Navigating with query: ", {
+      portfolioId: selectedPortfolioId,
+    });
+    push({
+      pathname: "./editportfolio",
+      query: { portfolioId: selectedPortfolioId }, // Pass the query parameter
+    });
   };
 
   return (
@@ -423,20 +412,14 @@ const ProfileHeader = () => {
 
             {/* Edit and Delete Buttons */}
             <View style={styles.rightIcons}>
-              <Pressable
-                onPress={() => {
-                  if (selectedPortfolioId) {
-                    router.push("/screens/editportfolio");
-                  }
-                }}
-                disabled={!selectedPortfolioId}
-              >
+              <Pressable onPress={handlePress} disabled={!selectedPortfolioId}>
                 <Ionicons
                   name="create-outline"
                   size={30}
-                  color={selectedPortfolioId ? "black" : "#aaa"} // Enable only if a portfolio is selected
+                  color={selectedPortfolioId ? "black" : "#aaa"} // Change color based on selection
                 />
               </Pressable>
+
               <Pressable
                 onPress={() => {
                   if (selectedPortfolioId) {
@@ -455,30 +438,34 @@ const ProfileHeader = () => {
           </View>
 
           <TouchableWithoutFeedback onPress={handleOutsidePress}>
-            {/* Portfoli Cards */}
+            {/* Portfolio Cards */}
             <View style={styles.container}>
-              {portfolio.map((portfolioItem) => (
-                <Pressable
-                  key={portfolioItem.portfolioid} // Ensure each portfolio has a unique key
-                  onPress={() =>
-                    handlePortfolioPress(portfolioItem.portfolioid)
-                  }
-                  onLongPress={() =>
-                    handlePortfolioLongPress(portfolioItem.portfolioid)
-                  }
-                  style={[
-                    styles.portfolioCard,
-                    isPortfolioSelected(portfolioItem.portfolioid) &&
-                      styles.selectedCard,
-                  ]}
-                >
-                  <PortfolioCard
-                    title={portfolioItem.portfolioname}
-                    description={portfolioItem.portfoliodesc}
-                    link={portfolioItem.link}
-                  />
-                </Pressable>
-              ))}
+              {portfolio.length > 0 ? (
+                portfolio.map((portfolioItem) => (
+                  <Pressable
+                    key={portfolioItem.portfolioid} // Ensure each portfolio has a unique key
+                    onPress={() =>
+                      handlePortfolioPress(portfolioItem.portfolioid)
+                    }
+                    onLongPress={() =>
+                      handlePortfolioLongPress(portfolioItem.portfolioid)
+                    }
+                    style={[
+                      styles.portfolioCard,
+                      isPortfolioSelected(portfolioItem.portfolioid) &&
+                        styles.selectedCard,
+                    ]}
+                  >
+                    <PortfolioCard
+                      title={portfolioItem.portfolioname}
+                      description={portfolioItem.portfoliodesc}
+                      link={portfolioItem.link}
+                    />
+                  </Pressable>
+                ))
+              ) : (
+                <Text>No portfolios available for this account.</Text>
+              )}
             </View>
           </TouchableWithoutFeedback>
         </>

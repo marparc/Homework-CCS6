@@ -1,5 +1,5 @@
 import { View, StyleSheet } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import InputField from "@/components/ui/inputfield";
 import Button from "@/components/ui/buttons";
 import { useRouter } from "expo-router";
@@ -7,7 +7,18 @@ import PopUp from "@/components/ui/popup";
 
 const EditPorfolio = () => {
   const [isPopUpVisible, setPopUpVisible] = useState(false); // State to control the visibility of the PopUp
-  const router = useRouter();
+  //const router = useRouter();
+  const { query } = useRouter();
+
+  // Accessing portfolioId from the query
+  const portfolioId = query?.portfolioId;
+
+  useEffect(() => {
+    // Log the query parameters and portfolioId
+    console.log("EDIT PORTFOLIO");
+    console.log("Full Query:", query);
+    console.log("Portfolio ID:", portfolioId);
+  }, [query]); // Re-run when the query changes
 
   const handleEditPorfolio = () => {
     // Here, you would usually add the logic for editing the Porfolio

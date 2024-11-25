@@ -11,7 +11,7 @@ const EditBio = () => {
   const [isPopUpVisible, setPopUpVisible] = useState(false); // State to control the visibility of the PopUp
 
   const [accountId, setAccountId] = useState(null);
-
+  const [password, setPassword] = useState(null); //later to use
   useEffect(() => {
     const getData = async () => {
       try {
@@ -27,21 +27,20 @@ const EditBio = () => {
     getData();
   }, []);
 
-  const handleEditBio= async () => {
+  const handleEditBio = async () => {
     const { biodata, error } = await supabase
-      .from('user_account')
+      .from("user_account")
       .update({ bio: bio })
-      .eq('accountid', accountId)
-    
-      if(biodata){
-        console.log(biodata)
-      }
-      else{
-        console.log(error)
-      }
+      .eq("accountid", accountId);
+
+    if (biodata) {
+      console.log(biodata);
+    } else {
+      console.log(error);
+    }
     setPopUpVisible(true);
   };
-  const [bio, setBio] = useState("Enter New Bio");
+  const [bio, setBio] = useState("");
 
   const router = useRouter();
   return (
