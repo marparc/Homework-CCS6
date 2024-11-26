@@ -136,7 +136,7 @@ const ProfileHeader = () => {
         .select("rating, usercomment, clientid, studentid")
         .eq("studentid", accountId);
 
-      console.log("Fetched Evaluation Data:", evaluationData);
+      //console.log("Fetched Evaluation Data:", evaluationData);
 
       const transformedRatings = evaluationData.map((evaluation) => ({
         id: evaluation.clientid, // Assuming clientid is unique
@@ -163,7 +163,7 @@ const ProfileHeader = () => {
         //console.error("Error fetching services:", servicesError);
         return;
       }
-      console.log("Fetched services data:", servicesData); // Log the fetched data
+      //console.log("Fetched services data:", servicesData); // Log the fetched data
       // Store the fetched services in the state
       setServices(servicesData);
     };
@@ -194,6 +194,8 @@ const ProfileHeader = () => {
   // Handle service selection
   const handleServicePress = (serviceId) => {
     setSelectedServiceId((prev) => (prev === serviceId ? null : serviceId));
+    console.log("HELLO");
+    console.log("SELECTED SERVICE ID: ", serviceId);
   };
 
   const handleServiceLongPress = (serviceId) => {
@@ -232,14 +234,14 @@ const ProfileHeader = () => {
   };
 
   const handlePress = () => {
-    console.log("THIS IS THE ID: ", selectedPortfolioId); // Log before navigation
-    console.log("Navigating with query: ", {
-      portfolioId: selectedPortfolioId,
-    });
-    push({
-      pathname: "./editportfolio",
-      query: { portfolioId: selectedPortfolioId }, // Pass the query parameter
-    });
+    //console.log("THIS IS THE ID: ", selectedPortfolioId); // Log before navigation
+    //console.log("Navigating with query: ", {
+    //  portfolioId: selectedPortfolioId,
+    //});
+    //push({
+    //  pathname: "./editportfolio",
+    ///  query: { portfolioId: selectedPortfolioId }, // Pass the query parameter
+    //});
   };
 
   return (
@@ -329,9 +331,13 @@ const ProfileHeader = () => {
             <View style={styles.rightIcons}>
               <Pressable
                 onPress={() => {
-                  if (selectedServiceId) {
-                    router.push(`/screens/editservice`);
-                  }
+                  //if (selectedServiceId) {
+                  //  router.push(`/screens/editservice`);
+                  //}
+                  console.log("ROUTER:", selectedServiceId);
+                  router.push(
+                    `/screens/editservice?selectedservice=${selectedServiceId}`
+                  );
                 }}
                 disabled={!selectedServiceId}
               >

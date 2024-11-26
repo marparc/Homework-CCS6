@@ -1,28 +1,58 @@
 import { View, StyleSheet } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import InputField from "@/components/ui/inputfield";
 import Button from "@/components/ui/buttons";
-import { useRouter } from "expo-router";
 import PopUp from "@/components/ui/popup";
+import { supabase } from "../../../lib/supabase";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 const EditService = () => {
-  const [isPopUpVisible, setPopUpVisible] = useState(false); // State to control the visibility of the PopUp
+  const [isPopUpVisible, setPopUpVisible] = useState(false);
+  const [serviceTitle, setServiceTitle] = useState("");
+  const [serviceDesc, setServiceDesc] = useState("");
+  const [serviceDetails, setServiceDetails] = useState(null);
   const router = useRouter();
+  const { selectedservice } = useLocalSearchParams();
+
+  const fetchServiceDetails = async (selectedservice) => {
+    const { data, error } = await supabase
+      .from("services")
+      .select("*") // Fetch all columns from the services table
+      .eq("serviceid", selectedservice) // Filter by selected service ID
+      .single();
+
+    if (error) {
+      console.error("Error fetching service details:", error);
+    } else {
+      setServiceDetails(data);
+      setServiceTitle(data?.serviceTitle || ""); // Set service title to state
+      setServiceDesc(data?.servicedesc || ""); // Set service description to state
+      //console.log("Service details fetched successfully:", data);
+    }
+  };
+
+  const updateServiceDetails = async (serviceId, serviceDesc, serviceTitle) => {
+    const { data, error } = await supabase
+      .from("services")
+      .update({ servicedesc: serviceDesc, serviceTitle: serviceTitle })
+      .eq("serviceid", selectedservice);
+
+    if (error) {
+      console.error("Error updating service:", error);
+    } else {
+      console.log("Service updated successfully:", data);
+      setPopUpVisible(true);
+    }
+  };
+
+  useEffect(() => {
+    fetchServiceDetails(selectedservice); // Fetch service details on mount
+  }, [selectedservice]);
 
   const handleEditService = () => {
-    // Here, you would usually add the logic for editing the service
-    // After editing the service, show the PopUp
+    updateServiceDetails(selectedservice, serviceDesc, serviceTitle);
     setPopUpVisible(true);
   };
-
-  const service = {
-    id: 1,
-    title: "Graphic Design",
-    description: "Creating logos, banners, and flyers.",
-  };
-
-  const [serviceName, setServiceName] = useState(service.title);
-  const [serviceDesc, setServiceDesc] = useState(service.description);
 
   return (
     <>
@@ -31,8 +61,8 @@ const EditService = () => {
           <InputField
             title="Service Title"
             size="medium"
-            value={serviceName}
-            onChangeText={setServiceName}
+            value={serviceTitle}
+            onChangeText={setServiceTitle}
           />
           <InputField
             title="Description"
@@ -46,7 +76,7 @@ const EditService = () => {
             title="Save Changes"
             type="dark"
             size="small"
-            onPress={handleEditService} // Call the handleEditService function on button press
+            onPress={handleEditService}
           />
         </View>
       </View>
@@ -55,7 +85,7 @@ const EditService = () => {
         <PopUp
           icon="checkmark-circle-outline"
           text="Service Edited Successfully!"
-          route="/student/profile" // Navigate to this route when the modal is closed
+          route="/student/profile"
         />
       )}
     </>
