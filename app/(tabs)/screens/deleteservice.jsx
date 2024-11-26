@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "@/components/ui/buttons";
 import JobCard from "@/components/ui/jobcard";
 import PopUp from "@/components/ui/popup";
@@ -10,11 +10,29 @@ const DeleteService = ({ id }) => {
   const router = useRouter();
   const [isPopUpVisible, setPopUpVisible] = useState(false); // State to control the visibility of the PopUp
   const { selectedservice } = useLocalSearchParams();
+  const [serviceData, setServiceData] = useState(null);
 
   console.log("DELETE RECEIVE ROUTER: ", selectedservice);
 
   const delService = () => {
     setPopUpVisible(true);
+  };
+
+  const fetchAllServices = async (selectedservice) => {
+    const { data: sdata, error } = await supabase
+      .from("services")
+      .select("*")
+      .eq("serviceid", selectedservice);
+
+    if (error) {
+      console.error("Error fetching services:", error);
+    } else {
+      console.log("HERERERE");
+      console.log("Services fetched successfully:", sdata);
+      setServiceData(sdata); // Store the fetched data in state
+    }
+
+    setLoading(false); // Set loading to false once data is fetched
   };
 
   const deleteService = async (selectedservice) => {
@@ -30,16 +48,26 @@ const DeleteService = ({ id }) => {
       router.push("/(tabs)/student/profile");
     }
   };
+
   const handleCancel = () => {
     router.push("/(tabs)/student/profile"); // Navigate back to profile
   };
+  useEffect(() => {
+    if (serviceData) {
+      console.log("Service Title:", serviceData[0]?.serviceTitle);
+    }
+  }, [serviceData]);
+  useEffect(() => {
+    fetchAllServices(selectedservice);
+  }, [selectedservice]);
+
   return (
     <>
       <View style={styles.centeredContainer}>
         <View style={styles.cardContainer}>
           <JobCard
-            title="Video Editing Job"
-            description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id imperdiet magna, a finibus magna. Sed sodales et nisl at ultrices. Sed nec ante ornare, tempor quam in, eleifend velit. Duis ut accumsan libero, a consectetur velit. Integer at tempor lectus, ut laoreet neque. "
+            title={serviceData?.[0]?.serviceTitle || ""}
+            description={serviceData?.[0]?.servicedesc || ""}
           />
 
           <Text style={styles.text}>
