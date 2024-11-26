@@ -84,6 +84,7 @@ const AddService = () => {
           servicedesc: servicedesc,
           studentid: accountId,
           price: 0,
+          serviceTitle: serviceName,
         },
       ]);
 
@@ -94,6 +95,7 @@ const AddService = () => {
         setPopUpVisible(true);
         setServiceName("");
         setServiceDesc("");
+        router.push("/(tabs)/student/profile");
       }
     } catch (err) {
       console.error("Error inserting service:", err);

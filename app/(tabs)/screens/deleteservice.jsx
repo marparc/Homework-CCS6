@@ -1,18 +1,38 @@
 import { View, Text, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import Button from "@/components/ui/buttons";
-import { useRouter } from "expo-router";
 import JobCard from "@/components/ui/jobcard";
 import PopUp from "@/components/ui/popup";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { supabase } from "../../../lib/supabase";
 
 const DeleteService = ({ id }) => {
   const router = useRouter();
   const [isPopUpVisible, setPopUpVisible] = useState(false); // State to control the visibility of the PopUp
+  const { selectedservice } = useLocalSearchParams();
+
+  console.log("DELETE RECEIVE ROUTER: ", selectedservice);
 
   const delService = () => {
     setPopUpVisible(true);
   };
 
+  const deleteService = async (selectedservice) => {
+    const { data, error } = await supabase
+      .from("services")
+      .delete()
+      .eq("serviceid", selectedservice);
+
+    if (error) {
+      console.error("Error deleting service:", error);
+    } else {
+      console.log("Service deleted successfully:", data);
+      router.push("/(tabs)/student/profile");
+    }
+  };
+  const handleCancel = () => {
+    router.push("/(tabs)/student/profile"); // Navigate back to profile
+  };
   return (
     <>
       <View style={styles.centeredContainer}>
@@ -29,13 +49,13 @@ const DeleteService = ({ id }) => {
             title="Delete"
             type="dark"
             size="medium"
-            onPress={delService}
+            onPress={() => deleteService(selectedservice)} // Confirm deletion
           />
           <Button
             title="Cancel"
             type="light"
             size="medium"
-            onPress={() => router.push("/(tabs)/student/profile")}
+            onPress={handleCancel} // Go back to profile without deleting
           />
         </View>
       </View>

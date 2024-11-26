@@ -334,7 +334,7 @@ const ProfileHeader = () => {
                   //if (selectedServiceId) {
                   //  router.push(`/screens/editservice`);
                   //}
-                  console.log("ROUTER:", selectedServiceId);
+                  console.log("EDIT ROUTER:", selectedServiceId);
                   router.push(
                     `/screens/editservice?selectedservice=${selectedServiceId}`
                   );
@@ -349,9 +349,13 @@ const ProfileHeader = () => {
               </Pressable>
               <Pressable
                 onPress={() => {
-                  if (selectedServiceId) {
-                    router.push("/(tabs)/screens/deleteservice");
-                  }
+                  //if (selectedServiceId) {
+                  //  router.push("/(tabs)/screens/deleteservice");
+                  //}
+                  console.log("DELETE FROM ROUTER:", selectedServiceId);
+                  router.push(
+                    `/screens/deleteservice?selectedservice=${selectedServiceId}`
+                  );
                 }}
                 disabled={!selectedServiceId}
               >
