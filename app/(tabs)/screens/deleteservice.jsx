@@ -8,7 +8,7 @@ import { supabase } from "../../../lib/supabase";
 
 const DeleteService = ({ id }) => {
   const router = useRouter();
-  const [isPopUpVisible, setPopUpVisible] = useState(false); // State to control the visibility of the PopUp
+  const [isPopUpVisible, setPopUpVisible] = useState(false);
   const { selectedservice } = useLocalSearchParams();
   const [serviceData, setServiceData] = useState(null);
 
@@ -29,10 +29,10 @@ const DeleteService = ({ id }) => {
     } else {
       console.log("HERERERE");
       console.log("Services fetched successfully:", sdata);
-      setServiceData(sdata); // Store the fetched data in state
+      setServiceData(sdata);
     }
 
-    setLoading(false); // Set loading to false once data is fetched
+    setLoading(false);
   };
 
   const deleteService = async (selectedservice) => {
@@ -52,11 +52,7 @@ const DeleteService = ({ id }) => {
   const handleCancel = () => {
     router.push("/(tabs)/student/profile"); // Navigate back to profile
   };
-  useEffect(() => {
-    if (serviceData) {
-      console.log("Service Title:", serviceData[0]?.serviceTitle);
-    }
-  }, [serviceData]);
+
   useEffect(() => {
     fetchAllServices(selectedservice);
   }, [selectedservice]);

@@ -1,13 +1,17 @@
 import { View, Text, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import Button from "@/components/ui/buttons";
-import { useRouter } from "expo-router";
 import PortfolioCard from "@/components/ui/portfoliocard";
 import PopUp from "@/components/ui/popup";
+import { supabase } from "../../../lib/supabase";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 const DeletePortfolio = ({ id }) => {
   const router = useRouter();
   const [isPopUpVisible, setPopUpVisible] = useState(false); // State to control the visibility of the PopUp
+  const { selectedportfolio } = useLocalSearchParams();
+
+  console.log("DELETE PORTFOLIO RECEIVE ROUTER: ", selectedportfolio);
 
   const portfolio = {
     id: 1,

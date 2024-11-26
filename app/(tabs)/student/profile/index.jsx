@@ -194,8 +194,6 @@ const ProfileHeader = () => {
   // Handle service selection
   const handleServicePress = (serviceId) => {
     setSelectedServiceId((prev) => (prev === serviceId ? null : serviceId));
-    //console.log("HELLO");
-    //console.log("SELECTED SERVICE ID: ", serviceId);
   };
 
   const handleServiceLongPress = (serviceId) => {
@@ -349,9 +347,6 @@ const ProfileHeader = () => {
               </Pressable>
               <Pressable
                 onPress={() => {
-                  //if (selectedServiceId) {
-                  //  router.push("/(tabs)/screens/deleteservice");
-                  //}
                   console.log("DELETE FROM ROUTER:", selectedServiceId);
                   router.push(
                     `/screens/deleteservice?selectedservice=${selectedServiceId}`
@@ -405,7 +400,7 @@ const ProfileHeader = () => {
             {/* Add Button */}
             <Pressable
               onPress={() => {
-                // Only allow navigation when no service is selected
+                //Only allow navigation when no service is selected
                 if (!selectedPortfolioId) {
                   router.push("/screens/addportfolio");
                 }
@@ -432,9 +427,13 @@ const ProfileHeader = () => {
 
               <Pressable
                 onPress={() => {
-                  if (selectedPortfolioId) {
-                    router.push("/screens/deleteportfolio");
-                  }
+                  console.log(
+                    "DELETE PORTFOLIO FROM ROUTER:",
+                    selectedPortfolioId
+                  );
+                  router.push(
+                    `/screens/deleteportfolio?selectedportfolio=${selectedPortfolioId}`
+                  );
                 }}
                 disabled={!selectedPortfolioId}
               >
