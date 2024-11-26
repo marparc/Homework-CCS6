@@ -35,6 +35,7 @@ const MyClientProfile = () => {
   const [loading, setLoading] = useState(true);
   const [clientInfo, setClientInfo] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [bio, setBio] = useState('');
 
   // to get account id
   useEffect(() => {
@@ -52,13 +53,13 @@ const MyClientProfile = () => {
     getData();
   }, []);
 
-  //to get client personal details
   useEffect(() => {
     const fetchAccountData = async () => {
+      setLoading(true);
+
       try {
         const accountIdInt = parseInt(accountId, 10);
 
-        // Fetch client data from client_table
         const { data: clientData, error: clientError } = await supabase
           .from("client_table")
           .select("client_organization, clientid, userid")
@@ -66,9 +67,37 @@ const MyClientProfile = () => {
           .single();
 
         if (clientData) {
-          setClientInfo(clientData); // Set client data
+          setClientInfo(clientData); 
 
-          // Fetch reviews from client_evaluation table based on clientid
+         
+          const { data: userData, error: userError } = await supabase
+            .from("user_table")
+            .select("firstname, lastname, birthdate, usertype")
+            .eq("userid", clientData.userid)
+            .single();
+
+          if (userError) {
+            console.error("Error fetching user data:", userError.message);
+          } else {
+            setUserData(userData);
+            const firstLetter = userData.firstname.charAt(0).toUpperCase();
+            setFirstLetter(firstLetter);
+          }
+
+        
+          const { data: userAccountData, error: userAccountError } = await supabase
+            .from("user_account")
+            .select("bio")
+            .eq("userid", clientData.userid)
+            .single();
+
+          if (userAccountError) {
+            console.error("Error fetching bio:", userAccountError.message);
+          } else {
+            setBio(userAccountData?.bio || '');
+          }
+
+        
           const { data: evaluationData, error: evaluationError } =
             await supabase
               .from("client_evaluation")
@@ -81,14 +110,16 @@ const MyClientProfile = () => {
               evaluationError.message
             );
           } else {
-            // Map the evaluation data and ensure unique keys
-            const transformedRatings = evaluationData.map((evaluation) => ({
-              id: `${evaluation.clientevalid}_${evaluation.studentid}`, // Ensure unique key
-              stars: evaluation.rating,
-              comment: evaluation.usercomment,
-            }));
+           
+            const transformedRatings = evaluationData.map((evaluation) => {
+              return {
+                id: evaluation.clientevalid, 
+                stars: evaluation.rating,
+                comment: evaluation.usercomment,
+              };
+            });
 
-            setRatings(transformedRatings); // Set the ratings data
+            setRatings(transformedRatings);
           }
         }
       } catch (error) {
@@ -101,75 +132,6 @@ const MyClientProfile = () => {
     fetchAccountData();
   }, [accountId]);
 
-  //for reviews
-  useEffect(() => {
-    const fetchAccountData = async () => {
-      setLoading(true);
-
-      try {
-        const accountIdInt = parseInt(accountId, 10);
-
-        // Fetch client data from client_table
-        const { data: clientData, error: clientError } = await supabase
-          .from("client_table")
-          .select("client_organization, clientid, userid")
-          .eq("userid", accountIdInt)
-          .single();
-
-        if (clientData) {
-          setClientInfo(clientData); // Set client data
-
-          // Fetch user data from user_table using clientData.userid
-          const { data: userData, error: userError } = await supabase
-            .from("user_table")
-            .select("firstname, lastname, birthdate, usertype")
-            .eq("userid", clientData.userid)
-            .single();
-          //console.log(userData);
-          //const firstLetter = userData.firstname.charAt(0).toUpperCase();
-          const firstLetter = userData.firstname.charAt(0).toUpperCase();
-          setFirstLetter(firstLetter);
-          if (userError) {
-            console.error("Error fetching user data:", userError.message);
-          } else {
-            setUserData(userData); // Set user data
-          }
-
-          // Fetch reviews from client_evaluation table based on clientid
-          const { data: evaluationData, error: evaluationError } =
-            await supabase
-              .from("client_evaluation")
-              .select("clientevalid, rating, usercomment, studentid, clientid")
-              .eq("clientid", clientData.clientid);
-
-          if (evaluationError) {
-            console.error(
-              "Error fetching evaluations:",
-              evaluationError.message
-            );
-          } else {
-            // Map the evaluation data to match your desired format
-            const transformedRatings = evaluationData.map((evaluation) => {
-              const id = evaluation.clientevalid; // Access clientevalid from each evaluation
-              //console.log("Generated ID:", id); // Log the id
-              return {
-                id,
-                stars: evaluation.rating,
-                comment: evaluation.usercomment,
-              };
-            });
-
-            //console.log("Final Transformed Ratings:", transformedRatings); // Log the entire array for verification
-            setRatings(transformedRatings); // Set the ratings data
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error.message);
-      }
-    };
-
-    fetchAccountData();
-  }, [accountId]);
 
   // Handle service selection
   const handleServicePress = (serviceId) => {
@@ -227,9 +189,9 @@ const MyClientProfile = () => {
             {userData?.usertype || "User type not available"}
           </Text>
           <Text style={styles.id}>
-            Account ID: {clientInfo?.clientid || "Not Available"}
+            Account ID: {accountId|| "Not Available"}
           </Text>
-          <Text style={styles.bio}>{userData?.bio || ""}</Text>
+          <Text style={styles.bio}>{bio || ""}</Text>
         </View>
       </View>
 
