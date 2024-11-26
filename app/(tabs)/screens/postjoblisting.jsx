@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import PopUp from "@/components/ui/popup";
 import { supabase } from "@/lib/supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const PostJobListing = () => {
   const [title, setTitle] = useState("");
@@ -30,6 +31,63 @@ const PostJobListing = () => {
   const [btnLocationType, setBtnLocationType] = useState("light");
   const [btnLocationTitle, setBtnLocationTitle] = useState("Get My Location");
   const [isPopUpVisible, setPopUpVisible] = useState(false);
+  const [accountId, setAccountId] = useState(null);
+
+  useEffect(() => {
+    const fetchAccountId = async () => {
+      try {
+        const storedAccountId = await AsyncStorage.getItem("accountId");
+        setAccountId(storedAccountId);
+      } catch (err) {
+        console.error("Failed to retrieve account ID from AsyncStorage:", err);
+      }
+    };
+
+    fetchAccountId();
+  }, []);
+
+  const getClientIdByAccountId = async (accountId) => {
+    try {
+      const { data: userAccountData, error: userAccountError } = await supabase
+        .from("user_account")
+        .select("userid")
+        .eq("accountid", accountId) 
+        .single();
+  
+      if (userAccountError) {
+        throw new Error(`Error fetching userid: ${userAccountError.message}`);
+      }
+  
+      if (!userAccountData) {
+        throw new Error(`No user found with accountId: ${accountId}`);
+      }
+  
+      const { userid } = userAccountData;
+      
+      const { data: clientData, error: clientError } = await supabase
+        .from("client_table")
+        .select("clientid")
+        .eq("userid", userid) // Matching the userid
+        .single(); // We expect only one client record for the given userid
+  
+      if (clientError) {
+        throw new Error(`Error fetching clientid: ${clientError.message}`);
+      }
+  
+      if (!clientData) {
+        throw new Error(`No client found for userid: ${userid}`);
+      }
+  
+      const { clientid } = clientData;
+  
+      // Return the clientid
+      return clientid;
+  
+    } catch (error) {
+      console.error(error.message);
+      throw error; // Optionally rethrow or handle the error as needed
+    }
+  };
 
   function formatDateToYYYYMMDD(date) {
     const selectedDate = new Date(date);
@@ -97,9 +155,9 @@ const PostJobListing = () => {
       if (error) {
         console.error("Error fetching latest jobid:", error.message);
       }
-
+      const clientid = await getClientIdByAccountId(accountId);
       const latestId = data && data.length > 0 ? data[0].jobid + 1 : 1;
-
+      /*
       console.log("Inserting job with the following values:");
       console.log({
         jobid: latestId,
@@ -113,7 +171,7 @@ const PostJobListing = () => {
         dateposted: formattedCurrentDate,
         jobstatus: "Open",
         clientid: 3,
-      });
+      });*/
 
       // Insert new job listing
       const { data: insertData, error: insertError } = await supabase
@@ -130,7 +188,7 @@ const PostJobListing = () => {
             duedate: formattedDeadline,
             dateposted: formattedCurrentDate,
             jobstatus: "Open",
-            clientid: 3,
+            clientid: clientid,
           },
         ]);
 
