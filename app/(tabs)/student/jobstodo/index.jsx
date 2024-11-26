@@ -5,7 +5,7 @@ import JobCard from "@/components/ui/jobcard";
 import { useRouter } from "expo-router";
 import { supabase } from "../../../../lib/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+//import ToDoDetails from "../../screens/todo"
 const JobsToDo = () => {
   const [isToDoActive, setIsToDoActive] = useState(true);
   const router = useRouter();
@@ -57,7 +57,7 @@ const JobsToDo = () => {
         job.application.some((app) => app.studentid === inputid)
       );
 
-      console.log("Filtered Jobs:", filteredJobs);
+      //console.log("Filtered Jobs:", filteredJobs);
       setMyJobs(filteredJobs);
     } catch (err) {
       console.error("Error fetching jobs:", err.message);
@@ -83,12 +83,14 @@ const JobsToDo = () => {
     setIsToDoActive(false);
   };
 
-  const JobListingDetails = (jobtitle) => {
-    console.log("Navigating with jobtitle:", jobtitle); // Log the jobtitle
-    router.push({
-      pathname: "/screens/todo", // Ensure the correct path
-      state: { jobtitle }, // Pass jobtitle in the state object
-    });
+  const JobListingDetails = (jobid) => {
+    console.log("Navigating with jobtitle:", jobid); // Log the jobtitle
+    //router.push({
+    //  pathname: "/screens/todo", // Ensure the correct path
+    //  state: { jobtitle }, // Pass jobtitle in the state object
+    //});
+
+    router.push(`/screens/todo?selectedjobid=${jobid}`);
   };
 
   return (
@@ -113,12 +115,12 @@ const JobsToDo = () => {
         {myJobs.length > 0 ? (
           myJobs.map((job, index) => (
             <JobCard
-              key={index}
+              key={job.jobid}
               title={job.jobtitle} // Access job title from the job object
               description={job.jobdescription} // Access job description from the job object
               onPress={() => {
                 // Navigate to JobListingDetails screen and pass the job title as a parameter
-                JobListingDetails(job.jobtitle); // Pass job.title to navigate
+                JobListingDetails(job.jobid); // Pass job.title to navigate
               }}
             />
           ))

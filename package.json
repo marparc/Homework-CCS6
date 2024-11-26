@@ -22,6 +22,7 @@
     "@react-native-community/datetimepicker": "^8.2.0",
     "@react-native-community/geolocation": "^3.4.0",
     "@supabase/supabase-js": "^2.46.1",
+    "date-fns": "^4.1.0",
     "expo": "~52.0.7",
     "expo-blur": "~14.0.1",
     "expo-constants": "~17.0.3",
@@ -31,6 +32,7 @@
     "expo-location": "~18.0.2",
     "expo-navigation-bar": "~4.0.3",
     "expo-router": "^4.0.9",
+    "expo-secure-store": "~14.0.0",
     "expo-splash-screen": "^0.29.11",
     "expo-status-bar": "~2.0.0",
     "expo-symbols": "~0.2.0",
@@ -50,8 +52,7 @@
     "react-native-screens": "~4.1.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "^13.12.4",
-    "supabase": "^1.223.10",
-    "expo-secure-store": "~14.0.0"
+    "supabase": "^1.223.10"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
