@@ -35,7 +35,7 @@ const MyListings = () => {
   const fetchJobsByClient = async (accountId) => {
     setLoading(true);
     try {
-      console.log("Account ID:", accountId);
+      //console.log("Account ID:", accountId);
       const { data: userAccountData, error: userAccountError } = await supabase
         .from("user_account")
         .select("userid")
@@ -51,7 +51,7 @@ const MyListings = () => {
       }
 
       const userId = userAccountData.userid;
-      console.log("User ID:", userId);
+      //console.log("User ID:", userId);
 
       const { data: clientData, error: clientError } = await supabase
         .from("client_table")
@@ -68,7 +68,7 @@ const MyListings = () => {
       }
 
       const clientId = clientData.clientid;
-      console.log("Client ID:", clientId);
+      //console.log("Client ID:", clientId);
 
       const { data: jobListingsData, error: jobListingsError } = await supabase
         .from("job_listing")
@@ -115,10 +115,10 @@ const MyListings = () => {
                 title={job.jobtitle}
                 description={job.jobdescription}
                 onPress={() => {
-                  router.push({
-                    pathname: "/(tabs)/screens/managejoblisting",
-                    params: { jobId: job.jobid },
-                  });
+                  console.log("ROUTER:", job.jobid);
+                  router.push(
+                    `/screens/managejoblisting?selectedjoblisting=${job.jobid}`
+                  );
                 }}
               />
             ))
