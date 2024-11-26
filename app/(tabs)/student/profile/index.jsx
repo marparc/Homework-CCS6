@@ -156,7 +156,7 @@ const ProfileHeader = () => {
     const fetchServicesData = async () => {
       const { data: servicesData, error: servicesError } = await supabase
         .from("services")
-        .select("serviceid, servicedesc, studentid") // Adjust columns as per your table structure
+        .select("serviceid, servicedesc, studentid, serviceTitle") // Adjust columns as per your table structure
         .eq("studentid", accountId);
 
       if (servicesError) {
@@ -194,8 +194,8 @@ const ProfileHeader = () => {
   // Handle service selection
   const handleServicePress = (serviceId) => {
     setSelectedServiceId((prev) => (prev === serviceId ? null : serviceId));
-    console.log("HELLO");
-    console.log("SELECTED SERVICE ID: ", serviceId);
+    //console.log("HELLO");
+    //console.log("SELECTED SERVICE ID: ", serviceId);
   };
 
   const handleServiceLongPress = (serviceId) => {
@@ -382,7 +382,7 @@ const ProfileHeader = () => {
                     ]}
                   >
                     <ServiceCard
-                      title={service.servicedesc}
+                      title={service.serviceTitle}
                       description={service.servicedesc}
                     />
                   </Pressable>
