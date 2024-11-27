@@ -24,7 +24,7 @@ const RemoteLists = () => {
         if (error) {
           console.error("Error fetching jobs:", error.message);
         } else {
-          console.log("Fetched Jobs:", data); //data is the array where the fetched jobs are stored
+          //console.log("Fetched Jobs:", data); //data is the array where the fetched jobs are stored
           setJobData(data); //transfer data to another array
         }
       } catch (fetchError) {
@@ -70,7 +70,13 @@ const RemoteLists = () => {
               key={job.jobid} // Use unique ID for key
               title={job.jobtitle}
               description={job.jobdescription}
-              onPress={() => openJobListing(job)} // Pass a function reference
+              //onPress={() => openJobListing(job)}
+              onPress={() => {
+                console.log("VIEW JOB FROM ROUTER:", job.jobid);
+                router.push(
+                  `/screens/viewjoblisting?selectedJobListing=${job.jobid}`
+                );
+              }}
             />
           ))
         ) : (
