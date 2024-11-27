@@ -5,17 +5,18 @@ import Button from "@/components/ui/buttons";
 import ProfileCard from "@/components/ui/profilecard";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { supabase } from "../../../lib/supabase";
-import { format } from "date-fns"; // For formatting the date
+import { format } from "date-fns";
+import * as Location from "expo-location";
 
 const ToDoDetails = () => {
-  const { selectedjobid } = useLocalSearchParams(); // Get jobid from route params
+  const { selectedjobid } = useLocalSearchParams();
 
   const [jobData, setJobData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [locationName, setLocationName] = useState(null);
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
 
-  console.log("FROM THE ROUTER:", selectedjobid);
   const fetchJobDetails = async () => {
     try {
       //console.log("Fetching job details for jobid:", selectedjobid);
@@ -73,12 +74,48 @@ const ToDoDetails = () => {
     }
   };
 
-  // Automatically call fetchJobDetails when the component mounts or jobid changes
   useEffect(() => {
     if (selectedjobid) {
       fetchJobDetails();
     }
   }, [selectedjobid]);
+
+  const getJobLocationDetails = async () => {
+    try {
+      if (jobData?.job?.locationlat && jobData?.job?.locationlong) {
+        const latitude = jobData.job.locationlat;
+        const longitude = jobData.job.locationlong;
+
+        let geocode = await Location.reverseGeocodeAsync({
+          latitude,
+          longitude,
+        });
+
+        console.log("Geocode:", geocode);
+
+        let address = geocode[0];
+        let formattedAddress = address
+          ? `${address.city || "Unknown city"}, ${
+              address.country || "Unknown country"
+            }`
+          : "Address not available";
+
+        setLocation(formattedAddress);
+        console.log("Formatted Location:", formattedAddress);
+      } else {
+        setLocation("Location not available");
+      }
+    } catch (error) {
+      console.error("Error retrieving location or geocode:", error);
+      setErrorMsg("Failed to retrieve job location details");
+    }
+  };
+
+  useEffect(() => {
+    if (jobData) {
+      getJobLocationDetails();
+    }
+  }, [jobData]);
 
   return (
     <ScrollView contentContainerStyle={styles.contentContainer}>
@@ -91,25 +128,31 @@ const ToDoDetails = () => {
             jobData.job.dateposted
               ? format(new Date(jobData.job.dateposted), "MMMM dd, yyyy")
               : "Not available"
-          } // Safe access for date format
+          }
           status={jobData.job.jobstatus || "Not available"}
           client={
             jobData?.client
               ? jobData.client.client_organization
               : "Not available"
-          } // Safe access for client data
+          }
           location={
-            jobData.job.locationlat && jobData.job.locationlong
-              ? `${jobData.job.locationlat}, ${jobData.job.locationlong}`
-              : "Not available"
-          } // Safe access for location data
+            //yaw ra sa ni iremove
+            //let geocode = await Location.reverseGeocodeAsync({
+            //  latitude: currentLocation.coords.latitude,
+            //  longitude: currentLocation.coords.longitude,
+            //});
+            //jobData.job.locationlat && jobData.job.locationlong
+            //  ? `${jobData.job.locationlat}, ${jobData.job.locationlong}`
+            //  : "Not available"
+            location
+          }
           description={
             jobData.job.jobdescription || "No description available."
           }
-          pay={jobData.job.jobpay || "Not available"} // Safe access for pay
+          pay={jobData.job.jobpay || "Not available"}
         />
       ) : (
-        <Text>Loading job details...</Text> // Show loading text or spinner while fetching
+        <Text>Loading job details...</Text>
       )}
       <ProfileCard
         profiletype="C"
