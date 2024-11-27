@@ -1,8 +1,18 @@
 import { View, Text, StyleSheet } from "react-native";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import moment from "moment";
 
-const Message = ({ role, name, message, date, time }) => {
+const Message = ({ role, name, message, timestamp }) => {
   const isSender = role === "sender";
+
+  // Initialize the time state with the timestamp
+  const [time, setTime] = useState(timestamp);
+
+  // Use useEffect to update the time only when the timestamp changes
+  useEffect(() => {
+    const timeElapsed = moment(timestamp).fromNow();
+    setTime(timeElapsed); // Set the time to the formatted timeElapsed
+  }, [timestamp]); // Dependency on timestamp
 
   return (
     <View
@@ -30,6 +40,7 @@ const Message = ({ role, name, message, date, time }) => {
             styles.content,
             {
               color: isSender ? "white" : "black",
+              textAlign: isSender ? "right" : "left",
             },
           ]}
         >
@@ -41,10 +52,10 @@ const Message = ({ role, name, message, date, time }) => {
           style={{
             fontSize: 12,
             color: "#A4A4A4",
-            textAlign: isSender ? "right" : "left",
+            textAlign: "right",
           }}
         >
-          {date} {time}
+          {time}
         </Text>
       </View>
     </View>
@@ -55,7 +66,7 @@ export default Message;
 
 const styles = StyleSheet.create({
   container: {
-    width: 300,
+    width: 330,
     padding: 20,
     margin: 10,
     borderRadius: 16,
