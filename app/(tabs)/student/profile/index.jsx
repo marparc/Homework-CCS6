@@ -57,8 +57,6 @@ const ProfileHeader = () => {
         const storedPassword = await AsyncStorage.getItem("password");
         setAccountId(storedAccountId);
         setPassword(storedPassword);
-        //console.log("Stored accountId:", storedAccountId); // Check the value
-        //console.log("Stored password:", storedPassword); // Check the password value
       } catch (err) {
         console.error("Failed to retrieve data from AsyncStorage:", err);
       }

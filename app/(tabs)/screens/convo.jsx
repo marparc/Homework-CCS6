@@ -9,27 +9,57 @@ import {
   TextInput,
 } from "react-native";
 import Message from "@/components/ui/message";
-import { useRouter } from "expo-router";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { supabase } from "../../../lib/supabase"; // Adjust this path to your supabase configuration
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 const Convo = () => {
   const router = useRouter();
   const scrollViewRef = useRef(null);
 
-  const [accountLoggedIn, setAccountLoggedIn] = useState(1); // Assume logged-in student account ID
-  const [sender, setSender] = useState(accountLoggedIn);
+  const [accountLoggedIn, setAccountLoggedIn] = useState(null); // Assume logged-in student account ID
+  const [sender, setSender] = useState(null);
   const [receiver, setReceiver] = useState(0); // This will be determined from the fetched data
   const [messages, setMessages] = useState([]); // Store messages
   const [message, setMessage] = useState(""); //new message to be sent
+  const [accountId, setAccountId] = useState(null);
+
+  const { chatid } = useLocalSearchParams();
+
+  console.log("CHATID RECEIVE ROUTER: ", chatid);
+  console.log("accountid: ", accountId);
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const storedAccountId = await AsyncStorage.getItem("accountId");
+
+        // Ensure the retrieved ID is parsed correctly
+        const parsedAccountId = storedAccountId
+          ? parseInt(storedAccountId, 10)
+          : null;
+
+        setAccountId(parsedAccountId);
+        setAccountLoggedIn(parsedAccountId); // Dynamically update accountLoggedIn
+        setSender(parsedAccountId); // Update sender to match logged-in account
+      } catch (err) {
+        console.error("Failed to retrieve data from AsyncStorage:", err);
+      }
+    };
+
+    getData();
+  }, []); // Only runs once, on mount
 
   // Fetch messages from the database
   const fetchMessages = async () => {
     try {
+      //setAccountLoggedIn(accountId);
+
       const { data, error } = await supabase
         .from("message_logs")
         .select("studentid, clientid, timesent, messagecontent") // Fetch required columns
-        .eq("chatid", 1) // Filter by specific chat ID
+        .eq("chatid", chatid) // Filter by specific chat ID
         .order("timesent", { ascending: true }); // Fetch messages in chronological order
 
       if (error) {
@@ -50,7 +80,7 @@ const Convo = () => {
 
         // Format messages for display
         const formattedMessages = data.map((msg) => ({
-          role: msg.studentid === accountLoggedIn ? "sender" : "receiver",
+          role: msg.studentid === accountLoggedIn ? "receiver" : "sender",
           name:
             msg.studentid === accountLoggedIn
               ? "You"
@@ -71,7 +101,7 @@ const Convo = () => {
   const handleSend = async (messageContent) => {
     try {
       const { error } = await supabase.from("message_logs").insert({
-        chatid: 1,
+        chatid: chatid,
         studentid: accountLoggedIn,
         messagecontent: messageContent,
         timesent: new Date().toISOString(),

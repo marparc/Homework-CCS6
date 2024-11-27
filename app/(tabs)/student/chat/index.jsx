@@ -1,64 +1,142 @@
-import { View, Text, SafeAreaView, ScrollView, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Pressable,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import Chat from "@/components/ui/chatcard"; // Assuming ChatCard supports `onPress`
-import { useRouter } from "expo-router";
 import { supabase } from "../../../../lib/supabase"; // Ensure Supabase client is correctly imported
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
 
 const ChatList = () => {
-  const [chatData, setChatData] = useState([]);
+  const [chatData, setChatData] = useState([]); // Ensure chatData starts as an empty array
   const [error, setError] = useState(null);
-  const accountid = 1; // Logged-in student's account ID
-
+  const [accountId, setAccountId] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchChatData = async () => {
+    const getData = async () => {
       try {
-        // Fetch chats where studentid matches the logged-in user's ID
-        const { data, error } = await supabase
-          .from("chat")
-          .select("*")
-          .eq("studentid", accountid);
-
-        if (error) {
-          console.error("Error fetching chat data:", error.message);
-          setError(error.message);
-        } else {
-          setChatData(data);
-          console.log("Fetched chat data:", data);
-        }
+        const storedAccountId = await AsyncStorage.getItem("accountId");
+        setAccountId(storedAccountId);
       } catch (err) {
-        console.error("Unexpected error:", err.message);
-        setError("An unexpected error occurred.");
+        console.error("Failed to retrieve data from AsyncStorage:", err);
+      }
+    };
+
+    getData();
+  }, []);
+
+  useEffect(() => {
+    const fetchChatData = async () => {
+      if (!accountId) {
+        console.log("Account ID is null or undefined, skipping fetch.");
+        return;
+      }
+
+      try {
+        const { data: userAccountData, error: userAccountError } =
+          await supabase
+            .from("user_account")
+            .select("userid")
+            .eq("accountid", accountId)
+            .single();
+
+        if (userAccountError || !userAccountData) {
+          throw new Error(
+            userAccountError?.message || "User account not found."
+          );
+        }
+
+        const { userid } = userAccountData;
+
+        const { data: studentData, error: studentError } = await supabase
+          .from("student")
+          .select("studentid")
+          .eq("userid", userid)
+          .single();
+
+        if (studentError || !studentData) {
+          throw new Error(studentError?.message || "Student data not found.");
+        }
+
+        const { studentid } = studentData;
+
+        const { data: chatData, error: chatError } = await supabase
+          .from("chat")
+          .select("clientid, chatid")
+          .eq("studentid", studentid);
+        //console.log("CHATDATA: ", chatData);
+
+        const clientIds = chatData.map((chat) => chat.clientid);
+        const { data: clientData, error: clientError } = await supabase
+          .from("client_table")
+          .select("clientid, userid")
+          .in("clientid", clientIds);
+
+        //console.log("CLIENTDATA : ", clientData);
+
+        const clientUserIds = clientData.map((client) => client.userid);
+        const { data: userData, error: userError } = await supabase
+          .from("user_table")
+          .select("userid, firstname, lastname")
+          .in("userid", clientUserIds);
+
+        console.log("USERDATA: ", userData);
+
+        const userMap = clientData.reduce((map, client) => {
+          const user = userData.find((u) => u.userid === client.userid);
+          if (user) {
+            map[client.clientid] = user;
+          }
+          return map;
+        }, {});
+
+        const chatsWithUsers = chatData.map((chat) => ({
+          ...chat,
+          user: userMap[chat.clientid] || {
+            firstname: "Unknown",
+            lastname: "",
+          },
+        }));
+
+        setChatData(chatsWithUsers);
+        //console.log("CHAT WITH USERS: ", chatsWithUsers);
+      } catch (err) {
+        console.error("Error fetching chat data:", err.message);
+        setError(err.message);
       }
     };
 
     fetchChatData();
-  }, []);
+  }, [accountId]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <ScrollView contentContainerStyle={{ padding: 16 }}>
-        {error ? (
-          <Text style={{ color: "red", textAlign: "center" }}>
-            Failed to load chats: {error}
-          </Text>
-        ) : chatData.length > 0 ? (
-          chatData.map((chat) => (
-            <Chat
-              key={chat.chatid} // Use unique ID from the chat table
-              receiver={`Client ID: ${chat.clientid}`} // Display the receiver (clientid)
-              message="Hello" // Placeholder for the message
-              onPress={() => {
-                router.push("/(tabs)/screens/convo"); // Navigate to the conversation screen
-              }}
-            />
-          ))
-        ) : (
-          <Text style={{ textAlign: "center", marginTop: 20 }}>
-            No chats available.
-          </Text>
-        )}
+        {chatData.map((chat) => (
+          <Pressable
+            key={chat.chatid}
+            style={{
+              padding: 10,
+              borderWidth: 1,
+              borderColor: "#000",
+              marginBottom: 10,
+            }}
+            onPress={() => {
+              console.log("Navigating to chat:", chat.chatid);
+              router.push(`/screens/convo?chatid=${chat.chatid}`);
+            }}
+          >
+            <Text>
+              {chat.user.firstname} {chat.user.lastname}
+            </Text>
+          </Pressable>
+        ))}
       </ScrollView>
     </SafeAreaView>
   );
