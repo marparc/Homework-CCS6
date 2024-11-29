@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Button } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../../lib/supabase.js";
 import moment from "moment";
@@ -15,6 +15,48 @@ const Message = (props) => {
   const [senderId, setSenderId] = useState(props.typeId);
   const [theme, setTheme] = useState(null); //determines message color
   const [time, setTime] = useState(props.timestamp); //timestamp for message
+
+  const fetchAndStoreUserType = async () => {
+    if (!accountId) {
+      console.warn("Account ID is not set");
+      return;
+    }
+    try {
+      const { data: userAccountData, error: userAccountError } = await supabase
+        .from("user_account")
+        .select("userid")
+        .eq("accountid", accountId)
+        .single();
+
+      if (userAccountError) {
+        throw userAccountError;
+      }
+
+      const userId = userAccountData.userid;
+
+      const { data: userTableData, error: userTableError } = await supabase
+        .from("user_table")
+        .select("usertype")
+        .eq("userid", userId)
+        .single();
+
+      if (userTableError) {
+        throw userTableError;
+      }
+
+      const userType = userTableData.usertype;
+
+      await AsyncStorage.setItem("userType", userType); //usertype for user
+
+      console.log("User type:", userType);
+    } catch (error) {
+      console.error("Error fetching or storing data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAndStoreUserType(); // Call the function here for initial fetching
+  }, [accountId]);
 
   useEffect(() => {
     const timeElapsed = moment(
@@ -107,7 +149,7 @@ const Message = (props) => {
             console.log("My Client ID:", clientId); // Log the actual client ID
             setMyAccType("client");
           } else {
-            console.log("No CLIENT ID found for this user.");
+            //console.log("No CLIENT ID found for this user.");
           }
         }
       } catch (err) {
