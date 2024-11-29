@@ -229,16 +229,7 @@ const ProfileHeader = () => {
     setSelectedPortfolioId(null);
   };
 
-  const handlePress = () => {
-    //console.log("THIS IS THE ID: ", selectedPortfolioId); // Log before navigation
-    //console.log("Navigating with query: ", {
-    //  portfolioId: selectedPortfolioId,
-    //});
-    //push({
-    //  pathname: "./editportfolio",
-    ///  query: { portfolioId: selectedPortfolioId }, // Pass the query parameter
-    //});
-  };
+  const handlePress = () => {};
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
