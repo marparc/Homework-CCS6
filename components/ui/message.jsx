@@ -1,87 +1,153 @@
-import { View, Text, StyleSheet } from "react-native";
 import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "../../lib/supabase.js";
 import moment from "moment";
 
-const Message = ({ role, name, message, timestamp }) => {
-  const isSender = role === "sender";
+const Message = (props) => {
+  const [accountId, setAccountId] = useState(null);
+  const [myUserId, setMyUserId] = useState(null);
+  const [name, setName] = useState(null);
+  const [theme, setTheme] = useState(null);
+  const [time, setTime] = useState(props.timestamp);
 
-  // Initialize the time state with the timestamp
-  const [time, setTime] = useState(timestamp);
-
-  // Use useEffect to update the time only when the timestamp changes
   useEffect(() => {
-    const timeElapsed = moment(timestamp).fromNow();
-    setTime(timeElapsed); // Set the time to the formatted timeElapsed
-  }, [timestamp]); // Dependency on timestamp
+    const timeElapsed = moment(
+      props.timestamp,
+      "YYYY-MM-DD HH:mm:ss.SSS"
+    ).fromNow();
+    setTime(timeElapsed); // Set the formatted time
+  }, [props.timestamp]); // Dependency on timestamp
+
+  useEffect(() => {
+    const getLoggedInAccId = async () => {
+      try {
+        const storedAccountId = await AsyncStorage.getItem("accountId");
+        setAccountId(storedAccountId ? parseInt(storedAccountId, 10) : null);
+      } catch (err) {
+        console.error("Failed to retrieve account ID:", err);
+      }
+    };
+    getLoggedInAccId();
+  }, []);
+
+  useEffect(() => {
+    const getMyAccountUserId = async () => {
+      if (!accountId) return;
+      try {
+        const { data, error } = await supabase
+          .from("user_account")
+          .select("userid")
+          .eq("accountid", accountId)
+          .single();
+        if (error) throw error;
+        setMyUserId(data.userid);
+      } catch (err) {
+        console.error("Error fetching my user ID:", err);
+      }
+    };
+    getMyAccountUserId();
+  }, [accountId]);
+
+  useEffect(() => {
+    const compareUserId = async () => {
+      if (!myUserId) return;
+      if (myUserId === props.userId) {
+        setName("You");
+        setTheme(fromMe);
+      } else {
+        await determineChatMate();
+        setTheme(fromChatMate);
+      }
+    };
+    compareUserId();
+  }, [myUserId, props.userId]); // Added props.userId to dependencies
+
+  const determineChatMate = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("user_account")
+        .select("account_name")
+        .eq("userid", props.userId)
+        .single();
+      if (error) throw error;
+
+      setName(data.account_name);
+      console.log("determine chat mate: " + data.account_name); // Log actual data
+    } catch (err) {
+      console.error("Error fetching chat mate data:", err);
+    }
+  };
 
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: isSender ? "black" : "#E3E3E3" },
-      ]}
-    >
-      <View style={styles.header}>
-        <Text
-          style={[
-            styles.name,
-            {
-              color: isSender ? "white" : "black",
-              textAlign: isSender ? "right" : "left",
-            },
-          ]}
-        >
-          {isSender ? "You" : name}
-        </Text>
+    <View style={theme?.container}>
+      <Text style={theme?.name}>{name}</Text>
+      <View style={theme?.messageContainer}>
+        <Text style={theme?.message}>{props.message}</Text>
       </View>
-      <View>
-        <Text
-          style={[
-            styles.content,
-            {
-              color: isSender ? "white" : "black",
-              textAlign: isSender ? "right" : "left",
-            },
-          ]}
-        >
-          {message}
-        </Text>
-      </View>
-      <View style={styles.footer}>
-        <Text
-          style={{
-            fontSize: 12,
-            color: "#A4A4A4",
-            textAlign: "right",
-          }}
-        >
-          {time}
-        </Text>
-      </View>
+      <Text style={theme?.time}>{time}</Text>
     </View>
   );
 };
 
 export default Message;
 
-const styles = StyleSheet.create({
+const fromMe = StyleSheet.create({
   container: {
-    width: 330,
-    padding: 20,
-    margin: 10,
-    borderRadius: 16,
+    width: "100%",
+    alignItems: "flex-end",
+    paddingHorizontal: 10,
   },
-  header: {
-    marginBottom: 10,
+  messageContainer: {
+    backgroundColor: "black",
+    borderRadius: 23,
+    padding: 16,
+    textAlign: "right",
+  },
+  message: {
+    color: "white",
+    fontSize: 14,
   },
   name: {
-    fontSize: 16,
-  },
-  content: {
+    color: "black",
+    textAlign: "right",
+    marginRight: 20,
     fontSize: 14,
-    marginBottom: 10,
   },
-  footer: {
-    marginTop: 10,
+  time: {
+    color: "#c8c8c8",
+    textAlign: "right",
+    marginRight: 20,
+    fontSize: 14,
+  },
+});
+
+const fromChatMate = StyleSheet.create({
+  container: {
+    width: "100%",
+    alignItems: "flex-start",
+    paddingHorizontal: 10,
+  },
+  messageContainer: {
+    backgroundColor: "#E3E3E3",
+    borderRadius: 23,
+    padding: 16,
+    textAlign: "left",
+  },
+  message: {
+    color: "black",
+    fontSize: 14,
+  },
+  name: {
+    color: "black",
+    textAlign: "left",
+    marginLeft: 20,
+    fontSize: 14,
+  },
+  time: {
+    color: "#c8c8c8",
+    textAlign: "left",
+    marginLeft: 20,
+    fontSize: 14,
   },
 });
