@@ -2,40 +2,71 @@ import { View, StyleSheet } from "react-native";
 import React, { useState, useEffect } from "react";
 import InputField from "@/components/ui/inputfield";
 import Button from "@/components/ui/buttons";
-import { useRouter } from "expo-router";
 import PopUp from "@/components/ui/popup";
+import { supabase } from "../../../lib/supabase";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 const EditPorfolio = () => {
-  const [isPopUpVisible, setPopUpVisible] = useState(false); // State to control the visibility of the PopUp
-  //const router = useRouter();
+  const [isPopUpVisible, setPopUpVisible] = useState(false);
   const { query } = useRouter();
-
-  // Accessing portfolioId from the query
+  const { selectedportfolio } = useLocalSearchParams();
   const portfolioId = query?.portfolioId;
+  const [portfolioData, setPortfolioData] = useState(null);
+  // State for form fields
+  const [portfolioName, setPortfolioName] = useState("");
+  const [portfolioDesc, setPortfolioDesc] = useState("");
+  const [portfolioLink, setPortfolioLink] = useState("");
+  //console.log("EDIT PORTFOLIO RECEIVE ROUTER: ", selectedportfolio);
 
   useEffect(() => {
-    // Log the query parameters and portfolioId
-    console.log("EDIT PORTFOLIO");
-    console.log("Full Query:", query);
-    console.log("Portfolio ID:", portfolioId);
-  }, [query]); // Re-run when the query changes
+    if (!selectedportfolio) return;
 
-  const handleEditPorfolio = () => {
-    // Here, you would usually add the logic for editing the Porfolio
-    // After editing the Porfolio, show the PopUp
+    const fetchPortfolioData = async () => {
+      const { data, error } = await supabase
+        .from("portfolio")
+        .select("portfolioid, portfolioname, portfoliodesc, link, studentid")
+        .eq("portfolioid", selectedportfolio);
+
+      if (error) {
+        console.error("Error fetching portfolio data:", error.message);
+        return;
+      }
+
+      console.log("Fetched Portfolio Data:", data);
+      setPortfolioData(data);
+      if (data && data.length > 0) {
+        setPortfolioName(data[0].portfolioname);
+        setPortfolioDesc(data[0].portfoliodesc);
+        setPortfolioLink(data[0].link);
+      }
+    };
+
+    fetchPortfolioData();
+  }, [selectedportfolio]);
+
+  const handleEditPortfolio = async () => {
+    if (!portfolioName || !portfolioDesc || !portfolioLink) {
+      console.error("All fields must be filled out");
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("portfolio")
+      .update({
+        portfolioname: portfolioName,
+        portfoliodesc: portfolioDesc,
+        link: portfolioLink,
+      })
+      .eq("portfolioid", selectedportfolio);
+
+    if (error) {
+      console.error("Error updating portfolio:", error.message);
+      return;
+    }
+
+    console.log("Portfolio updated successfully:", data);
     setPopUpVisible(true);
   };
-
-  const portfolio = {
-    id: 3,
-    title: "Portfolio 3",
-    description: "Portfolio displaying web development projects.",
-    link: "https://youtube.com",
-  };
-
-  const [portfolioName, setPortfolioName] = useState(portfolio.title);
-  const [portfolioDesc, setPortfolioDesc] = useState(portfolio.description);
-  const [portfolioLink, setPortfolioLink] = useState(portfolio.link);
 
   return (
     <>
@@ -60,14 +91,23 @@ const EditPorfolio = () => {
             onChangeText={setPortfolioLink}
           />
         </View>
+
         <View style={styles.buttonContainer}>
           <Button
             title="Save Changes"
             type="dark"
             size="small"
-            onPress={handleEditPorfolio}
+            onPress={handleEditPortfolio}
           />
         </View>
+
+        {isPopUpVisible && (
+          <PopUp
+            text="Portfolio Updated Successfully!"
+            route="/(tabs)/student/profile"
+            icon="checkmark-circle-outline"
+          />
+        )}
       </View>
 
       {isPopUpVisible && (

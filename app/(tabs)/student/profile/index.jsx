@@ -406,7 +406,18 @@ const ProfileHeader = () => {
 
             {/* Edit and Delete Buttons */}
             <View style={styles.rightIcons}>
-              <Pressable onPress={handlePress} disabled={!selectedPortfolioId}>
+              <Pressable
+                onPress={() => {
+                  console.log(
+                    //"EDIT PORTFOLIO FROM ROUTER:",
+                    selectedPortfolioId
+                  );
+                  router.push(
+                    `/screens/editportfolio?selectedportfolio=${selectedPortfolioId}`
+                  );
+                }}
+                disabled={!selectedPortfolioId}
+              >
                 <Ionicons
                   name="create-outline"
                   size={30}
