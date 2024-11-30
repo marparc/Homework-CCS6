@@ -157,7 +157,7 @@ const ChatList = () => {
               }}
               onPress={() => {
                 console.log("Navigating to chat:", chat.chatid);
-                //router.push(`/screens/convo?chatid=${chat.chatid}`);    //to be updated
+                router.push(`/screens/convo?chatid=${chat.chatid}`); //to be updated
               }}
             >
               <Text>

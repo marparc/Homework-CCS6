@@ -55,8 +55,49 @@ const Convo = () => {
   };
 
   useEffect(() => {
+    // Fetch initial messages
     fetchMessages();
-  }, [chatid]); // Added the dependency array for proper re-fetching
+
+    // Subscribe to real-time changes in the "message_logs" table
+    const channel = supabase
+      .channel("message-logs-channel")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "message_logs" },
+        (payload) => {
+          console.log("Real-time change received:", payload);
+
+          // Check if the change is related to the current chat ID
+          if (payload.new && payload.new.chatid === chatid) {
+            const newMessage = {
+              studentId: payload.new.studentid,
+              clientId: payload.new.clientid,
+              message: payload.new.messagecontent,
+              timestamp: payload.new.timesent,
+            };
+
+            // Update the messages state with the new message
+            setMessages((prevMessages) => [...prevMessages, newMessage]);
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription when component unmounts
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [chatid]);
+
+  useEffect(() => {
+    // Function to poll for new messages every second
+    const intervalId = setInterval(() => {
+      fetchMessages();
+    }, 1000); // Fetch messages every 1 second
+
+    // Cleanup the interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [chatid]); // Dependency on chatid
 
   return (
     <View style={styles.container}>
