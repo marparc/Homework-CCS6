@@ -72,6 +72,7 @@ const Convo = () => {
         {messages.map((msg, index) => (
           <Message
             key={index}
+            fromA={msg.studentId != null ? "Student" : "Client"}
             typeId={msg.studentId != null ? msg.studentId : msg.clientId}
             message={msg.message}
             timestamp={msg.timestamp}

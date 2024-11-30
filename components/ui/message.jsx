@@ -33,10 +33,9 @@ const Message = (props) => {
       }
 
       const userId = userAccountData.userid;
-
       const { data: userTableData, error: userTableError } = await supabase
         .from("user_table")
-        .select("usertype")
+        .select("usertype, firstname, lastname")
         .eq("userid", userId)
         .single();
 
@@ -45,10 +44,12 @@ const Message = (props) => {
       }
 
       const userType = userTableData.usertype;
+      const userName = `${userTableData.firstname} ${userTableData.lastname}`; // Corrected string concatenation
+
+      console.log(userName);
 
       await AsyncStorage.setItem("userType", userType); //usertype for user
-
-      console.log("User type:", userType);
+      setMyAccType(userType);
     } catch (error) {
       console.error("Error fetching or storing data:", error);
     }
@@ -81,7 +82,7 @@ const Message = (props) => {
 
   // Fetch the user ID based on account ID
   useEffect(() => {
-    const getMyAccountUserId = async () => {
+    const getMyAccountUserId = async (myType) => {
       try {
         const { data, error } = await supabase
           .from("user_account")
@@ -117,25 +118,24 @@ const Message = (props) => {
       if (!myUserId) return; // Ensure myUserId is valid
 
       try {
-        // Fetch student ID first
-        const { data, error } = await supabase
-          .from("student")
-          .select("studentid")
-          .eq("userid", myUserId);
+        if (myAccType === "Student") {
+          // Fetch student ID
+          const { data: studentData, error: studentError } = await supabase
+            .from("student")
+            .select("studentid")
+            .eq("userid", myUserId);
 
-        if (error) throw error;
+          if (studentError) throw studentError;
 
-        if (data && data.length > 0) {
-          const studentId = data[0].studentid;
-          setMyTypeId(studentId); // Set student ID
-          console.log("My Student ID:", studentId); // Log the actual student ID
-          setMyAccType("student");
-        } else {
-          console.log("No STUDENT ID found, checking client...");
-        }
-
-        // If no student ID, try to fetch client ID
-        if (myTypeId == null) {
+          if (studentData && studentData.length > 0) {
+            const studentId = studentData[0].studentid;
+            setMyTypeId(studentId); // Set student ID
+            console.log("My Student ID:", studentId); // Log the actual student ID
+          } else {
+            console.log("No STUDENT ID found.");
+          }
+        } else if (myAccType === "Client") {
+          // Fetch client ID
           const { data: clientData, error: clientError } = await supabase
             .from("client_table")
             .select("clientid")
@@ -147,10 +147,11 @@ const Message = (props) => {
             const clientId = clientData[0].clientid;
             setMyTypeId(clientId); // Set client ID
             console.log("My Client ID:", clientId); // Log the actual client ID
-            setMyAccType("client");
           } else {
-            //console.log("No CLIENT ID found for this user.");
+            console.log("No CLIENT ID found.");
           }
+        } else {
+          console.log("Invalid account type provided.");
         }
       } catch (err) {
         console.error("Error fetching my type ID:", err);
@@ -158,19 +159,24 @@ const Message = (props) => {
     };
 
     getMyTypeAndId();
-  }, [myUserId]); // Re-run this useEffect when myUserId changes
-
+  }, [myUserId, myAccType]); // Re-run this useEffect when myUserId or myType changes
   useEffect(() => {
     const compareUserId = async () => {
       if (!myTypeId || !props.typeId) return;
 
-      // Check if the message was sent by the logged-in user
       if (myTypeId === props.typeId) {
-        setName("You"); // Set name to "You" if it's the logged-in user
-        setTheme(fromMe); // Set theme for 'me'
+        if (myAccType === props.fromA) {
+          setName("You"); // Set name to "You" if it's the logged-in user
+          setTheme(fromMe); // Set theme for 'me'
+        } else {
+          console.log("Hello");
+          await determineChatMate(); // Fetch chat mate using sender's account type
+          setTheme(fromChatMate);
+        }
       } else {
-        await determineChatMate(); // Wait for determineChatMate to complete
-        setTheme(fromChatMate); // Set theme for chatmate after fetch is complete
+        console.log("Hi");
+        await determineChatMate(); // Default case: determine chat mate
+        setTheme(fromChatMate);
       }
     };
 
@@ -179,44 +185,47 @@ const Message = (props) => {
 
   const determineChatMate = async () => {
     try {
-      let fetchedSenderId;
+      let fetchedUserId, fetchedAccountName;
 
-      // Fetch the sender ID based on account type
-      let response;
-      if (myAccType === "client") {
-        response = await supabase
-          .from("student")
-          .select("userid")
-          .eq("studentid", props.typeId)
-          .single(); // Ensure you only get one result
-
-        if (response.error) throw response.error;
-
-        fetchedSenderId = response.data.userid;
-      } else {
-        response = await supabase
+      if (props.fromA === "Client") {
+        // Fetch the user ID associated with the client ID
+        const { data: clientData, error: clientError } = await supabase
           .from("client_table")
           .select("userid")
           .eq("clientid", props.typeId)
-          .single(); // Ensure you only get one result
+          .single(); // Expecting a single result
 
-        if (response.error) throw response.error;
+        if (clientError) throw clientError;
 
-        fetchedSenderId = response.data.userid;
+        fetchedUserId = clientData.userid;
+      } else {
+        // Fetch the user ID associated with the student ID
+        const { data: studentData, error: studentError } = await supabase
+          .from("student")
+          .select("userid")
+          .eq("studentid", props.typeId)
+          .single(); // Expecting a single result
+
+        if (studentError) throw studentError;
+
+        fetchedUserId = studentData.userid;
       }
 
-      // Fetch the account name of the chat mate
-      const { data, error } = await supabase
+      // Fetch the account name using the fetched user ID
+      const { data: accountData, error: accountError } = await supabase
         .from("user_account")
         .select("account_name")
-        .eq("userid", fetchedSenderId)
-        .single();
+        .eq("userid", fetchedUserId)
+        .single(); // Expecting a single result
 
-      if (error) throw error;
+      if (accountError) throw accountError;
 
-      setName(data.account_name); // Set the chatmate's name
-    } catch (err) {
-      console.error("Error fetching chat mate details:", err);
+      fetchedAccountName = accountData.account_name;
+
+      // Set the name of the chatmate
+      setName(fetchedAccountName);
+    } catch (error) {
+      console.error("Error in determineChatMate:", error);
     }
   };
 
