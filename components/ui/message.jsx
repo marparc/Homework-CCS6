@@ -230,12 +230,28 @@ const Message = (props) => {
   };
 
   return (
-    <View style={theme?.container}>
-      <Text style={theme?.name}>{name}</Text>
-      <View style={theme?.messageContainer}>
-        <Text style={theme?.message}>{props.message}</Text>
-      </View>
-      <Text style={theme?.time}>{time}</Text>
+    <View>
+      {/* Placeholder logic */}
+      {theme && name ? (
+        <View style={theme.container}>
+          <Text style={theme.name}>{name}</Text>
+          <View style={theme.messageContainer}>
+            <Text style={theme.message}>{props.message}</Text>
+          </View>
+          <Text style={theme.time}>{time}</Text>
+        </View>
+      ) : (
+        // Placeholder content
+        <View
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 20,
+          }}
+        >
+          <Text></Text>
+        </View>
+      )}
     </View>
   );
 };
