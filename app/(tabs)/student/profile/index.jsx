@@ -129,21 +129,51 @@ const ProfileHeader = () => {
   //for reviews
   useEffect(() => {
     const fetchEvaluationData = async () => {
-      const { data: evaluationData, error: evaluationError } = await supabase
-        .from("stud_evaluation")
-        .select("rating, usercomment, clientid, studentid")
-        .eq("studentid", accountId);
+      try {
+        // Fetch evaluation data
+        const { data: evaluationData, error: evaluationError } = await supabase
+          .from("stud_evaluation")
+          .select("rating, usercomment, clientid, studentid")
+          .eq("studentid", accountId);
+        //console.log("here");
+        if (evaluationError) throw evaluationError;
 
-      //console.log("Fetched Evaluation Data:", evaluationData);
+        // Transform the evaluation data
+        const transformedRatings = await Promise.all(
+          evaluationData.map(async (evaluation) => {
+            // Fetch the client details using clientid
+            const { data: clientData, error: clientError } = await supabase
+              .from("client_table")
+              .select("userid")
+              .eq("clientid", evaluation.clientid)
+              .single(); // Assuming clientid is unique
+            //console.log("ERROR1: ", evaluation.clientid);
+            if (clientError) throw clientError;
+            //console.log("ERROR2");
+            // Fetch user details using userid from clientData
+            const { data: userData, error: userError } = await supabase
+              .from("user_table")
+              .select("firstname, lastname")
+              .eq("userid", clientData.userid)
+              .single(); // Assuming userid is unique
 
-      const transformedRatings = evaluationData.map((evaluation) => ({
-        id: evaluation.clientid, // Assuming clientid is unique
-        stars: evaluation.rating,
-        comment: evaluation.usercomment,
-        rateFrom: evaluation.clientid,
-      }));
-
-      setRatings(transformedRatings);
+            if (userError) throw userError;
+            //console.log("ERROR3");
+            // Return the transformed rating
+            return {
+              id: evaluation.clientid, // Use clientid as ID
+              stars: evaluation.rating,
+              comment: evaluation.usercomment,
+              rateFrom: `${userData.firstname} ${userData.lastname}`, // Add client name
+            };
+            //console.log("ERROR4");
+          })
+        );
+        //console.log("ERROR5");
+        setRatings(transformedRatings);
+      } catch (error) {
+        //console.error("Error fetching evaluation data here:", error);
+      }
     };
 
     fetchEvaluationData();
@@ -228,8 +258,6 @@ const ProfileHeader = () => {
     setSelectedServiceId(null);
     setSelectedPortfolioId(null);
   };
-
-  const handlePress = () => {};
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -493,6 +521,7 @@ const ProfileHeader = () => {
               key={rating.id}
               stars={rating.stars.toString()} // Ensure stars are passed as a string
               comment={rating.comment}
+              rateFrom={rating.rateFrom} // Match the prop name used in the Rating component
             />
           ))
         )}

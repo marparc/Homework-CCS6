@@ -35,7 +35,7 @@ const MyClientProfile = () => {
   const [loading, setLoading] = useState(true);
   const [clientInfo, setClientInfo] = useState(null);
   const [userData, setUserData] = useState(null);
-  const [bio, setBio] = useState('');
+  const [bio, setBio] = useState("");
 
   // to get account id
   useEffect(() => {
@@ -58,72 +58,55 @@ const MyClientProfile = () => {
       setLoading(true);
 
       try {
-        const accountIdInt = parseInt(accountId, 10);
+        console.log("accountId here: ", accountId);
 
-        const { data: clientData, error: clientError } = await supabase
-          .from("client_table")
-          .select("client_organization, clientid, userid")
-          .eq("userid", accountIdInt)
+        // First, fetch user account data to get the bio and userid
+        const { data: userAccountData, error: userAccountError } =
+          await supabase
+            .from("user_account")
+            .select("bio, userid")
+            .eq("accountid", accountId)
+            .single();
+
+        // Set bio from the user account data
+        setBio(userAccountData?.bio || "");
+
+        const { data: userData, error: userError } = await supabase
+          .from("user_table")
+          .select("firstname, lastname, birthdate, usertype")
+          .eq("userid", userAccountData.userid)
           .single();
 
-        if (clientData) {
-          setClientInfo(clientData); 
-
-         
-          const { data: userData, error: userError } = await supabase
-            .from("user_table")
-            .select("firstname, lastname, birthdate, usertype")
-            .eq("userid", clientData.userid)
-            .single();
-
-          if (userError) {
-            console.error("Error fetching user data:", userError.message);
-          } else {
-            setUserData(userData);
-            const firstLetter = userData.firstname.charAt(0).toUpperCase();
-            setFirstLetter(firstLetter);
-          }
-
-        
-          const { data: userAccountData, error: userAccountError } = await supabase
-            .from("user_account")
-            .select("bio")
-            .eq("userid", clientData.userid)
-            .single();
-
-          if (userAccountError) {
-            console.error("Error fetching bio:", userAccountError.message);
-          } else {
-            setBio(userAccountData?.bio || '');
-          }
-
-        
-          const { data: evaluationData, error: evaluationError } =
-            await supabase
-              .from("client_evaluation")
-              .select("clientevalid, rating, usercomment, studentid, clientid")
-              .eq("clientid", clientData.clientid);
-
-          if (evaluationError) {
-            console.error(
-              "Error fetching evaluations:",
-              evaluationError.message
-            );
-          } else {
-           
-            const transformedRatings = evaluationData.map((evaluation) => {
-              return {
-                id: evaluation.clientevalid, 
-                stars: evaluation.rating,
-                comment: evaluation.usercomment,
-              };
-            });
-
-            setRatings(transformedRatings);
-          }
+        if (userError) {
+          console.error("Error fetching user data:", userError.message);
+          return;
         }
+
+        // Set the user data state
+        setUserData(userData);
+        const firstLetter = userData.firstname.charAt(0).toUpperCase();
+        setFirstLetter(firstLetter);
+
+        // Now fetch client data using the userid from user_account data
+        const { data: clientData, error: clientError } = await supabase
+          .from("client_table")
+          .select("client_organization, clientid")
+          .eq("userid", userAccountData.userid)
+          .single();
+
+        if (clientError) {
+          console.error("Error fetching client data:", clientError.message);
+          return; // Exit early if client data fetch fails
+        }
+
+        // Set client information state
+        setClientInfo(clientData);
+
+        // Fetch evaluations and update the ratings state
+        const evaluations = await fetchEvaluations(clientData.clientid);
+        setRatings(evaluations);
       } catch (error) {
-        console.error("Error fetching data:", error.message);
+        //console.error("Error fetching account data:", error.message);
       } finally {
         setLoading(false);
       }
@@ -132,6 +115,63 @@ const MyClientProfile = () => {
     fetchAccountData();
   }, [accountId]);
 
+  //reviews
+  const fetchEvaluations = async (clientid) => {
+    try {
+      const { data: evaluationData, error: evaluationError } = await supabase
+        .from("client_evaluation")
+        .select("clientevalid, rating, usercomment, studentid, clientid")
+        .eq("clientid", clientid);
+
+      if (evaluationError) {
+        console.error("Error fetching evaluations:", evaluationError.message);
+        return []; // Return an empty array in case of error
+      }
+
+      // Transform the evaluation data
+      const transformedRatings = await Promise.all(
+        evaluationData.map(async (evaluation) => {
+          // Fetch the student details using studentid
+          const { data: studentData, error: studentError } = await supabase
+            .from("student")
+            .select("userid")
+            .eq("studentid", evaluation.studentid)
+            .single(); // Assuming studentid is unique
+
+          if (studentError) {
+            console.error("Error fetching student data:", studentError.message);
+            return null; // Skip this evaluation if student fetch fails
+          }
+
+          // Fetch user details using userid from studentData
+          const { data: userData, error: userError } = await supabase
+            .from("user_table")
+            .select("firstname, lastname")
+            .eq("userid", studentData.userid)
+            .single(); // Assuming userid is unique
+
+          if (userError) {
+            console.error("Error fetching user data:", userError.message);
+            return null; // Skip this evaluation if user fetch fails
+          }
+
+          // Return the transformed rating
+          return {
+            id: evaluation.clientevalid,
+            stars: evaluation.rating,
+            comment: evaluation.usercomment,
+            rateFrom: `${userData.firstname} ${userData.lastname}`, // Add student name
+          };
+        })
+      );
+
+      // Filter out any null values resulting from failed transformations
+      return transformedRatings.filter((rating) => rating !== null);
+    } catch (error) {
+      console.error("Error fetching evaluations:", error.message);
+      return [];
+    }
+  };
 
   // Handle service selection
   const handleServicePress = (serviceId) => {
@@ -189,14 +229,21 @@ const MyClientProfile = () => {
             {userData?.usertype || "User type not available"}
           </Text>
           <Text style={styles.id}>
-            Account ID: {accountId|| "Not Available"}
+            Account ID: {accountId || "Not Available"}
           </Text>
           <Text style={styles.bio}>{bio || ""}</Text>
         </View>
       </View>
 
       <View style={styles.editContainer}>
-        <Button title="Edit Profile" type="light" size="small" />
+        <Button
+          title="Edit Bio"
+          type="light"
+          size="small"
+          onPress={() => {
+            router.push("/screens/editbioclient");
+          }}
+        ></Button>
       </View>
       <View style={styles.aboutContainer}>
         <Text style={styles.detailsHeader}>About Me:</Text>
@@ -216,9 +263,10 @@ const MyClientProfile = () => {
         {ratings.length > 0 ? (
           ratings.map((rating) => (
             <Rating
-              key={rating.id} // Ensure unique key
-              stars={rating.stars.toString()} // Ensure stars is a string
+              key={rating.id}
+              stars={rating.stars.toString()} // Ensure stars are passed as a string
               comment={rating.comment}
+              rateFrom={rating.rateFrom} // Match the prop name used in the Rating component
             />
           ))
         ) : (

@@ -68,7 +68,7 @@ const EditBio = () => {
         <PopUp
           icon="checkmark-circle-outline"
           text="Bio Edited Successfully!"
-          route="/student/profile" // Navigate to this route when the modal is closed
+          route="/client/profile" // Navigate to this route when the modal is closed
         />
       )}
     </>
