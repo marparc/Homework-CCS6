@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,29 +6,48 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import * as Location from "expo-location"; // Import Expo Location
+import * as Location from "expo-location";
 import InputField from "@/components/ui/inputfield";
 import Button from "@/components/ui/buttons";
 import DatePick from "@/components/ui/pickdate";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { supabase } from "../../../lib/supabase";
 
 const RequestServiceJob = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [pay, setPay] = useState("");
-  const [jobType, setJobType] = useState(""); // To track the selected job type
-  const [location, setLocation] = useState(""); // To store city or town name
+  const [jobType, setJobType] = useState("");
+  const [location, setLocation] = useState("");
   const [isLocationRetrieved, setIsLocationRetrieved] = useState(false);
-  const [errorMsg, setErrorMsg] = useState(""); // To handle location errors
+  const [errorMsg, setErrorMsg] = useState("");
   const [deadline, setDeadline] = useState("");
   const router = useRouter();
   const [btnLocationType, setBtnLocationType] = useState("light");
   const [btnLocationTitle, setBtnLocationTitle] = useState("Get My Location");
+  const { selectedrequest } = useLocalSearchParams();
+
+  const [accountId, setAccountId] = useState(null);
+  console.log("FROM THE ROUTER:", selectedrequest);
+
+  useEffect(() => {
+    const fetchAccountId = async () => {
+      try {
+        const storedAccountId = await AsyncStorage.getItem("accountId");
+        setAccountId(storedAccountId);
+      } catch (err) {
+        console.error("Failed to retrieve account ID from AsyncStorage:", err);
+      }
+    };
+
+    fetchAccountId();
+  }, []);
 
   const handleGetLocation = async () => {
     try {
-      // Request location permission
       let { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== "granted") {
@@ -36,16 +55,13 @@ const RequestServiceJob = () => {
         return;
       }
 
-      // Get current location
       let currentLocation = await Location.getCurrentPositionAsync({});
 
-      // Reverse geocoding to get city or town
       let geocode = await Location.reverseGeocodeAsync({
         latitude: currentLocation.coords.latitude,
         longitude: currentLocation.coords.longitude,
       });
 
-      // Extract the city or town name
       if (geocode.length > 0) {
         const { city, district, subregion } = geocode[0];
         const locationName =
@@ -62,6 +78,76 @@ const RequestServiceJob = () => {
     }
     setBtnLocationType("dark");
     setBtnLocationTitle("Location Retrieved");
+  };
+
+  const handlePublish = async () => {
+    try {
+      // 1. Fetch the `userid` from the `user_account` table using `accountId`
+      const { data: userData, error: userError } = await supabase
+        .from("user_account")
+        .select("userid")
+        .eq("accountid", accountId)
+        .single();
+
+      if (userError || !userData) {
+        throw new Error(
+          `Failed to fetch user data for accountId ${accountId}: ${
+            userError ? userError.message : "User not found"
+          }`
+        );
+      }
+
+      const userid = userData.userid;
+
+      // 2. Fetch the `clientid` from the `client_table` using `userid`
+      const { data: clientData, error: clientError } = await supabase
+        .from("client_table")
+        .select("clientid")
+        .eq("userid", userid)
+        .single();
+
+      if (clientError || !clientData) {
+        throw new Error(
+          `Failed to fetch client data for userid ${userid}: ${
+            clientError ? clientError.message : "Client not found"
+          }`
+        );
+      }
+
+      const clientid = clientData.clientid;
+
+      // 3. Get the count of existing service requests to generate the new requestid
+      const { data: countData, error: countError } = await supabase
+        .from("service_request")
+        .select("requestid", { count: "exact" });
+
+      if (countError) {
+        throw new Error(`Failed to fetch request count: ${countError.message}`);
+      }
+
+      const newRequestId = countData.length + 1; // Calculate the new requestid
+
+      // 4. Insert into the `service_request` table with the `clientid` and `serviceid`
+      const serviceId = selectedrequest; // Assuming `selectedrequest` is the serviceId
+
+      const { data, error } = await supabase.from("service_request").insert([
+        {
+          requestid: newRequestId, // Set the new requestid
+          requeststatus: "Pending", // Setting the status to Pending
+          clientid: clientid, // Use the fetched clientid
+          serviceid: serviceId, // The service ID associated with the request
+        },
+      ]);
+
+      if (error) throw new Error(`Failed to publish request: ${error.message}`);
+
+      console.log("Request published successfully:", data);
+
+      // Navigate to the confirmation screen
+      router.push("/(tabs)/screens/requestsent");
+    } catch (error) {
+      console.error("Error publishing request:", error.message);
+    }
   };
 
   return (
@@ -95,7 +181,6 @@ const RequestServiceJob = () => {
         >
           <Text style={styles.sectionTitle}>Job Type</Text>
 
-          {/* Radio Button for Onsite */}
           <TouchableOpacity
             style={styles.radioContainer}
             onPress={() => setJobType("Onsite")}
@@ -109,7 +194,6 @@ const RequestServiceJob = () => {
             <Text style={styles.radioText}>Onsite</Text>
           </TouchableOpacity>
 
-          {/* Radio Button for Remote */}
           <TouchableOpacity
             style={styles.radioContainer}
             onPress={() => setJobType("Remote")}
@@ -123,7 +207,7 @@ const RequestServiceJob = () => {
             <Text style={styles.radioText}>Remote</Text>
           </TouchableOpacity>
         </View>
-        {/* Location Section (Visible Only When Onsite is Selected) */}
+
         {jobType === "Onsite" && (
           <>
             <Text style={styles.sectionTitle}>
@@ -152,7 +236,7 @@ const RequestServiceJob = () => {
         <DatePick
           label="MM/DD/YY"
           mode="date"
-          minDate={new Date()} // Ensure dates are not in the past
+          minDate={new Date()}
           onDateChange={(date) => setDeadline(date)}
         />
 
@@ -160,9 +244,7 @@ const RequestServiceJob = () => {
           type="dark"
           size="medium"
           title="Publish"
-          onPress={() => {
-            router.push("/(tabs)/screens/requestsent");
-          }}
+          onPress={handlePublish}
         />
       </View>
     </ScrollView>
@@ -170,6 +252,7 @@ const RequestServiceJob = () => {
 };
 
 export default RequestServiceJob;
+
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,

@@ -6,10 +6,10 @@ import { useRouter } from "expo-router";
 
 const ReqCard = (props) => {
   // Destructure stars from props
-  const { title, name, description, stars } = props;
+  const { id, title, name, description, stars } = props;
   const router = useRouter();
   const [isPressed, setIsPressed] = useState(false);
-
+  console.log("THIS ID: ", id);
   return (
     <Pressable
       onPressIn={() => setIsPressed(true)}
@@ -31,7 +31,8 @@ const ReqCard = (props) => {
             type="dark"
             size="small"
             onPress={() => {
-              router.push("/(tabs)/screens/requestservice");
+              router.push(`/screens/requestservice?selectedrequest=${id}`);
+              //`/screens/managejoblisting?selectedjoblisting=${job.jobid}`
             }}
           />
           <Button title="View" type="light" size="small" />

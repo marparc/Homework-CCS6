@@ -14,7 +14,6 @@ const ServiceListings = () => {
   useEffect(() => {
     const fetchServiceData = async () => {
       try {
-        // Fetch data from the services table
         const { data: servicesData, error: servicesError } = await supabase
           .from("services")
           .select("serviceid, servicedesc, serviceTitle, studentid");
@@ -25,17 +24,8 @@ const ServiceListings = () => {
         }
 
         if (servicesData) {
-          // Log just the studentid for each service
-          servicesData.forEach((service) => {
-            console.log(service.studentid);
-          });
-        }
-        if (servicesData) {
-          // Loop through each service to get student info
-          //console.log("THIS ONE:", servicesData.studentid)
           const servicesWithUserInfo = await Promise.all(
             servicesData.map(async (service) => {
-              // Fetch the userid using studentid
               const { data: studentData, error: studentError } = await supabase
                 .from("student")
                 .select("userid")
@@ -43,11 +33,13 @@ const ServiceListings = () => {
                 .single();
 
               if (studentError) {
-                console.error(`Error fetching student for service ${service.serviceid}:`, studentError.message);
+                console.error(
+                  `Error fetching student for service ${service.serviceid}:`,
+                  studentError.message
+                );
                 return null;
               }
 
-              // If student data is found, fetch user info
               if (studentData) {
                 const { data: userData, error: userError } = await supabase
                   .from("user_table")
@@ -56,13 +48,13 @@ const ServiceListings = () => {
                   .single();
 
                 if (userError) {
-                  console.error(`Error fetching user info for student ${service.studentid}:`, userError.message);
+                  console.error(
+                    `Error fetching user info for student ${service.studentid}:`,
+                    userError.message
+                  );
                   return null;
                 }
-                if(userData){
-                  console.log("this is the data:", userData.firstname)
-                }
-                // Add user info to the service data
+
                 return {
                   ...service,
                   firstname: userData ? userData.firstname : null,
@@ -74,60 +66,56 @@ const ServiceListings = () => {
             })
           );
 
-          // Filter out any services that didn't have all necessary data
-          setFilteredRequests(servicesWithUserInfo.filter((service) => service !== null));
+          setServiceRequests(
+            servicesWithUserInfo.filter((service) => service !== null)
+          );
+          console.log("serviceRequests: ", serviceRequests);
         }
       } catch (error) {
         console.error("Error fetching data:", error.message);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchServiceData();
-  }, []); 
+  }, []);
 
   // Update filtered requests when the search value changes
   useEffect(() => {
     const lowercasedSearch = search.toLowerCase();
     const filtered = serviceRequests.filter(
       (request) =>
-        request.title.toLowerCase().includes(lowercasedSearch) ||
-        request.description.toLowerCase().includes(lowercasedSearch) ||
-        request.name.toLowerCase().includes(lowercasedSearch)
+        request.serviceTitle.toLowerCase().includes(lowercasedSearch) ||
+        request.servicedesc.toLowerCase().includes(lowercasedSearch) ||
+        request.firstname.toLowerCase().includes(lowercasedSearch) ||
+        request.lastname.toLowerCase().includes(lowercasedSearch) ||
+        request.serviceid.toString().includes(lowercasedSearch) // Filter by serviceid as well
     );
     setFilteredRequests(filtered);
   }, [search, serviceRequests]);
 
   return (
-    <>
-      <SafeAreaView style={styles.header}>
-        <SearchBox
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Search for a service..."
-        />
-      </SafeAreaView>
+    <SafeAreaView style={styles.container}>
+      <SearchBox value={search} onChangeText={setSearch} />
 
-      <ScrollView contentContainerStyle={styles.serviceList}>
-      {filteredRequests.length > 0 ? (
-        filteredRequests.map((request, index) => (
-          <ReqCard
-            key={index}
-            title={request.serviceTitle}
-            name={`${request.firstname} ${request.lastname}`} // Combine firstname and lastname
-            description={request.servicedesc}
-            stars={request.stars} // Assuming you have stars in your response
-          />
-        ))
-      ) : (
-        <Text style={styles.noResultsText}>No service requests found.</Text>
-      )}
-    </ScrollView>
-    </>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {filteredRequests.length > 0 ? (
+          filteredRequests.map((request) => (
+            <ReqCard
+              key={request.serviceid}
+              id={request.serviceid}
+              title={request.serviceTitle}
+              name={`${request.firstname} ${request.lastname}`} // Combine firstname and lastname
+              description={request.servicedesc}
+              stars={request.stars || 0} // Assuming stars is in the response, otherwise default to 0
+            />
+          ))
+        ) : (
+          <Text style={styles.noResultsText}>No results found</Text>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 };
-
 export default ServiceListings;
 
 const styles = StyleSheet.create({
