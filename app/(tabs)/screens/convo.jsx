@@ -12,15 +12,115 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { supabase } from "../../../lib/supabase"; // Adjust this path to your supabase configuration
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { getDate } from "date-fns";
 
 const Convo = () => {
   const [messages, setMessages] = useState([]); // the messages that have been sent
   const [message, setMessage] = useState(""); // a new message to be sent
   const scrollViewRef = useRef(null);
 
+  const [accountId, setAccountId] = useState();
+  const [myTypeId, setmyTypeId] = useState();
+  const [myAccType, setMyAccType] = useState();
+
   //get chat id from async storage
   const { chatid } = useLocalSearchParams();
   console.log("CHATID RECEIVE ROUTER: ", chatid);
+  useEffect(() => {
+    const getLoggedInAccId = async () => {
+      try {
+        const storedAccountId = await AsyncStorage.getItem("accountId");
+        setAccountId(storedAccountId ? parseInt(storedAccountId, 10) : null);
+      } catch (err) {
+        console.error("Failed to retrieve account ID:", err);
+      }
+    };
+
+    getLoggedInAccId();
+  }, []); // Runs only once when the component mounts
+
+  useEffect(() => {
+    const fetchAndStoreUserType = async () => {
+      if (!accountId) {
+        console.warn("Account ID is not set");
+        return;
+      }
+      try {
+        const { data: userAccountData, error: userAccountError } =
+          await supabase
+            .from("user_account")
+            .select("userid")
+            .eq("accountid", accountId)
+            .single();
+
+        if (userAccountError) {
+          throw userAccountError;
+        }
+
+        const userId = userAccountData.userid;
+
+        const { data: userTableData, error: userTableError } = await supabase
+          .from("user_table")
+          .select("usertype")
+          .eq("userid", userId)
+          .single();
+
+        if (userTableError) {
+          throw userTableError;
+        }
+
+        const userType = userTableData.usertype; // Extract user type
+        setMyAccType(userType); // Update state with user type
+        await AsyncStorage.setItem("userType", userType); // Store user type locally
+      } catch (error) {
+        console.error("Error fetching or storing data:", error);
+      }
+    };
+
+    if (accountId) {
+      fetchAndStoreUserType();
+    }
+  }, [accountId]); // Runs whenever accountId changes
+
+  useEffect(() => {
+    const getMyTypeId = async () => {
+      try {
+        let data, error;
+
+        if (myAccType === "Student") {
+          ({ data, error } = await supabase
+            .from("chat")
+            .select("studentid")
+            .eq("chatid", chatid)
+            .single());
+        } else {
+          ({ data, error } = await supabase
+            .from("chat")
+            .select("clientid")
+            .eq("chatid", chatid)
+            .single());
+        }
+
+        if (error) {
+          console.error("Error fetching data:", error);
+          return; // Exit early if there's an error
+        }
+
+        const id = myAccType === "Student" ? data?.studentid : data?.clientid;
+
+        if (id) {
+          setmyTypeId(id);
+        } else {
+          console.warn("ID not found in the response data.");
+        }
+      } catch (err) {
+        console.error("Unexpected error:", err);
+      }
+    };
+
+    // Call the function
+    getMyTypeId();
+  }, [myAccType, chatid]); // Add dependencies if needed
 
   // Fetch messages from the database
   const fetchMessages = async () => {
@@ -53,6 +153,43 @@ const Convo = () => {
       console.error("Error fetching messages:", err);
     }
   };
+
+  const handleSend = async (message) => {
+    if (!message.trim()) {
+      console.warn("Message cannot be empty.");
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.from("message_logs").insert([
+        {
+          timesent: formatDateToYYYYMMDD(new Date().toISOString()),
+          messagecontent: message.trim(), // Trim whitespace from message
+          chatid: chatid,
+          clientid: myAccType === "Client" ? myTypeId : null,
+          studentid: myAccType === "Student" ? myTypeId : null,
+        },
+      ]);
+
+      if (error) {
+        console.error("Error sending message:", error);
+        return;
+      }
+
+      console.log("Message sent successfully:", data);
+      setMessage(""); // Clear the input field
+    } catch (err) {
+      console.error("Unexpected error while sending message:", err);
+    }
+  };
+
+  function formatDateToYYYYMMDD(date) {
+    const selectedDate = new Date(date);
+    const year = selectedDate.getFullYear();
+    const month = (selectedDate.getMonth() + 1).toString().padStart(2, "0");
+    const day = selectedDate.getDate().toString().padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
 
   useEffect(() => {
     // Fetch initial messages
