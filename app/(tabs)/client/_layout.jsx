@@ -1,4 +1,4 @@
-import { Tabs } from "expo-router";
+import { router, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity, Alert } from "react-native";
 
@@ -6,6 +6,7 @@ export default function Layout() {
   const handleLogout = () => {
     // Add your logout logic here
     Alert.alert("Logout", "You have logged out successfully!");
+    router.push("/studentlogin");
   };
 
   return (
