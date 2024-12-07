@@ -47,7 +47,7 @@ const Layout = () => {
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => {
-                router.back(); // Navigate back when pressed
+                router.push("/(tabs)/student/findjob");
               }}
             >
               <Ionicons
