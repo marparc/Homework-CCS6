@@ -43,6 +43,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#000",
+    textTransform: "uppercase",
   },
   description: {
     fontSize: 12,
