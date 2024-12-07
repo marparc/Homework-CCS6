@@ -6,12 +6,14 @@ import Button from "@/components/ui/buttons";
 import ProfileCard from "@/components/ui/profilecard";
 import TextCard from "@/components/ui/textcard";
 import { supabase } from "../../../lib/supabase";
+import * as Location from "expo-location"; // Import Location from expo-location
 
 const ViewRequest = () => {
   const router = useRouter();
   const [jobDetails, setJobDetails] = useState(null); // State to store job details
   const [clientDetails, setClientDetails] = useState(null); // State to store client details
   const [loading, setLoading] = useState(true);
+  const [location, setLocation] = useState(null); // State to store location (city)
   const { requestid } = useLocalSearchParams();
   console.log("HERE IN VIEW REQUEST: ", requestid);
 
@@ -68,6 +70,9 @@ const ViewRequest = () => {
           accountName: accountData.account_name,
         }));
 
+        // Step 5: Fetch job location details (city name from latitude and longitude)
+        getJobLocationDetails(jobData.locationlat, jobData.locationlong);
+
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch job details:", error.message);
@@ -80,12 +85,37 @@ const ViewRequest = () => {
     }
   }, [requestid]);
 
-  if (loading) {
-    return <Text>Loading...</Text>; // Show loading state until data is fetched
-  }
+  // Function to fetch the city based on latitude and longitude
+  const getJobLocationDetails = async (latitude, longitude) => {
+    try {
+      if (latitude && longitude) {
+        const geocode = await Location.reverseGeocodeAsync({
+          latitude,
+          longitude,
+        });
+
+        console.log("Geocode:", geocode);
+
+        const address = geocode[0];
+        const formattedAddress = address
+          ? `${address.city || "Unknown city"}, ${
+              address.country || "Unknown country"
+            }`
+          : "Address not available";
+
+        setLocation(formattedAddress); // Store formatted location in state
+        console.log("Formatted Location:", formattedAddress);
+      } else {
+        setLocation("Location not available");
+      }
+    } catch (error) {
+      console.error("Error retrieving location or geocode:", error);
+      setLocation("Failed to retrieve job location details");
+    }
+  };
 
   if (loading) {
-    return <Text>Loading...</Text>;
+    return <Text>Loading...</Text>; // Show loading state until data is fetched
   }
 
   return (
@@ -98,7 +128,7 @@ const ViewRequest = () => {
           status={jobDetails.jobstatus}
           client={jobDetails.accountName}
           stars="5"
-          location={`${jobDetails.locationlat}, ${jobDetails.locationlong}`}
+          location={location || "Location not available"} // Display the formatted city or location
           description={jobDetails.jobdescription}
           pay={jobDetails.jobpay}
         />
