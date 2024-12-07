@@ -7,6 +7,7 @@ import ProfileCard from "@/components/ui/profilecard";
 import TextCard from "@/components/ui/textcard";
 import { supabase } from "../../../lib/supabase";
 import * as Location from "expo-location"; // Import Location from expo-location
+import { Alert } from "react-native";
 
 const ViewRequest = () => {
   const router = useRouter();
@@ -103,7 +104,7 @@ const ViewRequest = () => {
             }`
           : "Address not available";
 
-        setLocation(formattedAddress); // Store formatted location in state
+        setLocation(formattedAddress);
         console.log("Formatted Location:", formattedAddress);
       } else {
         setLocation("Location not available");
@@ -114,8 +115,176 @@ const ViewRequest = () => {
     }
   };
 
+  const handleDecline = async () => {
+    Alert.alert(
+      "Confirm Decline",
+      "Are you sure you want to decline this job request?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Decline Cancelled"),
+          style: "cancel",
+        },
+        {
+          text: "Decline",
+          onPress: async () => {
+            try {
+              const { error: jobError } = await supabase
+                .from("job_listing")
+                .update({ jobstatus: "Declined" })
+                .eq("requestid", requestid);
+
+              if (jobError) {
+                throw new Error(
+                  `Error updating job status: ${jobError.message}`
+                );
+              }
+
+              const { error: requestError } = await supabase
+                .from("service_request")
+                .update({ requeststatus: "Declined" })
+                .eq("requestid", requestid);
+
+              if (requestError) {
+                throw new Error(
+                  `Error updating request status: ${requestError.message}`
+                );
+              }
+
+              console.log("Request and job status updated to 'Declined'");
+
+              router.push("/student/services");
+            } catch (error) {
+              console.error("Error handling decline:", error.message);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const handleApprove = async () => {
+    Alert.alert(
+      "Confirm Approval",
+      "Are you sure you want to accept this job request?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Approval Cancelled"),
+          style: "cancel",
+        },
+        {
+          text: "Approve",
+          onPress: async () => {
+            try {
+              const { error: jobError } = await supabase
+                .from("job_listing")
+                .update({ jobstatus: "In Progress" })
+                .eq("requestid", requestid);
+
+              if (jobError) {
+                throw new Error(
+                  `Error updating job status: ${jobError.message}`
+                );
+              }
+
+              const { error: requestError } = await supabase
+                .from("service_request")
+                .update({ requeststatus: "Accepted" })
+                .eq("requestid", requestid);
+
+              if (requestError) {
+                throw new Error(
+                  `Error updating request status: ${requestError.message}`
+                );
+              }
+
+              const { data: serviceRequestData, error: serviceRequestError } =
+                await supabase
+                  .from("service_request")
+                  .select("serviceid")
+                  .eq("requestid", requestid)
+                  .single();
+
+              if (serviceRequestError) {
+                throw new Error(
+                  `Error fetching serviceid: ${serviceRequestError.message}`
+                );
+              }
+
+              const serviceid = serviceRequestData?.serviceid;
+              if (!serviceid) {
+                throw new Error(
+                  "Service ID not found in service_request table."
+                );
+              }
+
+              const { data: serviceData, error: serviceError } = await supabase
+                .from("services")
+                .select("studentid")
+                .eq("serviceid", serviceid)
+                .single();
+
+              if (serviceError) {
+                throw new Error(
+                  `Error fetching studentid: ${serviceError.message}`
+                );
+              }
+
+              const studentid = serviceData?.studentid;
+              if (!studentid) {
+                throw new Error("Student ID not found in services table.");
+              }
+
+              const { data: existingChats, error: chatError } = await supabase
+                .from("chat")
+                .select("chatid");
+
+              if (chatError) {
+                throw new Error(
+                  `Error fetching chat data: ${chatError.message}`
+                );
+              }
+
+              const nextChatId =
+                existingChats.length > 0
+                  ? Math.max(...existingChats.map((chat) => chat.chatid)) + 1
+                  : 1;
+
+              const { error: insertChatError } = await supabase
+                .from("chat")
+                .insert([
+                  {
+                    chatid: nextChatId,
+                    clientid: jobDetails.clientid,
+                    studentid: studentid,
+                  },
+                ]);
+
+              if (insertChatError) {
+                throw new Error(
+                  `Error inserting chat data: ${insertChatError.message}`
+                );
+              }
+
+              console.log(
+                "Request and job status updated, and new chat created."
+              );
+
+              router.push("/student/services");
+            } catch (error) {
+              console.error("Error handling approve:", error.message);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   if (loading) {
-    return <Text>Loading...</Text>; // Show loading state until data is fetched
+    return <Text>Loading...</Text>;
   }
 
   return (
@@ -128,7 +297,7 @@ const ViewRequest = () => {
           status={jobDetails.jobstatus}
           client={jobDetails.accountName}
           stars="5"
-          location={location || "Location not available"} // Display the formatted city or location
+          location={location || "Location not available"}
           description={jobDetails.jobdescription}
           pay={jobDetails.jobpay}
         />
@@ -149,14 +318,14 @@ const ViewRequest = () => {
         title="Approve"
         type="dark"
         size="medium"
-        onPress={() => console.log("Confirmed")}
+        onPress={handleApprove}
       />
 
       <Button
         title="Decline"
         type="light"
         size="medium"
-        onPress={() => router.push("")}
+        onPress={handleDecline}
       />
     </ScrollView>
   );
