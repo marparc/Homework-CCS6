@@ -1,13 +1,9 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 
-const Chat = ({ receiver, message, onPress }) => {
+const Chat = ({ receiver, onPress }) => {
   // Get the first letter of the receiver's name
   const firstLetter = receiver.charAt(0).toUpperCase();
-
-  // Truncate message if it exceeds 33 characters
-  const truncatedMessage =
-    message.length > 33 ? message.substring(0, 33) + "..." : message;
 
   // Hover state (for web support)
   const [isHovered, setIsHovered] = useState(false);
@@ -27,7 +23,6 @@ const Chat = ({ receiver, message, onPress }) => {
       {/* Mid Section */}
       <View style={styles.mid}>
         <Text style={styles.receiver}>{receiver}</Text>
-        <Text style={styles.message}>{truncatedMessage}</Text>
       </View>
 
       {/* Right Section */}

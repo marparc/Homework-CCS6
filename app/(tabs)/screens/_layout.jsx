@@ -19,7 +19,7 @@ const Layout = () => {
       <Stack.Screen
         name="convo"
         options={{
-          title: "Chats",
+          title: "",
           headerTitleAlign: "center", // Center the header title
           headerLeft: () => (
             <TouchableOpacity

@@ -11,6 +11,7 @@ import Chat from "@/components/ui/chatcard"; // Assuming ChatCard supports `onPr
 import { supabase } from "../../../../lib/supabase"; // Ensure Supabase client is correctly imported
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import Message from "@/components/ui/message";
 
 const ChatList = () => {
   const [chatData, setChatData] = useState([]); // Ensure chatData starts as an empty array
@@ -117,25 +118,15 @@ const ChatList = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 20 }}>
         {chatData.map((chat) => (
-          <Pressable
+          <Chat
             key={chat.chatid}
-            style={{
-              padding: 10,
-              borderWidth: 1,
-              borderColor: "#000",
-              marginBottom: 10,
-            }}
+            receiver={chat.user.firstname + " " + chat.user.lastname}
             onPress={() => {
-              console.log("Navigating to chat:", chat.chatid);
               router.push(`/screens/convo?chatid=${chat.chatid}`);
             }}
-          >
-            <Text>
-              {chat.user.firstname} {chat.user.lastname}
-            </Text>
-          </Pressable>
+          />
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -143,15 +134,3 @@ const ChatList = () => {
 };
 
 export default ChatList;
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row", // Aligns children horizontally
-    paddingTop: 10,
-    marginLeft: 20,
-  },
-  headerText: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-});

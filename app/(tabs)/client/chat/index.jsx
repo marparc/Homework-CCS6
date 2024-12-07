@@ -7,6 +7,7 @@ import {
   Pressable,
 } from "react-native";
 import React, { useEffect, useState } from "react";
+import Chat from "@/components/ui/chatcard";
 import { supabase } from "../../../../lib/supabase"; // Ensure Supabase client is correctly imported
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -141,31 +142,17 @@ const ChatList = () => {
   }, [accountId]);
 
   return (
-    <SafeAreaView>
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
-        {error ? (
-          <Text style={{ color: "red", textAlign: "center" }}>{error}</Text>
-        ) : (
-          chatData.map((chat) => (
-            <Pressable
-              key={chat.chatid}
-              style={{
-                padding: 10,
-                borderWidth: 1,
-                borderColor: "#000",
-                marginBottom: 10,
-              }}
-              onPress={() => {
-                console.log("Navigating to chat:", chat.chatid);
-                router.push(`/screens/convo?chatid=${chat.chatid}`); //to be updated
-              }}
-            >
-              <Text>
-                {chat.user.firstname} {chat.user.lastname}
-              </Text>
-            </Pressable>
-          ))
-        )}
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 20 }}>
+        {chatData.map((chat) => (
+          <Chat
+            key={chat.chatid}
+            receiver={chat.user.firstname + " " + chat.user.lastname}
+            onPress={() => {
+              router.push(`/screens/convo?chatid=${chat.chatid}`);
+            }}
+          />
+        ))}
       </ScrollView>
     </SafeAreaView>
   );

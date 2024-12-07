@@ -154,6 +154,23 @@ const Convo = () => {
     }
   };
 
+  function formatDateToYYYYMMDDHHMMSS(date) {
+    const selectedDate = new Date(date);
+
+    // Format the date to YYYY-MM-DD HH:MM:SS format
+    const year = selectedDate.getFullYear(); // Full year (e.g., 2024)
+    const month = (selectedDate.getMonth() + 1).toString().padStart(2, "0"); // Months are 0-indexed, pad with leading zero
+    const day = selectedDate.getDate().toString().padStart(2, "0"); // Ensure day is 2 digits, pad with leading zero
+
+    const hours = selectedDate.getHours().toString().padStart(2, "0"); // Hours in 24-hour format, pad with leading zero
+    const minutes = selectedDate.getMinutes().toString().padStart(2, "0"); // Minutes, pad with leading zero
+    const seconds = selectedDate.getSeconds().toString().padStart(2, "0"); // Seconds, pad with leading zero
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`; // Return in the format YYYY-MM-DD HH:MM:SS
+  }
+
+  const formattedCurrentDate = formatDateToYYYYMMDDHHMMSS(new Date());
+
   const handleSend = async (message) => {
     if (!message.trim()) {
       console.warn("Message cannot be empty.");
@@ -163,7 +180,7 @@ const Convo = () => {
     try {
       const { data, error } = await supabase.from("message_logs").insert([
         {
-          timesent: formatDateToYYYYMMDD(new Date().toISOString()),
+          timesent: formattedCurrentDate,
           messagecontent: message.trim(), // Trim whitespace from message
           chatid: chatid,
           clientid: myAccType === "Client" ? myTypeId : null,
@@ -182,14 +199,6 @@ const Convo = () => {
       console.error("Unexpected error while sending message:", err);
     }
   };
-
-  function formatDateToYYYYMMDD(date) {
-    const selectedDate = new Date(date);
-    const year = selectedDate.getFullYear();
-    const month = (selectedDate.getMonth() + 1).toString().padStart(2, "0");
-    const day = selectedDate.getDate().toString().padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
 
   useEffect(() => {
     // Fetch initial messages
