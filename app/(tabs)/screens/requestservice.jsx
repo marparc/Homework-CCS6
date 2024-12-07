@@ -31,7 +31,7 @@ const RequestServiceJob = () => {
   const { selectedrequest } = useLocalSearchParams();
 
   const [accountId, setAccountId] = useState(null);
-  console.log("FROM THE ROUTER:", selectedrequest);
+  console.log("FROM THE ROUrrrTER:", selectedrequest);
 
   useEffect(() => {
     const fetchAccountId = async () => {
@@ -82,7 +82,7 @@ const RequestServiceJob = () => {
 
   const handlePublish = async () => {
     try {
-      // 1. Fetch the `userid` from the `user_account` table using `accountId`
+      // Step 1: Fetch user data to get the user ID
       const { data: userData, error: userError } = await supabase
         .from("user_account")
         .select("userid")
@@ -99,7 +99,7 @@ const RequestServiceJob = () => {
 
       const userid = userData.userid;
 
-      // 2. Fetch the `clientid` from the `client_table` using `userid`
+      // Step 2: Fetch client data to get the client ID
       const { data: clientData, error: clientError } = await supabase
         .from("client_table")
         .select("clientid")
@@ -116,34 +116,98 @@ const RequestServiceJob = () => {
 
       const clientid = clientData.clientid;
 
-      // 3. Get the count of existing service requests to generate the new requestid
-      const { data: countData, error: countError } = await supabase
-        .from("service_request")
-        .select("requestid", { count: "exact" });
+      // Step 3: Get the service request ID (from selectedrequest param)
+      const serviceId = selectedrequest;
 
-      if (countError) {
-        throw new Error(`Failed to fetch request count: ${countError.message}`);
+      // Step 4: Get the current date for 'dateposted'
+      const dateposted = new Date().toISOString();
+
+      // Step 5: Get the location details if the job is onsite
+      let locationlat = null;
+      let locationlong = null;
+
+      if (jobType === "Onsite" && isLocationRetrieved) {
+        // If the job is onsite, use the retrieved location coordinates
+        const currentLocation = await Location.getCurrentPositionAsync({});
+        locationlat = currentLocation.coords.latitude;
+        locationlong = currentLocation.coords.longitude;
       }
 
-      const newRequestId = countData.length + 1; // Calculate the new requestid
+      // Step 6: Get the new jobid by counting the number of records in job_listing
+      const { count, error: countError } = await supabase
+        .from("job_listing")
+        .select("jobid", { count: "exact" });
 
-      // 4. Insert into the `service_request` table with the `clientid` and `serviceid`
-      const serviceId = selectedrequest; // Assuming `selectedrequest` is the serviceId
+      if (countError) {
+        throw new Error(`Failed to fetch job count: ${countError.message}`);
+      }
 
-      const { data, error } = await supabase.from("service_request").insert([
-        {
-          requestid: newRequestId, // Set the new requestid
-          requeststatus: "Pending", // Setting the status to Pending
-          clientid: clientid, // Use the fetched clientid
-          serviceid: serviceId, // The service ID associated with the request
-        },
-      ]);
+      const newJobId = count + 1; // Increment the count by 1 to get the new jobid
 
-      if (error) throw new Error(`Failed to publish request: ${error.message}`);
+      // Step 7: Insert into the 'service_request' table
+      const { data: countData, error: countErrorServiceRequest } =
+        await supabase
+          .from("service_request")
+          .select("requestid", { count: "exact" });
 
-      console.log("Request published successfully:", data);
+      if (countErrorServiceRequest) {
+        throw new Error(
+          `Failed to fetch request count: ${countErrorServiceRequest.message}`
+        );
+      }
 
-      // Navigate to the confirmation screen
+      const newRequestId = countData.length + 1;
+
+      const { data: serviceRequestData, error: serviceRequestError } =
+        await supabase.from("service_request").insert([
+          {
+            requestid: newRequestId,
+            requeststatus: "Pending",
+            clientid: clientid,
+            serviceid: serviceId,
+          },
+        ]);
+
+      if (serviceRequestError) {
+        throw new Error(
+          `Failed to publish service request: ${serviceRequestError.message}`
+        );
+      }
+
+      console.log(
+        "Service request published successfully:",
+        serviceRequestData
+      );
+
+      // Step 8: Insert into the 'job_listing' table with the new jobid
+      const { data: jobListingData, error: jobListingError } = await supabase
+        .from("job_listing")
+        .insert([
+          {
+            jobid: newJobId, // Use the calculated jobid
+            jobtitle: title,
+            jobdescription: description,
+            jobpay: pay,
+            jobtype: jobType,
+            locationlat: locationlat,
+            locationlong: locationlong,
+            duedate: deadline, // Assuming 'deadline' is in the correct format
+            dateposted: dateposted,
+            jobstatus: "Private", // Job status is set to 'Private'
+            clientid: clientid,
+            requestid: newRequestId,
+          },
+        ]);
+
+      if (jobListingError) {
+        throw new Error(
+          `Failed to insert into job_listing table: ${jobListingError.message}`
+        );
+      }
+
+      console.log("Job listing inserted successfully:", jobListingData);
+
+      // Step 9: Navigate to the request sent screen
       router.push("/(tabs)/screens/requestsent");
     } catch (error) {
       console.error("Error publishing request:", error.message);
