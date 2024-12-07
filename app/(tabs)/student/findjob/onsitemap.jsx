@@ -5,6 +5,7 @@ import * as Location from "expo-location";
 import Button from "@/components/ui/buttons";
 import { useRouter } from "expo-router";
 import { supabase } from "../../../../lib/supabase";
+import { Image } from "react-native";
 
 export default function JobMap() {
   const [location, setLocation] = useState(null);
@@ -95,6 +96,7 @@ export default function JobMap() {
               //job is an object for the jobData array
               <Marker
                 key={job.jobid}
+                icon={require("../../student/findjob/HW.png")}
                 coordinate={{
                   latitude: job.locationlat,
                   longitude: job.locationlong,
