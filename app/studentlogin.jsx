@@ -7,14 +7,26 @@ import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+//09876352671
 const LoginStudent = () => {
   const [contactNumber, setContactNumber] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [contactNumberError, setContactNumberError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const router = useRouter();
 
   const VerifyLogin = async () => {
+    console.log("triggered verifylogin");
+    setContactNumberError("");
+    setPasswordError("");
+
+    if (!contactNumber || !password) {
+      // Validate input fields
+      if (!contactNumber) setContactNumberError("Contact number is required.");
+      if (!password) setPasswordError("Password is required.");
+      return;
+    }
+
     const { data: rpcData, error: rpcError } = await supabase.rpc(
       "get_userid",
       {
@@ -26,32 +38,47 @@ const LoginStudent = () => {
       console.error("Failed to retrieve user ID:", rpcError);
       return;
     }
-    if (!contactNumber || !password) {
-      console.log("Please enter both account ID and password.");
+    if (!rpcData) {
+      console.log("User ID not found.");
+      setContactNumberError("Account ID does not exist.");
       return;
     }
-    if (rpcData) {
-      const userid = rpcData;
-      console.log("rpcdata: ", rpcData);
-      console.log("userid: ", userid);
-      const { data, error } = await supabase
-        .from("user_account")
-        .select("accountid, account_password")
-        .eq("userid", userid)
-        .eq("account_password", password)
-        .eq("account_status", "Verified");
 
-      if (error) {
-        console.error("Login failed:", error);
-      } else if (data.length > 0) {
+    const userid = rpcData;
+
+    console.log("rpcdata: ", rpcData);
+    console.log("userid: ", userid);
+    const { data, error } = await supabase
+      .from("user_account")
+      .select("accountid, account_password, account_status")
+      .eq("userid", userid)
+      .eq("account_password", password)
+      .eq("account_status", "Verified");
+
+    if (error) {
+      console.error("Login failed:", error);
+    }
+
+    console.log("Fetched user account data:", data); // Log the fetched data
+
+    if (data && data.length > 0) {
+      const user = data[0];
+      console.log("account_status:", user.account_status);
+      if (user.account_status !== "Verified") {
+        console.log("Account status is not Verified.");
+        setContactNumberError("Account status is not Verified.");
+      } else if (user.account_password !== password) {
+        console.log("Password does not match.");
+        setPasswordError("Password does not match.");
+      } else {
         const accountid = data[0].accountid;
-        const account_password = data[0].account_password;
 
         const { data: userTypeData, error: userTypeError } = await supabase
           .from("user_table")
           .select("usertype")
           .eq("userid", userid)
           .single();
+
         if (userTypeData) {
           const userType = userTypeData.usertype;
           if (userType === "Student") {
@@ -66,27 +93,17 @@ const LoginStudent = () => {
             router.push("/(tabs)/client/myjoblistings");
           }
         }
-      } else {
-        // ingna marc nga mo create ug ui for this
-        if (data.length === 0) {
-          console.log("Login failed. Please check the following:");
-
-          if (data.some((item) => item.account_status !== "Verified")) {
-            console.log("Account status is not Verified.");
-          }
-          if (data.some((item) => item.contactnumber !== contactNumber)) {
-            console.log("Account ID does not match.");
-          }
-          if (data.some((item) => item.account_password !== inputtedpassword)) {
-            console.log("Password does not match.");
-          }
-        }
-        console.log("Invalid credentials or account not verified");
       }
     } else {
-      console.log("User ID not found in rpcData.");
-      return;
+      // ingna marc nga mo create ug ui for this
+      console.log("Login failed. Please check the following:");
+      setContactNumber("");
+      setPassword("");
+
+      console.log("Invalid credentials or account not verified");
+      setContactNumberError("Invalid credentials or account not verified");
     }
+    //} else if (contactNumber === "aapadmin" && password === "aapadmin") {
   };
 
   return (
@@ -98,12 +115,19 @@ const LoginStudent = () => {
           value={contactNumber}
           onChangeText={setContactNumber}
         />
+        {contactNumberError ? (
+          <Text style={styles.errorText}>{contactNumberError}</Text>
+        ) : null}
+
         <InputField
           title="Password"
           size="medium"
           value={password}
           onChangeText={setPassword}
         />
+        {passwordError ? (
+          <Text style={styles.errorText}>{passwordError}</Text>
+        ) : null}
       </View>
 
       <View style={styles.buttonContainer}>
@@ -141,5 +165,8 @@ const styles = StyleSheet.create({
   footerContainer: {
     marginTop: 20, // Space between footer items
     alignItems: "center", // Center footer elements horizontally
+  },
+  errorText: {
+    color: "red",
   },
 });
