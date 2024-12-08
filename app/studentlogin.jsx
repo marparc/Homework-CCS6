@@ -32,7 +32,7 @@ const LoginStudent = () => {
       // You can store admin data if needed, then navigate to the admin page
       await AsyncStorage.setItem("accountId", "aapadmin");
       await AsyncStorage.setItem("password", "aapadmin");
-      router.push("/sysadmin/accrequests"); // Change this to your actual admin page
+      router.push("/(tabs)/sysadmin"); // Change this to your actual admin page
       return; // Exit the function early to avoid further database checks
     }
 
