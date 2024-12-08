@@ -4,10 +4,12 @@ import { Alert, TouchableOpacity } from "react-native";
 import React from "react";
 
 export default function Layout() {
-  const handleLogout = () => {
+  const handleLogout = async () => {
     // Add your logout logic here
     Alert.alert("Logout", "You have logged out successfully!");
-    router.push("/studentlogin");
+    await AsyncStorage.removeItem("accountId");
+    await AsyncStorage.removeItem("password");
+    router.replace("/studentlogin");
   };
 
   return (

@@ -1,4 +1,11 @@
-import { SafeAreaView, ScrollView, Text, StyleSheet, View } from "react-native";
+import {
+  SafeAreaView,
+  ScrollView,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 import React, { useState, useEffect } from "react";
 import Button from "@/components/ui/buttons";
 import { supabase } from "../../../lib/supabase";
@@ -9,7 +16,6 @@ const AccountRequests = () => {
   const router = useRouter();
   const [accounts, setAccounts] = useState([]);
   const [filter, setFilter] = useState("Pending");
-  const [isApprovedActive, setIsApprovedActive] = useState(true);
   const [isPendingActive, setIsPendingActive] = useState(true);
   const [error, setError] = useState(null);
 
@@ -43,15 +49,30 @@ const AccountRequests = () => {
   const handlePendingClick = () => {
     setFilter("Pending");
     setIsPendingActive(true); // Show "To Do" jobs
-    setIsApprovedActive(false);
   };
 
   // Handle "Approved" tab click
   const handleApprovedClick = () => {
     setFilter("Verified");
     setIsPendingActive(false); // Show "Completed" jobs
-    setIsApprovedActive(true);
   };
+
+  const handleLogout = async () => {
+    try {
+      // Clear stored data
+      await AsyncStorage.removeItem("accountId");
+      await AsyncStorage.removeItem("password");
+
+      // Log message for debugging
+      console.log("User logged out.");
+
+      // Navigate back to login screen
+      router.replace("/login"); // Use replace to prevent going back to the current screen
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  };
+
   return (
     <>
       <SafeAreaView style={styles.header}>
@@ -65,12 +86,11 @@ const AccountRequests = () => {
         />
         <Button
           title="Approved"
-          type={isApprovedActive ? "light" : "dark"}
+          type={isPendingActive ? "light" : "dark"}
           size="small"
           onPress={handleApprovedClick}
         />
       </SafeAreaView>
-
       <ScrollView contentContainerStyle={styles.jobList}>
         {accounts.length > 0 ? (
           accounts.map((account) => (
@@ -78,12 +98,12 @@ const AccountRequests = () => {
               key={account.accountid}
               title={account.account_name}
               description={`Status: ${account.account_status}`}
-              onPress={() => {
+              /*onPress={() => {
                 console.log("ROUTER:", account.accountid);
                 router.push(
                   `/screens/manageaccount?selectedaccount=${account.accountid}`
                 );
-              }}
+              }}*/
             />
           ))
         ) : (
@@ -92,6 +112,11 @@ const AccountRequests = () => {
           </Text>
         )}
       </ScrollView>
+      {/* headerRight: () => (
+      <TouchableOpacity onPress={handleLogout} style={{ marginRight: 10 }}>
+        <Ionicons name="log-out-outline" size={24} color="white" />
+      </TouchableOpacity>
+      ),*/}
     </>
   );
 };
