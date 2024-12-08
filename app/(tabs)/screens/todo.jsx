@@ -1,4 +1,4 @@
-import { StyleSheet, ScrollView, Text } from "react-native";
+import { StyleSheet, ScrollView, Text, Button as RNButton } from "react-native";
 import React, { useEffect, useState } from "react";
 import ListingDetails from "../../../components/ui/jobdetailsexpanded";
 import Button from "@/components/ui/buttons";
@@ -9,18 +9,20 @@ import { format } from "date-fns";
 import * as Location from "expo-location";
 
 const ToDoDetails = () => {
-  const { selectedjobid } = useLocalSearchParams();
+  const { selectedjobid, jobstatus } = useLocalSearchParams();
 
   const [jobData, setJobData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
+  const router = useRouter();
+
+  console.log("selectedjobid: ", selectedjobid);
+  console.log("jobstatus: ", jobstatus);
 
   const fetchJobDetails = async () => {
     try {
-      //console.log("Fetching job details for jobid:", selectedjobid);
-
       // Fetch job details from job_listing
       const { data: jobData, error: jobError } = await supabase
         .from("job_listing")
@@ -31,8 +33,6 @@ const ToDoDetails = () => {
       if (jobError) {
         throw jobError; // Handle job fetching error
       }
-
-      //console.log("Fetched job data:", jobData);
 
       // Now, fetch client details using clientid from the job_data
       const { data: clientData, error: clientError } = await supabase
@@ -45,8 +45,6 @@ const ToDoDetails = () => {
         throw clientError; // Handle client fetching error
       }
 
-      //console.log("Fetched client data:", clientData);
-
       // Now, fetch user details using the userid from the client_data
       const { data: userData, error: userError } = await supabase
         .from("user_table")
@@ -57,8 +55,6 @@ const ToDoDetails = () => {
       if (userError) {
         throw userError; // Handle user fetching error
       }
-
-      //console.log("Fetched user data:", userData);
 
       // Combine all fetched data into one object and set state
       setJobData({
@@ -117,6 +113,11 @@ const ToDoDetails = () => {
     }
   }, [jobData]);
 
+  // Handle navigation when "Back" button is clicked
+  const handleBackClick = () => {
+    router.back(); // Navigate back to the previous page
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.contentContainer}>
       {/* Conditional Rendering: Only render ListingDetails if jobData is available */}
@@ -135,17 +136,7 @@ const ToDoDetails = () => {
               ? jobData.client.client_organization
               : "Not available"
           }
-          location={
-            //yaw ra sa ni iremove
-            //let geocode = await Location.reverseGeocodeAsync({
-            //  latitude: currentLocation.coords.latitude,
-            //  longitude: currentLocation.coords.longitude,
-            //});
-            //jobData.job.locationlat && jobData.job.locationlong
-            //  ? `${jobData.job.locationlat}, ${jobData.job.locationlong}`
-            //  : "Not available"
-            location
-          }
+          location={location}
           description={
             jobData.job.jobdescription || "No description available."
           }
@@ -154,6 +145,7 @@ const ToDoDetails = () => {
       ) : (
         <Text>Loading job details...</Text>
       )}
+
       <ProfileCard
         profiletype="C"
         name={
@@ -166,22 +158,33 @@ const ToDoDetails = () => {
         } // Client user (name) from userData
       />
 
-      <Button
-        title="Confirm"
-        type="dark"
-        size="medium"
-        onPress={() => console.log("Confirmed")}
-      />
-      <Button
-        title="Go to Messages"
-        type="light"
-        size="medium"
-        onPress={() => router.push("/screens/convo")}
-      />
+      {/* Conditionally render buttons based on jobstatus */}
+      {jobstatus === "In Progress" ? (
+        <>
+          <Button
+            title="Confirm"
+            type="dark"
+            size="medium"
+            onPress={() => console.log("Confirmed")}
+          />
+          <Button
+            title="Go to Messages"
+            type="light"
+            size="medium"
+            onPress={() => router.push("/(tabs)/student/chat")}
+          />
+        </>
+      ) : jobstatus === "Completed" ? (
+        <Button
+          title="Back"
+          type="light"
+          size="medium"
+          onPress={handleBackClick} // Navigate back to previous screen
+        />
+      ) : null}
     </ScrollView>
   );
 };
-
 const styles = StyleSheet.create({
   contentContainer: {
     flexGrow: 1,

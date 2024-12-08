@@ -6,16 +6,32 @@ import InputField from "@/components/ui/inputfield";
 import Button from "@/components/ui/buttons";
 import { supabase } from "../../../lib/supabase";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ViewJobListing = () => {
   const router = useRouter();
-  const { selectedJobListing } = useLocalSearchParams(); // The id comes from the router params
+  const { selectedJobListing } = useLocalSearchParams();
+  const [accountId, setAccountId] = useState(null);
+  const [jobDetails, setJobDetails] = useState(null);
+  const [userAccountName, setUserAccountName] = useState(null);
+  const [message, setMessage] = useState(""); // For storing the input message
+  const [error, setError] = useState(null); // For capturing error messages
 
-  // Initial state for job details
-  const [jobDetails, setJobDetails] = useState([]);
-  const [error, setError] = useState(null); // State for the selected job ID
+  console.log("selectedJobListing: ", selectedJobListing);
 
-  // Fetch job data when selectedJobListing changes
+  useEffect(() => {
+    const fetchAccountId = async () => {
+      try {
+        const storedAccountId = await AsyncStorage.getItem("accountId");
+        setAccountId(storedAccountId);
+      } catch (err) {
+        console.error("Failed to retrieve account ID from AsyncStorage:", err);
+      }
+    };
+
+    fetchAccountId();
+  }, []);
+
   useEffect(() => {
     const fetchJobData = async () => {
       if (!selectedJobListing) {
@@ -24,20 +40,54 @@ const ViewJobListing = () => {
       }
 
       try {
-        // Query the `job_listing` table for details matching the `selectedJobListing`
         const { data: jobData, error: jobError } = await supabase
           .from("job_listing")
           .select("*")
-          .eq("jobid", selectedJobListing); // Match job ID
+          .eq("jobid", selectedJobListing);
 
         if (jobError) {
           throw new Error(jobError.message);
         }
 
         if (jobData && jobData.length > 0) {
-          // Set job details state with fetched data
-          setJobDetails(jobData[0]); // Assuming the data array contains the job object
-          console.log("Job data fetched:", jobData[0]);
+          const job = jobData[0];
+          setJobDetails(job);
+          console.log("Job data fetched:", job);
+
+          const clientId = job.clientid;
+          const { data: clientData, error: clientError } = await supabase
+            .from("client_table")
+            .select("userid")
+            .eq("clientid", clientId)
+            .single();
+
+          if (clientError) {
+            throw new Error(clientError.message);
+          }
+
+          if (clientData) {
+            console.log("Client data fetched:", clientData);
+
+            const userId = clientData.userid;
+            const { data: userData, error: userError } = await supabase
+              .from("user_account")
+              .select("account_name")
+              .eq("userid", userId)
+              .single();
+
+            if (userError) {
+              throw new Error(userError.message);
+            }
+
+            if (userData) {
+              setUserAccountName(userData.account_name);
+              console.log("User account name fetched:", userData.account_name);
+            } else {
+              console.log("No user account found for the given userid.");
+            }
+          } else {
+            console.log("No client data found for the given clientid.");
+          }
         } else {
           console.log("No job listings found for the given ID.");
           setJobDetails(null);
@@ -51,40 +101,117 @@ const ViewJobListing = () => {
     fetchJobData();
   }, [selectedJobListing]);
 
+  const handleSendApplication = async () => {
+    try {
+      const { count, error: countError } = await supabase
+        .from("application")
+        .select("applicationid", { count: "exact" });
+
+      if (countError) {
+        throw new Error(countError.message);
+      }
+
+      const newApplicationId = count + 1;
+
+      const { data: accountData, error: accountError } = await supabase
+        .from("user_account")
+        .select("userid")
+        .eq("accountid", accountId)
+        .single();
+
+      if (accountError) {
+        throw new Error(accountError.message);
+      }
+
+      const userId = accountData?.userid;
+      if (!userId) {
+        throw new Error("User not found with the provided accountId.");
+      }
+
+      const { data: studentData, error: studentError } = await supabase
+        .from("student")
+        .select("studentid")
+        .eq("userid", userId)
+        .single();
+
+      if (studentError) {
+        throw new Error(studentError.message);
+      }
+
+      const studentId = studentData?.studentid;
+      if (!studentId) {
+        throw new Error("Student not found for the given userId.");
+      }
+
+      const { data, error } = await supabase.from("application").insert([
+        {
+          applicationid: newApplicationId,
+          applicationmessage: message,
+          applicationstatus: "Pending",
+          studentid: studentId,
+          jobid: selectedJobListing,
+        },
+      ]);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      console.log("Application submitted successfully:", data);
+
+      // Redirect to the submitted application page
+      router.push("/(tabs)/screens/submittedapplication");
+    } catch (err) {
+      console.error("Error submitting application:", err.message);
+      setError(err.message);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <ListingDetails
-          title={jobDetails.jobtitle}
-          jobType={jobDetails.jobtype}
-          posted={jobDetails.dateposted}
-          status={jobDetails.jobstatus}
-          client="Marc Warren" //to be updated
-          stars="5"
-          location="Dumaguete City"
-          description={jobDetails.jobdescription}
-          pay={jobDetails.jobpay}
-        />
+        {jobDetails ? (
+          <ListingDetails
+            title={jobDetails.jobtitle}
+            jobType={jobDetails.jobtype}
+            posted={jobDetails.dateposted}
+            status={jobDetails.jobstatus}
+            client={userAccountName || "Client Not Available"}
+            stars="5"
+            location="Dumaguete City"
+            description={jobDetails.jobdescription}
+            pay={jobDetails.jobpay}
+          />
+        ) : (
+          <Text>Loading job details...</Text>
+        )}
 
         <TextCard
           type="light"
           text="All personal information in your profile will be shared with the client. Once you click 'Send Application,' the client will review your profile. 
-
-You will receive a notification if your application is accepted, and you will then be directed to a private conversation with the client."
+          You will receive a notification if your application is accepted, and you will then be directed to a private conversation with the client."
         />
 
-        <InputField title="Enter message for Client" size="large" />
+        <InputField
+          title="Enter message for Client"
+          size="large"
+          value={message}
+          onChangeText={(text) => setMessage(text)} // Update the message state
+        />
 
         <Button
           title="Send Application"
           type="dark"
           size="medium"
-          onPress={() => {
-            router.push("/(tabs)/screens/submittedapplication");
-          }}
+          onPress={handleSendApplication} // Call the function to submit the application
         />
 
-        <Button title="Cancel" type="light" size="medium" />
+        <Button
+          title="Cancel"
+          type="light"
+          size="medium"
+          onPress={() => router.push("/(tabs)/student/findjob")} // Navigate to the "Find Jobs" screen
+        />
       </ScrollView>
     </View>
   );
@@ -93,11 +220,11 @@ You will receive a notification if your application is accepted, and you will th
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff", // Set a background color for the screen
+    backgroundColor: "#fff",
   },
   scrollContainer: {
-    padding: 16, // Add padding for better spacing
-    alignItems: "center", // Center child elements horizontally
+    padding: 16,
+    alignItems: "center",
   },
 });
 

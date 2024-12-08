@@ -9,7 +9,6 @@ const ServiceListings = () => {
   const [serviceRequests, setServiceRequests] = useState([]); // Full list of service requests
   const [search, setSearch] = useState(""); // Search text input
   const [filteredRequests, setFilteredRequests] = useState([]); // Filtered list
-  const [servicesData, setServicesData] = useState([]);
 
   useEffect(() => {
     const fetchServiceData = async () => {
@@ -69,7 +68,6 @@ const ServiceListings = () => {
           setServiceRequests(
             servicesWithUserInfo.filter((service) => service !== null)
           );
-          console.log("serviceRequests: ", serviceRequests);
         }
       } catch (error) {
         console.error("Error fetching data:", error.message);
@@ -79,7 +77,7 @@ const ServiceListings = () => {
     fetchServiceData();
   }, []);
 
-  // Update filtered requests when the search value changes
+  // Update filtered requests based on the search term
   useEffect(() => {
     const lowercasedSearch = search.toLowerCase();
     const filtered = serviceRequests.filter(
@@ -95,7 +93,11 @@ const ServiceListings = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <SearchBox value={search} onChangeText={setSearch} />
+      <SearchBox
+        value={search}
+        onChangeText={setSearch}
+        placeholder="Search services..."
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {filteredRequests.length > 0 ? (
@@ -116,18 +118,14 @@ const ServiceListings = () => {
     </SafeAreaView>
   );
 };
-export default ServiceListings;
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row", // Aligns children horizontally
-    paddingTop: 10,
-    marginLeft: 20,
+  container: {
+    flex: 1,
+    padding: 16,
   },
-  serviceList: {
-    padding: 50,
-    paddingTop: 10,
-    alignItems: "center",
+  scrollContainer: {
+    flexGrow: 1,
   },
   noResultsText: {
     fontSize: 16,
@@ -136,3 +134,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+
+export default ServiceListings;

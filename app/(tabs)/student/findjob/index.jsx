@@ -20,13 +20,13 @@ const FindJob = () => {
       <SafeAreaView style={styles.header}>
         <Button
           title="Onsite"
-          type={isOnsiteActive ? "dark" : "light"} // Change button type based on active state
+          type={isOnsiteActive ? "dark" : "light"}
           size="small"
           onPress={handleOnsiteClick}
         />
         <Button
           title="Remote"
-          type={isOnsiteActive ? "light" : "dark"} // Change button type based on active state
+          type={isOnsiteActive ? "light" : "dark"}
           size="small"
           onPress={handleRemoteClick}
         />

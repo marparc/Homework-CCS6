@@ -62,7 +62,6 @@ const RequestLists = () => {
   useEffect(() => {
     const fetchAccountData = async () => {
       try {
-        // Step 1: Fetch the user ID from the user_account table
         const { data: userAccountData, error: userAccountError } =
           await supabase
             .from("user_account")
@@ -76,7 +75,6 @@ const RequestLists = () => {
         const userId = userAccountData?.userid;
         if (!userId) throw new Error("User ID not found");
 
-        // Step 2: Fetch the student ID from the student table
         const { data: studentData, error: studentError } = await supabase
           .from("student")
           .select("studentid")
@@ -89,32 +87,22 @@ const RequestLists = () => {
         const studentId = studentData?.studentid;
         if (!studentId) throw new Error("Student ID not found");
 
-        // Step 3: Fetch services associated with the student ID
         const { data: servicesData, error: servicesError } = await supabase
           .from("services")
-          .select("serviceid, serviceTitle, servicedesc")
+          .select("serviceid")
           .eq("studentid", studentId);
-
+        console.log("servicesData: ", servicesData);
         if (servicesError)
           throw new Error(`Services Error: ${servicesError.message}`);
 
-        const servicesMap = servicesData.reduce((map, service) => {
-          map[service.serviceid] = {
-            serviceTitle: service.serviceTitle,
-            servicedesc: service.servicedesc,
-          };
-          return map;
-        }, {});
-
-        const serviceIds = servicesData.map((item) => item.serviceid);
-        if (serviceIds.length === 0)
+        if (servicesData.length === 0)
           throw new Error("No services found for this student");
 
-        // Step 4: Fetch service requests associated with the service IDs
+        const serviceIds = servicesData.map((service) => service.serviceid);
         const { data: serviceRequestData, error: serviceRequestError } =
           await supabase
             .from("service_request")
-            .select("requestid, requeststatus, clientid, serviceid") // Include serviceid for mapping
+            .select("requestid, clientid, serviceid, requeststatus")
             .in("serviceid", serviceIds)
             .eq("requeststatus", "Pending");
 
@@ -122,25 +110,46 @@ const RequestLists = () => {
           throw new Error(
             `Service Request Error: ${serviceRequestError.message}`
           );
+        console.log("serviceRequestData:", serviceRequestData);
+        const enrichedRequests = await Promise.all(
+          serviceRequestData.map(async (request) => {
+            const { data: jobListingData, error: jobListingError } =
+              await supabase
+                .from("job_listing")
+                .select("jobid, jobtitle, jobdescription")
+                .eq("requestid", request.requestid)
+                .single();
+            console.log("jobListingData:", jobListingData);
+            console.log("request.requestid:", request.requestid);
+            if (jobListingError)
+              throw new Error(`Job Listing Error: ${jobListingError.message}`);
 
-        // Step 5: Combine service requests with service details
-        const enrichedRequests = serviceRequestData.map((request) => ({
-          ...request,
-          serviceTitle:
-            servicesMap[request.serviceid]?.serviceTitle || "No Title",
-          servicedesc:
-            servicesMap[request.serviceid]?.servicedesc || "No Description",
-        }));
+            const service = servicesData.find(
+              (s) => s.serviceid === request.serviceid
+            );
 
-        // Set the enriched service requests in the state
+            return {
+              ...request,
+              serviceTitle: service?.serviceTitle || "No Title",
+              servicedesc: service?.servicedesc || "No Description",
+              jobid: jobListingData?.jobid || "No Job ID",
+              jobtitle: jobListingData?.jobtitle || "No Job Title",
+              jobdescription:
+                jobListingData?.jobdescription || "No Job Description",
+            };
+          })
+        );
+
         setServiceRequests(enrichedRequests);
-        console.log("Enriched Service Requests:", enrichedRequests);
+        console.log(
+          "Enriched Service Requests with Job Listings:",
+          enrichedRequests
+        );
       } catch (error) {
         console.error("Error fetching account data:", error.message);
       }
     };
 
-    // Only fetch data when accountId is available
     if (accountId) {
       fetchAccountData();
     }
@@ -150,13 +159,19 @@ const RequestLists = () => {
     return serviceRequests.map((request) => (
       <JobCard
         key={request.requestid}
-        title={request.serviceTitle || "No Title Available"}
-        description={request.servicedesc || "No Description Available"}
+        title={request.jobtitle || request.serviceTitle || "No Title Available"}
+        description={
+          request.jobdescription ||
+          request.servicedesc ||
+          "No Description Available"
+        }
         onPress={() => {
+          router.push(`/screens/viewrequest?requestid=${request.requestid}`);
+          /*
           router.push({
             pathname: "/screens/viewrequest",
-            query: { requestId: request.requestid }, // Pass the request ID to the next screen
-          });
+            query: { requestId: request.requestid },
+          });*/
         }}
       />
     ));
