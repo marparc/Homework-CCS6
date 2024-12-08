@@ -6,14 +6,16 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import Button from "@/components/ui/buttons";
 import { supabase } from "../../../lib/supabase";
-import { useRouter } from "expo-router";
-import JobCard from "@/components/ui/jobcard"; //reniel reniel
+import { useRouter, useNavigation } from "expo-router";
+import JobCard from "@/components/ui/jobcard";
+import { Ionicons } from "@expo/vector-icons";
 
 const AccountRequests = () => {
   const router = useRouter();
+  const navigation = useNavigation();
   const [accounts, setAccounts] = useState([]);
   const [filter, setFilter] = useState("Pending");
   const [isPendingActive, setIsPendingActive] = useState(true);
@@ -67,11 +69,25 @@ const AccountRequests = () => {
       console.log("User logged out.");
 
       // Navigate back to login screen
-      router.replace("/login"); // Use replace to prevent going back to the current screen
+      router.replace("/studentlogin"); // Use replace to prevent going back to the current screen
     } catch (error) {
       console.error("Error during logout:", error);
     }
   };
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      headerStyle: { backgroundColor: "black" },
+      headerTitleStyle: { color: "white" },
+      headerTitle: "Account Requests",
+      headerRight: () => (
+        <TouchableOpacity onPress={handleLogout} style={{ marginRight: 10 }}>
+          <Ionicons name="log-out-outline" size={24} color="white" />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
 
   return (
     <>
@@ -94,7 +110,7 @@ const AccountRequests = () => {
       <ScrollView contentContainerStyle={styles.jobList}>
         {accounts.length > 0 ? (
           accounts.map((account) => (
-            <JobCard //reniel reniel
+            <JobCard
               key={account.accountid}
               title={account.account_name}
               description={`Status: ${account.account_status}`}
@@ -112,11 +128,6 @@ const AccountRequests = () => {
           </Text>
         )}
       </ScrollView>
-      {/* headerRight: () => (
-      <TouchableOpacity onPress={handleLogout} style={{ marginRight: 10 }}>
-        <Ionicons name="log-out-outline" size={24} color="white" />
-      </TouchableOpacity>
-      ),*/}
     </>
   );
 };
