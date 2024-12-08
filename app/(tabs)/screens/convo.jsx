@@ -25,7 +25,7 @@ const Convo = () => {
 
   //get chat id from async storage
   const { chatid } = useLocalSearchParams();
-  console.log("CHATID RECEIVE ROUTER: ", chatid);
+  //console.log("CHATID RECEIVE ROUTER: ", chatid);
   useEffect(() => {
     const getLoggedInAccId = async () => {
       try {

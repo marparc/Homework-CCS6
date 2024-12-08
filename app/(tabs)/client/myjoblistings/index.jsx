@@ -10,6 +10,7 @@ const MyListings = () => {
   const [jobListings, setJobListings] = useState([]);
   const [accountId, setAccountId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("My Listings"); // New state for tab tracking
 
   const router = useRouter();
 
@@ -27,15 +28,14 @@ const MyListings = () => {
   }, []);
 
   useEffect(() => {
-    if (accountId) {
+    if (accountId && activeTab === "My Listings") {
       fetchJobsByClient(accountId);
     }
-  }, [accountId]);
+  }, [accountId, activeTab]);
 
   const fetchJobsByClient = async (accountId) => {
     setLoading(true);
     try {
-      //console.log("Account ID:", accountId);
       const { data: userAccountData, error: userAccountError } = await supabase
         .from("user_account")
         .select("userid")
@@ -51,7 +51,6 @@ const MyListings = () => {
       }
 
       const userId = userAccountData.userid;
-      //console.log("User ID:", userId);
 
       const { data: clientData, error: clientError } = await supabase
         .from("client_table")
@@ -68,7 +67,6 @@ const MyListings = () => {
       }
 
       const clientId = clientData.clientid;
-      //console.log("Client ID:", clientId);
 
       const { data: jobListingsData, error: jobListingsError } = await supabase
         .from("job_listing")
@@ -92,40 +90,63 @@ const MyListings = () => {
   return (
     <>
       <SafeAreaView style={styles.header}>
-        <Button title="My Listings" type="dark" size="small" />
-        <Button title="Applications" type="light" size="small" />
-      </SafeAreaView>
-      <View style={{ marginLeft: 20, marginBottom: 10 }}>
         <Button
-          title="Create +"
-          type="light"
+          title="My Listings"
+          type={activeTab === "My Listings" ? "dark" : "light"}
           size="small"
-          onPress={() => router.push("/screens/postjoblisting")}
+          onPress={() => setActiveTab("My Listings")}
         />
-      </View>
+        <Button
+          title="Applications"
+          type={activeTab === "Applications" ? "dark" : "light"}
+          size="small"
+          onPress={() => {
+            setActiveTab("Applications");
+            console.log("Applications");
+          }}
+        />
+      </SafeAreaView>
+      {activeTab === "My Listings" ? (
+        <>
+          <View style={{ marginLeft: 20, marginBottom: 10 }}>
+            <Button
+              title="Create +"
+              type="light"
+              size="small"
+              onPress={() => router.push("/screens/postjoblisting")}
+            />
+          </View>
 
-      {loading ? (
-        <Text style={styles.loadingText}>Loading job listings...</Text>
-      ) : (
-        <ScrollView contentContainerStyle={styles.jobList}>
-          {jobListings.length > 0 ? (
-            jobListings.map((job) => (
-              <JobCard
-                key={job.jobid}
-                title={job.jobtitle}
-                description={job.jobdescription}
-                onPress={() => {
-                  console.log("ROUTER:", job.jobid);
-                  router.push(
-                    `/screens/managejoblisting?selectedjoblisting=${job.jobid}`
-                  );
-                }}
-              />
-            ))
+          {loading ? (
+            <Text style={styles.loadingText}>Loading job listings...</Text>
           ) : (
-            <Text style={styles.noJobsText}>No job listings available.</Text>
+            <ScrollView contentContainerStyle={styles.jobList}>
+              {jobListings.length > 0 ? (
+                jobListings.map((job) => (
+                  <JobCard
+                    key={job.jobid}
+                    title={job.jobtitle}
+                    description={job.jobdescription}
+                    onPress={() => {
+                      console.log("ROUTER:", job.jobid);
+                      router.push(
+                        `/screens/managejoblisting?selectedjoblisting=${job.jobid}`
+                      );
+                    }}
+                  />
+                ))
+              ) : (
+                <Text style={styles.noJobsText}>
+                  No job listings available.
+                </Text>
+              )}
+            </ScrollView>
           )}
-        </ScrollView>
+        </>
+      ) : (
+        <View style={styles.noJobsText}>
+          <Text>Applications view is not implemented yet.</Text>
+        </View>
       )}
     </>
   );
@@ -142,5 +163,15 @@ const styles = StyleSheet.create({
   jobList: {
     paddingHorizontal: 20,
     paddingBottom: 30,
+  },
+  loadingText: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 16,
+  },
+  noJobsText: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 16,
   },
 });
