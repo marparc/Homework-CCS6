@@ -6,8 +6,11 @@ import { supabase } from "../../../lib/supabase";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { format } from "date-fns"; // For formatting the date
 import * as Location from "expo-location"; // Import Location to use reverse geocode
+import PopUp from "@/components/ui/popup";
 
 const ManageJobListing = () => {
+  // Declare useState hooks inside the component
+  const [isPopUpVisible, setPopUpVisible] = useState(false);
   const { selectedjoblisting } = useLocalSearchParams(); // Get jobid from route params
   const router = useRouter();
   const [jobData, setJobData] = useState(null);
@@ -48,19 +51,12 @@ const ManageJobListing = () => {
       if (userError) {
         throw userError;
       }
-      console.log("HEREHRHEHR");
+
       setJobData({
         job: jobData,
         client: clientData,
         user: userData,
       });
-      console.log("HEREHRHEHRHEREHRHEHR");
-      // Log to confirm this line is being executed
-      console.log(
-        "Latitude and Longitude",
-        jobData.locationlat,
-        jobData.locationlong
-      );
 
       // Get the location details after fetching job data
       if (jobData?.locationlat && jobData?.locationlong) {
@@ -77,16 +73,11 @@ const ManageJobListing = () => {
   // Function to get job location details based on latitude and longitude
   const getJobLocationDetails = async (latitude, longitude) => {
     try {
-      console.log("Latitude:", latitude);
-      console.log("Longitude:", longitude);
-
       if (latitude && longitude) {
         let geocode = await Location.reverseGeocodeAsync({
           latitude,
           longitude,
         });
-
-        console.log("Geocode:", geocode);
 
         let address = geocode[0];
         let formattedAddress = address
@@ -96,7 +87,6 @@ const ManageJobListing = () => {
           : "Address not available";
 
         setLocation(formattedAddress);
-        console.log("Formatted Location:", formattedAddress);
       } else {
         setLocation("Location not available");
       }
@@ -157,20 +147,7 @@ const ManageJobListing = () => {
                     if (deleteError) {
                       throw deleteError;
                     }
-
-                    // Success alert after deletion
-                    Alert.alert(
-                      "Listing Deleted",
-                      "The job listing has been successfully deleted.",
-                      [
-                        {
-                          text: "OK",
-                          onPress: () => {
-                            router.push("/(tabs)/client/myjoblistings");
-                          },
-                        },
-                      ]
-                    );
+                    setPopUpVisible(true);
                   } catch (err) {
                     console.error("Error deleting job listing:", err);
                     Alert.alert(
@@ -194,50 +171,59 @@ const ManageJobListing = () => {
   };
 
   return (
-    <View>
-      {jobData ? (
-        <ListingDetails
-          title={jobData.job.jobtitle || "Not available"}
-          jobType={jobData.job.jobtype || "Not available"}
-          posted={
-            jobData.job.dateposted
-              ? format(new Date(jobData.job.dateposted), "MMMM dd, yyyy")
-              : "Not available"
-          }
-          status={jobData.job.jobstatus || "Not available"}
-          client={
-            jobData?.client
-              ? jobData.client.client_organization
-              : "Not available"
-          }
-          location={location || "Location not available"}
-          description={
-            jobData.job.jobdescription || "No description available."
-          }
-          pay={jobData.job.jobpay || "Not available"}
+    <>
+      <View>
+        {jobData ? (
+          <ListingDetails
+            title={jobData.job.jobtitle || "Not available"}
+            jobType={jobData.job.jobtype || "Not available"}
+            posted={
+              jobData.job.dateposted
+                ? format(new Date(jobData.job.dateposted), "MMMM dd, yyyy")
+                : "Not available"
+            }
+            status={jobData.job.jobstatus || "Not available"}
+            client={
+              jobData?.client
+                ? jobData.client.client_organization
+                : "Not available"
+            }
+            location={location || "Location not available"}
+            description={
+              jobData.job.jobdescription || "No description available."
+            }
+            pay={jobData.job.jobpay || "Not available"}
+          />
+        ) : (
+          <Text>Loading job details...</Text>
+        )}
+
+        <Button
+          title="Edit Listing"
+          type="light"
+          size="medium"
+          onPress={() => {
+            router.push(
+              `/screens/editjoblisting?selectedjoblisting=${selectedjoblisting}`
+            );
+          }}
         />
-      ) : (
-        <Text>Loading job details...</Text>
+
+        <Button
+          title="Delete Listing"
+          type="dark"
+          size="medium"
+          onPress={handleDeleteListing}
+        />
+      </View>
+      {isPopUpVisible && (
+        <PopUp
+          icon="checkmark-circle-outline"
+          text="Job Deleted Successfully!"
+          route="/(tabs)/client/myjoblistings" // Navigate to this route when the modal is closed
+        />
       )}
-
-      <Button
-        title="Edit Listing"
-        type="light"
-        size="medium"
-        onPress={() => {
-          router.push(
-            `/screens/editjoblisting?selectedjoblisting=${selectedjoblisting}`
-          );
-        }}
-      />
-
-      <Button
-        title="Delete Listing"
-        type="dark"
-        size="medium"
-        onPress={handleDeleteListing}
-      />
-    </View>
+    </>
   );
 };
 

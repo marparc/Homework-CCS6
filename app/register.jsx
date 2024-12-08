@@ -23,6 +23,7 @@ const Register = () => {
         lastName,
         contactNumber,
         birthdate,
+        password,
       },
     });
   };
@@ -34,6 +35,7 @@ const Register = () => {
         lastName,
         contactNumber,
         birthdate,
+        password,
       },
     });
   };

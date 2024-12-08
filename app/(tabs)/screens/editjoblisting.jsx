@@ -128,7 +128,7 @@ const EditJobListing = () => {
         return;
       }
 
-      // Show the success popup and navigate to the job listings page
+      // Show the success popup
       setPopUpVisible(true);
     } catch (err) {
       console.error("Error publishing job listing:", err.message);
@@ -214,7 +214,6 @@ const EditJobListing = () => {
         <DatePick
           label="MM/DD/YY"
           mode="date"
-          //maxDate={new Date()}
           onDateChange={(date) => setDeadline(date)}
         />
 
@@ -228,9 +227,12 @@ const EditJobListing = () => {
         {isPopUpVisible && (
           <PopUp
             icon="checkmark-circle-outline"
-            text="Listing Edited Successfully!"
+            text="Job Edited Successfully!"
             route="/(tabs)/client/myjoblistings"
-            onClose={() => setPopUpVisible(false)}
+            onClose={() => {
+              setPopUpVisible(false);
+              router.push("/(tabs)/client/myjoblistings");
+            }}
           />
         )}
       </View>

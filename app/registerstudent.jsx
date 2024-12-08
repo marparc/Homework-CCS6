@@ -8,6 +8,7 @@ import { useLocalSearchParams } from "expo-router";
 import { supabase } from "../lib/supabase";
 
 const registerUser = async (userData, studentData, accountData) => {
+  const router = useRouter();
   const date = new Date();
   const utcDate = date.toISOString();
   try {
@@ -90,7 +91,7 @@ const registerUser = async (userData, studentData, accountData) => {
         accountid: newAccountId,
         account_name: accountData.accountName,
         account_status: "Pending",
-        account_password: "db2admin",
+        account_password: userData.password,
         bio: "",
         userid: newUserId,
       },
@@ -102,6 +103,7 @@ const registerUser = async (userData, studentData, accountData) => {
     }
 
     console.log("User account data inserted for user:", user.id);
+    //router.push("/registersuccess");
   } catch (error) {
     console.error("Error inserting data:", error.message);
   }
@@ -115,6 +117,7 @@ const RegisterStudent = () => {
     lastName = "undefined",
     contactNumber = "undefined",
     birthdate = "undefined",
+    password = "undefined",
   } = params;
 
   const [educationLevel, setEducationLevel] = useState(null);
@@ -217,7 +220,8 @@ const RegisterStudent = () => {
             lastName,
             contactNumber,
             birthdate,
-            userType: "student",
+            userType: "Student",
+            password,
           };
 
           const studentData = {
@@ -234,7 +238,6 @@ const RegisterStudent = () => {
           };
 
           registerUser(userData, studentData, accountData);
-
           router.push("/registersuccess");
         }}
       />
