@@ -27,6 +27,15 @@ const LoginStudent = () => {
       return;
     }
 
+    if (contactNumber === "aapadmin" && password === "aapadmin") {
+      console.log("Login successful. ADMIN");
+      // You can store admin data if needed, then navigate to the admin page
+      await AsyncStorage.setItem("accountId", "aapadmin");
+      await AsyncStorage.setItem("password", "aapadmin");
+      router.push("/sysadmin/accrequests"); // Change this to your actual admin page
+      return; // Exit the function early to avoid further database checks
+    }
+
     const { data: rpcData, error: rpcError } = await supabase.rpc(
       "get_userid",
       {
