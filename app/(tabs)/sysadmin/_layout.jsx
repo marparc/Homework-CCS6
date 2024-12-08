@@ -5,17 +5,18 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  View,
 } from "react-native";
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "@/components/ui/buttons";
 import { supabase } from "../../../lib/supabase";
 import { useRouter, useNavigation } from "expo-router";
 import JobCard from "@/components/ui/jobcard";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AccountRequests = () => {
   const router = useRouter();
-  const navigation = useNavigation();
   const [accounts, setAccounts] = useState([]);
   const [filter, setFilter] = useState("Pending");
   const [isPendingActive, setIsPendingActive] = useState(true);
@@ -75,37 +76,31 @@ const AccountRequests = () => {
     }
   };
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerShown: true,
-      headerStyle: { backgroundColor: "black" },
-      headerTitleStyle: { color: "white" },
-      headerTitle: "Account Requests",
-      headerRight: () => (
-        <TouchableOpacity onPress={handleLogout} style={{ marginRight: 10 }}>
-          <Ionicons name="log-out-outline" size={24} color="white" />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
-
   return (
     <>
+      <SafeAreaView>
+        <Text style={styles.title}>Applications</Text>
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+          <Ionicons name="log-out-outline" size={24} color="black" />
+        </TouchableOpacity>
+      </SafeAreaView>
       <SafeAreaView style={styles.header}>
         {/* Tab buttons for "To Do" and "Completed" */}
-        <Button
-          title="Pending"
-          type={isPendingActive ? "dark" : "light"}
-          size="small"
-          disabled={!isPendingActive}
-          onPress={handlePendingClick}
-        />
-        <Button
-          title="Approved"
-          type={isPendingActive ? "light" : "dark"}
-          size="small"
-          onPress={handleApprovedClick}
-        />
+        <View style={styles.buttonContainer}>
+          <Button
+            title="Pending"
+            type={isPendingActive ? "dark" : "light"}
+            size="small"
+            disabled={!isPendingActive}
+            onPress={handlePendingClick}
+          />
+          <Button
+            title="Approved"
+            type={isPendingActive ? "light" : "dark"}
+            size="small"
+            onPress={handleApprovedClick}
+          />
+        </View>
       </SafeAreaView>
       <ScrollView contentContainerStyle={styles.jobList}>
         {accounts.length > 0 ? (
@@ -142,6 +137,25 @@ const styles = StyleSheet.create({
     padding: 50,
     paddingTop: 10,
     alignItems: "center",
+  },
+  logoutButton: {
+    position: "absolute", // Position the button absolutely
+    top: 10,
+    right: 10, // Adjust to place it at the top-right corner
+    zIndex: 1,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginLeft: 30,
+    marginBottom: 5,
+    color: "#333",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-evenly", // Space buttons evenly
+    marginTop: 5, // Add margin to separate it from the title
   },
 });
 
