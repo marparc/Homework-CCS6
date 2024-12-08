@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Button from "@/components/ui/buttons";
 import { supabase } from "../../../lib/supabase";
 import { useRouter } from "expo-router";
+import JobCard from "@/components/ui/jobcard"; //reniel reniel
 
 const AccountRequests = () => {
   const router = useRouter();
@@ -73,16 +74,21 @@ const AccountRequests = () => {
       <ScrollView contentContainerStyle={styles.jobList}>
         {accounts.length > 0 ? (
           accounts.map((account) => (
-            <View key={account.accountid} style={styles.accountItem}>
-              <Text style={styles.accountName}>{account.account_name}</Text>
-              <Text style={styles.accountStatus}>
-                Status: {account.account_status}
-              </Text>
-            </View>
+            <JobCard //reniel reniel
+              key={account.accountid}
+              title={account.account_name}
+              description={`Status: ${account.account_status}`}
+              onPress={() => {
+                console.log("ROUTER:", account.accountid);
+                router.push(
+                  `/screens/manageaccount?selectedaccount=${account.accountid}`
+                );
+              }}
+            />
           ))
         ) : (
           <Text style={styles.noDataText}>
-            {error || "No ${filter.toLowerCase()} accounts available."}
+            {error || `No ${filter.toLowerCase()} accounts available.`}
           </Text>
         )}
       </ScrollView>
