@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,52 +6,83 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import * as Location from "expo-location"; // Import Expo Location
+import * as Location from "expo-location";
 import InputField from "@/components/ui/inputfield";
 import Button from "@/components/ui/buttons";
 import DatePick from "@/components/ui/pickdate";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import PopUp from "@/components/ui/popup";
+import { supabase } from "../../../lib/supabase";
 
 const EditJobListing = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [pay, setPay] = useState("");
-  const [jobType, setJobType] = useState(""); // To track the selected job type
-  const [location, setLocation] = useState(""); // To store city or town name
+  const [jobType, setJobType] = useState("");
+  const [location, setLocation] = useState("");
   const [isLocationRetrieved, setIsLocationRetrieved] = useState(false);
-  const [errorMsg, setErrorMsg] = useState(""); // To handle location errors
+  const [errorMsg, setErrorMsg] = useState("");
   const [deadline, setDeadline] = useState("");
-  const router = useRouter();
   const [btnLocationType, setBtnLocationType] = useState("light");
   const [btnLocationTitle, setBtnLocationTitle] = useState("Get My Location");
   const [isPopUpVisible, setPopUpVisible] = useState(false);
+  const [latitude, setLatitude] = useState(null); // To store latitude
+  const [longitude, setLongitude] = useState(null); // To store longitude
+
+  const router = useRouter();
+  const { selectedjoblisting } = useLocalSearchParams(); // Get jobid from route params
+
+  useEffect(() => {
+    // Fetch existing job listing data to populate the form if editing
+    const fetchJobListing = async () => {
+      const { data: jobListing, error } = await supabase
+        .from("job_listing")
+        .select("*")
+        .eq("jobid", selectedjoblisting)
+        .single();
+
+      if (error) {
+        console.error("Error fetching job listing:", error.message);
+      } else {
+        setTitle(jobListing.jobtitle);
+        setDescription(jobListing.jobdescription);
+        setPay(jobListing.jobpay);
+        setJobType(jobListing.jobtype);
+        if (jobListing.jobtype === "Onsite") {
+          setLocation(jobListing.location);
+        }
+        setDeadline(jobListing.deadline);
+      }
+      console.log("Current pay value: ", pay);
+    };
+
+    if (selectedjoblisting) {
+      fetchJobListing();
+    }
+  }, [selectedjoblisting]);
+
   const handleGetLocation = async () => {
     try {
-      // Request location permission
       let { status } = await Location.requestForegroundPermissionsAsync();
-
       if (status !== "granted") {
         setErrorMsg("Permission to access location was denied");
         return;
       }
 
-      // Get current location
       let currentLocation = await Location.getCurrentPositionAsync({});
-
-      // Reverse geocoding to get city or town
       let geocode = await Location.reverseGeocodeAsync({
         latitude: currentLocation.coords.latitude,
         longitude: currentLocation.coords.longitude,
       });
 
-      // Extract the city or town name
       if (geocode.length > 0) {
         const { city, district, subregion } = geocode[0];
         const locationName =
           city || district || subregion || "Location not found";
         setLocation(locationName);
+        setLatitude(currentLocation.coords.latitude);
+        setLongitude(currentLocation.coords.longitude);
       } else {
         setErrorMsg("Unable to retrieve location name");
       }
@@ -61,8 +92,47 @@ const EditJobListing = () => {
       setErrorMsg("Failed to retrieve location. Please try again.");
       console.error("Location Error:", error);
     }
+
     setBtnLocationType("dark");
     setBtnLocationTitle("Location Retrieved");
+  };
+
+  const handlePublish = async () => {
+    try {
+      const jobData = {
+        jobtitle: title,
+        jobdescription: description,
+        jobpay: pay,
+        jobtype: jobType,
+        duedate: deadline,
+      };
+
+      // Handle location data based on job type
+      if (jobType === "Onsite") {
+        jobData.locationlat = latitude;
+        jobData.locationlong = longitude;
+      } else if (jobType === "Remote") {
+        // Set location to null if job type is remote
+        jobData.locationlat = null;
+        jobData.locationlong = null;
+      }
+
+      // Update job listing in the database
+      const { data, error } = await supabase
+        .from("job_listing")
+        .update(jobData)
+        .eq("jobid", selectedjoblisting);
+
+      if (error) {
+        console.error("Error updating job listing:", error.message);
+        return;
+      }
+
+      // Show the success popup and navigate to the job listings page
+      setPopUpVisible(true);
+    } catch (err) {
+      console.error("Error publishing job listing:", err.message);
+    }
   };
 
   return (
@@ -74,29 +144,22 @@ const EditJobListing = () => {
           value={title}
           onChangeText={setTitle}
         />
-
         <InputField
           title="Description"
           size="large"
           value={description}
           onChangeText={setDescription}
         />
-
-        <View style={{ width: "100%" }}>
-          <InputField
-            title="Pay"
-            size="small"
-            value={pay}
-            onChangeText={setPay}
-          />
-        </View>
-
+        <InputField
+          title="Pay"
+          size="small"
+          value={String(pay) || ""}
+          onChangeText={setPay}
+        />
         <View
           style={{ width: "100%", alignItems: "flex-start", paddingLeft: 10 }}
         >
           <Text style={styles.sectionTitle}>Job Type</Text>
-
-          {/* Radio Button for Onsite */}
           <TouchableOpacity
             style={styles.radioContainer}
             onPress={() => setJobType("Onsite")}
@@ -110,7 +173,6 @@ const EditJobListing = () => {
             <Text style={styles.radioText}>Onsite</Text>
           </TouchableOpacity>
 
-          {/* Radio Button for Remote */}
           <TouchableOpacity
             style={styles.radioContainer}
             onPress={() => setJobType("Remote")}
@@ -124,7 +186,7 @@ const EditJobListing = () => {
             <Text style={styles.radioText}>Remote</Text>
           </TouchableOpacity>
         </View>
-        {/* Location Section (Visible Only When Onsite is Selected) */}
+
         {jobType === "Onsite" && (
           <>
             <Text style={styles.sectionTitle}>
@@ -136,7 +198,6 @@ const EditJobListing = () => {
                 </>
               )}
             </Text>
-
             <View style={styles.locationContainer}>
               <Button
                 type={btnLocationType}
@@ -153,7 +214,7 @@ const EditJobListing = () => {
         <DatePick
           label="MM/DD/YY"
           mode="date"
-          maxDate={new Date()} // Ensure dates are only in the past
+          //maxDate={new Date()}
           onDateChange={(date) => setDeadline(date)}
         />
 
@@ -161,15 +222,15 @@ const EditJobListing = () => {
           type="dark"
           size="medium"
           title="Publish"
-          onPress={() => setPopUpVisible(true)}
+          onPress={handlePublish}
         />
 
         {isPopUpVisible && (
           <PopUp
             icon="checkmark-circle-outline"
             text="Listing Edited Successfully!"
-            route="/(tabs)/client/myjoblistings" // Navigate to this route when the modal is closed
-            onClose={() => setPopUpVisible(false)} // Assuming PopUp accepts an `onClose` prop
+            route="/(tabs)/client/myjoblistings"
+            onClose={() => setPopUpVisible(false)}
           />
         )}
       </View>
@@ -178,20 +239,21 @@ const EditJobListing = () => {
 };
 
 export default EditJobListing;
+
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     padding: 20,
-    backgroundColor: "white", // Optional background for visibility
+    backgroundColor: "white",
   },
   container: {
     flex: 1,
-    alignItems: "center", // Centers elements horizontally
+    alignItems: "center",
   },
   sectionTitle: {
     fontSize: 16,
     marginVertical: 10,
-    textAlign: "center", // Centers the section title text
+    textAlign: "center",
   },
   radioContainer: {
     flexDirection: "row",
@@ -215,12 +277,12 @@ const styles = StyleSheet.create({
   locationContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center", // Centers location button and checkmark
+    justifyContent: "center",
     marginTop: 10,
   },
   errorText: {
     color: "red",
     marginTop: 10,
-    textAlign: "center", // Centers error messages
+    textAlign: "center",
   },
 });

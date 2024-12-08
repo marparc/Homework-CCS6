@@ -2,22 +2,21 @@ import { Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 import React, { useEffect, useState } from "react";
-import { useRouter } from "expo-router"; // Import useRouter for navigation
+import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { supabase } from "../../../lib/supabase"; // Ensure Supabase client is correctly imported
+import { supabase } from "../../../lib/supabase";
 
 const Layout = () => {
-  const router = useRouter(); // Get router instance for navigation
+  const router = useRouter();
   const [sender, setSender] = useState(null);
   const [receiver, setReceiver] = useState(null);
   const [receiverid, setReceiverID] = useState(null);
   const [senderid, setSenderID] = useState(null);
-  const [usertype, setUsertype] = useState(null); // State for usertype
+  const [usertype, setUsertype] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Retrieve the sender and receiver from AsyncStorage
         const sender = await AsyncStorage.getItem("sender");
         const receiver = await AsyncStorage.getItem("receiver");
         const receiverid = await AsyncStorage.getItem("receiverUserId");
@@ -28,12 +27,11 @@ const Layout = () => {
         console.log("receiverUserIdreceiverUserId: ", receiverid);
 
         if (receiver) {
-          // Query the user_account table to find the userid based on receiver (account_name)
           const { data: userAccountData, error: userAccountError } =
             await supabase
               .from("user_account")
               .select("userid")
-              .eq("accountid", receiverid) // Corrected trim usage
+              .eq("accountid", receiverid)
               .single();
 
           if (userAccountError || !userAccountData) {
@@ -42,7 +40,6 @@ const Layout = () => {
 
           const { userid } = userAccountData;
 
-          // Now query the user_table to get the usertype using the userid
           const { data: userData, error: userError } = await supabase
             .from("user_table")
             .select("usertype")
@@ -56,7 +53,7 @@ const Layout = () => {
           }
 
           const { usertype } = userData;
-          setUsertype(usertype); // Save usertype in state
+          setUsertype(usertype);
           console.log("HEREHERHERHER: ", usertype);
         }
       } catch (err) {
@@ -65,9 +62,8 @@ const Layout = () => {
     };
 
     fetchData();
-  }, [receiverid]); // Run the effect when `receiverid` changes
+  }, [receiverid]);
 
-  // Conditional logic for navigation
   const handleBackPress = () => {
     if (usertype === "Student") {
       router.push("/(tabs)/student/chat");
@@ -109,7 +105,7 @@ const Layout = () => {
         name="viewjoblisting"
         options={{
           title: "Job Details",
-          headerTitleAlign: "center", // Center the header title
+          headerTitleAlign: "center",
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => {
@@ -365,6 +361,27 @@ const Layout = () => {
         name="postjoblisting"
         options={{
           title: "Post a Job Listing",
+          headerTitleAlign: "center", // Center the header title
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => {
+                router.push("/(tabs)/client/myjoblistings"); // Navigate back when pressed
+              }}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color="black"
+                style={{ marginLeft: 10 }}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="manageapplications"
+        options={{
+          title: "Job Applications",
           headerTitleAlign: "center", // Center the header title
           headerLeft: () => (
             <TouchableOpacity

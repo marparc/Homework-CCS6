@@ -10,7 +10,7 @@ const MyListings = () => {
   const [jobListings, setJobListings] = useState([]);
   const [accountId, setAccountId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("My Listings"); // New state for tab tracking
+  const [activeTab, setActiveTab] = useState("My Listings");
 
   const router = useRouter();
 
@@ -18,9 +18,9 @@ const MyListings = () => {
     const fetchAccountId = async () => {
       try {
         const storedAccountId = await AsyncStorage.getItem("accountId");
-        setAccountId(storedAccountId);
+        if (storedAccountId) setAccountId(storedAccountId);
       } catch (err) {
-        console.error("Failed to retrieve account ID from AsyncStorage:", err);
+        console.error("Failed to retrieve account ID:", err);
       }
     };
 
@@ -28,8 +28,12 @@ const MyListings = () => {
   }, []);
 
   useEffect(() => {
-    if (accountId && activeTab === "My Listings") {
-      fetchJobsByClient(accountId);
+    if (accountId) {
+      if (activeTab === "My Listings") {
+        fetchJobsByClient(accountId);
+      } else if (activeTab === "Applications") {
+        fetchJobDetailsWithApplicationCount(accountId);
+      }
     }
   }, [accountId, activeTab]);
 
@@ -41,6 +45,7 @@ const MyListings = () => {
         .select("userid")
         .eq("accountid", accountId)
         .single();
+
       if (userAccountError || !userAccountData) {
         console.error(
           "Error fetching user account:",
@@ -57,6 +62,7 @@ const MyListings = () => {
         .select("clientid")
         .eq("userid", userId)
         .single();
+
       if (clientError || !clientData) {
         console.error(
           "Error fetching client data:",
@@ -87,6 +93,86 @@ const MyListings = () => {
     }
   };
 
+  const fetchJobDetailsWithApplicationCount = async (accountId) => {
+    setLoading(true);
+    try {
+      const { data: userAccountData, error: userAccountError } = await supabase
+        .from("user_account")
+        .select("userid")
+        .eq("accountid", accountId)
+        .single();
+
+      if (userAccountError || !userAccountData) {
+        console.error(
+          "Error fetching user account:",
+          userAccountError?.message || "No user found"
+        );
+        setJobListings([]);
+        return;
+      }
+
+      const userId = userAccountData.userid;
+
+      const { data: clientData, error: clientError } = await supabase
+        .from("client_table")
+        .select("clientid")
+        .eq("userid", userId)
+        .single();
+
+      if (clientError || !clientData) {
+        console.error(
+          "Error fetching client data:",
+          clientError?.message || "No client found"
+        );
+        setJobListings([]);
+        return;
+      }
+
+      const clientId = clientData.clientid;
+
+      const { data: jobData, error: jobError } = await supabase
+        .from("job_listing")
+        .select("jobid, jobtitle")
+        .eq("clientid", clientId);
+
+      if (jobError || !jobData) {
+        console.error(
+          "Error fetching job listings:",
+          jobError?.message || "No jobs found"
+        );
+        setJobListings([]);
+        return;
+      }
+
+      const jobDetailsWithCounts = await Promise.all(
+        jobData.map(async (job) => {
+          const { count: applicationCount, error: applicationError } =
+            await supabase
+              .from("application")
+              .select("*", { count: "exact" })
+              .eq("jobid", job.jobid);
+
+          if (applicationError) {
+            console.error(
+              `Error counting applications for jobid ${job.jobid}:`,
+              applicationError.message
+            );
+            return { ...job, applicationCount: 0 };
+          }
+
+          return { ...job, applicationCount };
+        })
+      );
+
+      setJobListings(jobDetailsWithCounts);
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      setJobListings([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <SafeAreaView style={styles.header}>
@@ -100,53 +186,52 @@ const MyListings = () => {
           title="Applications"
           type={activeTab === "Applications" ? "dark" : "light"}
           size="small"
-          onPress={() => {
-            setActiveTab("Applications");
-            console.log("Applications");
-          }}
+          onPress={() => setActiveTab("Applications")}
         />
       </SafeAreaView>
-      {activeTab === "My Listings" ? (
-        <>
-          <View style={{ marginLeft: 20, marginBottom: 10 }}>
-            <Button
-              title="Create +"
-              type="light"
-              size="small"
-              onPress={() => router.push("/screens/postjoblisting")}
-            />
-          </View>
 
-          {loading ? (
-            <Text style={styles.loadingText}>Loading job listings...</Text>
-          ) : (
-            <ScrollView contentContainerStyle={styles.jobList}>
-              {jobListings.length > 0 ? (
-                jobListings.map((job) => (
-                  <JobCard
-                    key={job.jobid}
-                    title={job.jobtitle}
-                    description={job.jobdescription}
-                    onPress={() => {
-                      console.log("ROUTER:", job.jobid);
-                      router.push(
-                        `/screens/managejoblisting?selectedjoblisting=${job.jobid}`
-                      );
-                    }}
-                  />
-                ))
-              ) : (
-                <Text style={styles.noJobsText}>
-                  No job listings available.
-                </Text>
-              )}
-            </ScrollView>
-          )}
-        </>
-      ) : (
-        <View style={styles.noJobsText}>
-          <Text>Applications view is not implemented yet.</Text>
+      {activeTab === "My Listings" && (
+        <View style={{ marginLeft: 20, marginBottom: 10 }}>
+          <Button
+            title="Create +"
+            type="light"
+            size="small"
+            onPress={() => router.push("/screens/postjoblisting")}
+          />
         </View>
+      )}
+
+      {loading ? (
+        <Text style={styles.loadingText}>Loading...</Text>
+      ) : (
+        <ScrollView contentContainerStyle={styles.jobList}>
+          {jobListings.length > 0 ? (
+            jobListings.map((job) => (
+              <JobCard
+                key={job.jobid}
+                title={job.jobtitle}
+                description={
+                  activeTab === "My Listings"
+                    ? job.jobdescription
+                    : `Applications: ${job.applicationCount}`
+                }
+                onPress={() => {
+                  if (activeTab === "My Listings") {
+                    router.push(
+                      `/screens/managejoblisting?selectedjoblisting=${job.jobid}`
+                    );
+                  } else if (activeTab === "Applications") {
+                    router.push(
+                      `/screens/manageapplications?selectedjobid=${job.jobid}`
+                    );
+                  }
+                }}
+              />
+            ))
+          ) : (
+            <Text style={styles.noJobsText}>No job listings available.</Text>
+          )}
+        </ScrollView>
       )}
     </>
   );
@@ -156,7 +241,7 @@ export default MyListings;
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: "row", // Aligns children horizontally
+    flexDirection: "row",
     paddingTop: 10,
     marginLeft: 20,
   },

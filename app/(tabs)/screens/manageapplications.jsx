@@ -1,0 +1,150 @@
+import { View, Text, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import Button from "@/components/ui/buttons";
+import { supabase } from "../../../lib/supabase";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import ReqCard from "@/components/ui/request"; // Assuming you have a JobCard component
+
+const ManageApplications = () => {
+  const { selectedjobid } = useLocalSearchParams(); // Get jobid from route params
+  const router = useRouter();
+  const [jobData, setJobData] = useState(null);
+  const [applications, setApplications] = useState([]); // To store the fetched application data
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  console.log("FROM THE ROUTER:", selectedjobid);
+
+  useEffect(() => {
+    const fetchJobData = async () => {
+      setLoading(true); // Set loading state to true before fetching data
+
+      try {
+        // Fetch job details based on selectedjobid
+        const { data: job, error: jobError } = await supabase
+          .from("job_listing")
+          .select("jobtitle, jobdescription")
+          .eq("jobid", selectedjobid)
+          .single();
+
+        if (jobError) {
+          console.error("Error fetching job data:", jobError.message);
+          setError(jobError.message);
+        } else {
+          setJobData(job);
+        }
+
+        // Fetch application data based on selectedjobid
+        const { data: applicationsData, error: applicationsError } =
+          await supabase
+            .from("application")
+            .select("applicationmessage, studentid")
+            .eq("jobid", selectedjobid);
+
+        if (applicationsError) {
+          console.error(
+            "Error fetching application data:",
+            applicationsError.message
+          );
+          setError(applicationsError.message);
+        } else {
+          // Enrich applications with student details
+          const enrichedApplications = await Promise.all(
+            applicationsData.map(async (application) => {
+              try {
+                // Fetch student details
+                const { data: student, error: studentError } = await supabase
+                  .from("student")
+                  .select("userid")
+                  .eq("studentid", application.studentid)
+                  .single();
+
+                if (studentError) {
+                  console.error(
+                    `Error fetching student details for studentid ${application.studentid}:`,
+                    studentError.message
+                  );
+                  return { ...application, firstname: null, lastname: null }; // Return without name if error
+                }
+
+                // Fetch user details
+                const { data: user, error: userError } = await supabase
+                  .from("user_table")
+                  .select("firstname, lastname")
+                  .eq("userid", student.userid)
+                  .single();
+
+                if (userError) {
+                  console.error(
+                    `Error fetching user details for userid ${student.userid}:`,
+                    userError.message
+                  );
+                  return { ...application, firstname: null, lastname: null }; // Return without name if error
+                }
+
+                // Append names to the application object
+                return {
+                  ...application,
+                  firstname: user.firstname,
+                  lastname: user.lastname,
+                };
+              } catch (error) {
+                console.error("Error enriching application data:", error);
+                return { ...application, firstname: null, lastname: null }; // Return without name if error
+              }
+            })
+          );
+
+          setApplications(enrichedApplications);
+        }
+      } catch (err) {
+        console.error("Unexpected error:", err);
+        setError("An unexpected error occurred.");
+      } finally {
+        setLoading(false); // Set loading state to false after fetching data
+      }
+    };
+
+    if (selectedjobid) {
+      fetchJobData();
+    }
+  }, [selectedjobid]);
+
+  if (loading) {
+    return <Text>Loading...</Text>;
+  }
+
+  if (error) {
+    return <Text>{error}</Text>;
+  }
+
+  return (
+    <View>
+      {jobData && (
+        <ScrollView>
+          {applications.length > 0 ? (
+            applications.map((application) => (
+              <View key={application.studentid}>
+                <ReqCard
+                  id={application.studentid}
+                  title={`${application.firstname} ${application.lastname}`} // Display the student's first and last name
+                  name={application.applicationmessage} // Display the application message as the name
+                  description={""} // Empty description
+                  stars={0} // Default stars to 0
+                  primaryButtonTitle="Approve" // Custom title for the first button
+                  secondaryButtonTitle="Reject" // Custom title for the second button
+                  primaryButtonRoute={`/screens/approveapplication?studentid=${application.studentid}`} // Route for the primary button
+                  secondaryButtonRoute={`/screens/rejectapplication?studentid=${application.studentid}`} // Route for the secondary button
+                />
+              </View>
+            ))
+          ) : (
+            <Text>No applications for this job yet.</Text>
+          )}
+        </ScrollView>
+      )}
+    </View>
+  );
+};
+
+export default ManageApplications;

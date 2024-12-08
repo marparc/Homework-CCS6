@@ -9,7 +9,9 @@ const ReqCard = (props) => {
   const { id, title, name, description, stars } = props;
   const router = useRouter();
   const [isPressed, setIsPressed] = useState(false);
+
   console.log("THIS ID: ", id);
+
   return (
     <Pressable
       onPressIn={() => setIsPressed(true)}
@@ -32,7 +34,6 @@ const ReqCard = (props) => {
             size="small"
             onPress={() => {
               router.push(`/screens/requestservice?selectedrequest=${id}`);
-              //`/screens/managejoblisting?selectedjoblisting=${job.jobid}`
             }}
           />
           <Button title="View" type="light" size="small" />
