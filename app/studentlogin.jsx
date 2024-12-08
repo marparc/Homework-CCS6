@@ -9,62 +9,83 @@ import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LoginStudent = () => {
-  const [accountId, setAccountId] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
   const VerifyLogin = async () => {
-    if (!accountId || !password) {
+    const { data: rpcData, error: rpcError } = await supabase.rpc(
+      "get_userid",
+      {
+        provided_contactnumber: contactNumber,
+      }
+    );
+
+    if (rpcError) {
+      console.error("Failed to retrieve user ID:", rpcError);
+      return;
+    }
+    if (!contactNumber || !password) {
       console.log("Please enter both account ID and password.");
       return;
     }
-    const { data, error } = await supabase
-      .from("user_account")
-      .select("accountid, account_password, account_status, userid")
-      .eq("accountid", accountId)
-      .eq("account_password", password)
-      .eq("account_status", "Verified");
-
-    if (error) {
-      console.error("Login failed:", error);
-    } else if (data.length > 0) {
-      const userid = data[0].userid;
-
-      const { data: userTypeData, error: userTypeError } = await supabase
-        .from("user_table")
-        .select("usertype")
+    if (rpcData) {
+      const userid = rpcData;
+      console.log("rpcdata: ", rpcData);
+      console.log("userid: ", userid);
+      const { data, error } = await supabase
+        .from("user_account")
+        .select("accountid, account_password")
         .eq("userid", userid)
-        .single();
-      if (userTypeData) {
-        const userType = userTypeData.usertype;
-        if (userType === "Student") {
-          console.log("Login successful. STUDENT");
-          await AsyncStorage.setItem("accountId", accountId);
-          await AsyncStorage.setItem("password", password);
-          router.push("/(tabs)/student/jobstodo");
-        } else {
-          console.log("Login successful. CLIENT");
-          await AsyncStorage.setItem("accountId", accountId);
-          await AsyncStorage.setItem("password", password);
-          router.push("/(tabs)/client/myjoblistings");
+        .eq("account_password", password)
+        .eq("account_status", "Verified");
+
+      if (error) {
+        console.error("Login failed:", error);
+      } else if (data.length > 0) {
+        const accountid = data[0].accountid;
+        const account_password = data[0].account_password;
+
+        const { data: userTypeData, error: userTypeError } = await supabase
+          .from("user_table")
+          .select("usertype")
+          .eq("userid", userid)
+          .single();
+        if (userTypeData) {
+          const userType = userTypeData.usertype;
+          if (userType === "Student") {
+            console.log("Login successful. STUDENT");
+            await AsyncStorage.setItem("accountId", String(accountid));
+            await AsyncStorage.setItem("password", String(password));
+            router.push("/(tabs)/student/jobstodo");
+          } else {
+            console.log("Login successful. CLIENT");
+            await AsyncStorage.setItem("accountId", String(accountid));
+            await AsyncStorage.setItem("password", String(password));
+            router.push("/(tabs)/client/myjoblistings");
+          }
         }
+      } else {
+        // ingna marc nga mo create ug ui for this
+        if (data.length === 0) {
+          console.log("Login failed. Please check the following:");
+
+          if (data.some((item) => item.account_status !== "Verified")) {
+            console.log("Account status is not Verified.");
+          }
+          if (data.some((item) => item.contactnumber !== contactNumber)) {
+            console.log("Account ID does not match.");
+          }
+          if (data.some((item) => item.account_password !== inputtedpassword)) {
+            console.log("Password does not match.");
+          }
+        }
+        console.log("Invalid credentials or account not verified");
       }
     } else {
-      // ingna marc nga mo create ug ui for this
-      if (data.length === 0) {
-        console.log("Login failed. Please check the following:");
-
-        if (data.some((item) => item.account_status !== "Verified")) {
-          console.log("Account status is not Verified.");
-        }
-        if (data.some((item) => item.accountid !== inputtedid)) {
-          console.log("Account ID does not match.");
-        }
-        if (data.some((item) => item.account_password !== inputtedpassword)) {
-          console.log("Password does not match.");
-        }
-      }
-      console.log("Invalid credentials or account not verified");
+      console.log("User ID not found in rpcData.");
+      return;
     }
   };
 
@@ -72,10 +93,10 @@ const LoginStudent = () => {
     <SafeAreaView style={styles.pageContainer}>
       <View style={styles.formContainer}>
         <InputField
-          title="Account ID"
+          title="Contact Number"
           size="medium"
-          value={accountId}
-          onChangeText={setAccountId}
+          value={contactNumber}
+          onChangeText={setContactNumber}
         />
         <InputField
           title="Password"
@@ -87,13 +108,6 @@ const LoginStudent = () => {
 
       <View style={styles.buttonContainer}>
         <Button title="Login" type="dark" size="medium" onPress={VerifyLogin} />
-      </View>
-
-      <View style={styles.footerContainer}>
-        <Text>Not a Student?</Text>
-        <Link href="clientlogin" asChild>
-          <Button title="Client Login" type="light" size="medium" />
-        </Link>
       </View>
 
       <View style={styles.footerContainer}>
