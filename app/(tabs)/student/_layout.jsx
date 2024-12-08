@@ -7,7 +7,7 @@ export default function Layout() {
   const handleLogout = () => {
     // Add your logout logic here
     Alert.alert("Logout", "You have logged out successfully!");
-    router.push("/studentlogin");
+    router.replace("/studentlogin");
   };
 
   return (
