@@ -5,11 +5,13 @@ import Button from "@/components/ui/buttons";
 import { supabase } from "../../../lib/supabase";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { format } from "date-fns"; // For formatting the date
+import * as Location from "expo-location"; // Import Location to use reverse geocode
 
 const ManageJobListing = () => {
   const { selectedjoblisting } = useLocalSearchParams(); // Get jobid from route params
   const router = useRouter();
   const [jobData, setJobData] = useState(null);
+  const [location, setLocation] = useState("Location not available"); // Location state
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -24,6 +26,9 @@ const ManageJobListing = () => {
       if (jobError) {
         throw jobError;
       }
+
+      console.log("Job Data:", jobData); // Check if jobData is correct
+
       const { data: clientData, error: clientError } = await supabase
         .from("client_table")
         .select("client_organization, userid")
@@ -43,17 +48,61 @@ const ManageJobListing = () => {
       if (userError) {
         throw userError;
       }
-
+      console.log("HEREHRHEHR");
       setJobData({
         job: jobData,
         client: clientData,
         user: userData,
       });
+      console.log("HEREHRHEHRHEREHRHEHR");
+      // Log to confirm this line is being executed
+      console.log(
+        "Latitude and Longitude",
+        jobData.locationlat,
+        jobData.locationlong
+      );
+
+      // Get the location details after fetching job data
+      if (jobData?.locationlat && jobData?.locationlong) {
+        getJobLocationDetails(jobData.locationlat, jobData.locationlong);
+      }
     } catch (err) {
       console.error("Error fetching details:", err);
       setError("Unable to fetch job details.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Function to get job location details based on latitude and longitude
+  const getJobLocationDetails = async (latitude, longitude) => {
+    try {
+      console.log("Latitude:", latitude);
+      console.log("Longitude:", longitude);
+
+      if (latitude && longitude) {
+        let geocode = await Location.reverseGeocodeAsync({
+          latitude,
+          longitude,
+        });
+
+        console.log("Geocode:", geocode);
+
+        let address = geocode[0];
+        let formattedAddress = address
+          ? `${address.city || "Unknown city"}, ${
+              address.country || "Unknown country"
+            }`
+          : "Address not available";
+
+        setLocation(formattedAddress);
+        console.log("Formatted Location:", formattedAddress);
+      } else {
+        setLocation("Location not available");
+      }
+    } catch (error) {
+      console.error("Error retrieving location or geocode:", error);
+      setError("Failed to retrieve job location details");
     }
   };
 
@@ -63,6 +112,7 @@ const ManageJobListing = () => {
     }
   }, [selectedjoblisting]);
 
+  // Function to handle deletion of the listing
   const handleDeleteListing = async () => {
     try {
       const { data: job, error: fetchError } = await supabase
@@ -76,47 +126,30 @@ const ManageJobListing = () => {
       }
 
       if (job.jobstatus === "In Progress") {
+        // Show an alert if deletion is not allowed
         Alert.alert(
           "Deletion Not Allowed",
           "This job listing cannot be deleted because its status is 'In Progress'.",
           [{ text: "OK" }]
         );
       } else {
-        // Prompt the user for confirmation before proceeding with deletion
+        const { error: deleteError } = await supabase
+          .from("job_listing")
+          .delete()
+          .eq("jobid", selectedjoblisting);
+
+        if (deleteError) {
+          throw deleteError;
+        }
+
         Alert.alert(
-          "Confirm Deletion",
-          "Are you sure you want to delete this job listing?",
+          "Listing Deleted",
+          "The job listing has been successfully deleted.",
           [
             {
-              text: "Cancel",
-              style: "cancel", // Cancel button to close the dialog
-            },
-            {
-              text: "Delete",
-              style: "destructive", // Red color for destructive action
-              onPress: async () => {
-                // Proceed with deletion
-                const { error: deleteError } = await supabase
-                  .from("job_listing")
-                  .delete()
-                  .eq("jobid", selectedjoblisting);
-
-                if (deleteError) {
-                  throw deleteError;
-                }
-
-                Alert.alert(
-                  "Listing Deleted",
-                  "The job listing has been successfully deleted.",
-                  [
-                    {
-                      text: "OK",
-                      onPress: () => {
-                        router.push("/(tabs)/client/myjoblistings");
-                      },
-                    },
-                  ]
-                );
+              text: "OK",
+              onPress: () => {
+                router.push("/(tabs)/client/myjoblistings");
               },
             },
           ]
@@ -148,11 +181,7 @@ const ManageJobListing = () => {
               ? jobData.client.client_organization
               : "Not available"
           }
-          location={
-            jobData.job.locationlat && jobData.job.locationlong
-              ? `${jobData.job.locationlat}, ${jobData.job.locationlong}`
-              : "Not available"
-          }
+          location={location || "Location not available"}
           description={
             jobData.job.jobdescription || "No description available."
           }
