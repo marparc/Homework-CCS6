@@ -6,26 +6,28 @@ import { useRouter } from "expo-router";
 
 const AccountRequests = () => {
   const router = useRouter();
-  const [pendingAccs, setPendingAccs] = useState([]);
+  const [accounts, setAccounts] = useState([]);
+  const [filter, setFilter] = useState("Pending");
   const [isApprovedActive, setIsApprovedActive] = useState(true);
   const [isPendingActive, setIsPendingActive] = useState(true);
   const [error, setError] = useState(null);
 
   console.log("Displaying list");
   useEffect(() => {
-    const grabPending = async () => {
+    const grabAccounts = async () => {
       try {
         const { data, error } = await supabase
           .from("user_account")
           .select("accountid, account_name, account_status")
-          .eq("account_status", "Pending");
+          .eq("account_status", filter);
 
         if (error) {
           console.error("Error fetching data:", error);
           setError("Failed to fetch data.");
         } else {
           console.log("Fetched data:", data);
-          setPendingAccs(data || []);
+          setAccounts(data || []);
+          setError(null);
         }
       } catch (err) {
         console.error("Unexpected error:", err);
@@ -33,17 +35,21 @@ const AccountRequests = () => {
       }
     };
 
-    grabPending();
-  }, []);
+    grabAccounts();
+  }, [filter]);
 
   // Handle "Pending" tab click
   const handlePendingClick = () => {
+    setFilter("Pending");
     setIsPendingActive(true); // Show "To Do" jobs
+    setIsApprovedActive(false);
   };
 
   // Handle "Approved" tab click
   const handleApprovedClick = () => {
+    setFilter("Verified");
     setIsPendingActive(false); // Show "Completed" jobs
+    setIsApprovedActive(true);
   };
   return (
     <>
@@ -65,8 +71,8 @@ const AccountRequests = () => {
       </SafeAreaView>
 
       <ScrollView contentContainerStyle={styles.jobList}>
-        {pendingAccs.length > 0 ? (
-          pendingAccs.map((account) => (
+        {accounts.length > 0 ? (
+          accounts.map((account) => (
             <View key={account.accountid} style={styles.accountItem}>
               <Text style={styles.accountName}>{account.account_name}</Text>
               <Text style={styles.accountStatus}>
@@ -76,7 +82,7 @@ const AccountRequests = () => {
           ))
         ) : (
           <Text style={styles.noDataText}>
-            {error || "No pending accounts available."}
+            {error || "No ${filter.toLowerCase()} accounts available."}
           </Text>
         )}
       </ScrollView>
