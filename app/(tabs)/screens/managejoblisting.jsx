@@ -112,56 +112,85 @@ const ManageJobListing = () => {
     }
   }, [selectedjoblisting]);
 
-  // Function to handle deletion of the listing
-  const handleDeleteListing = async () => {
-    try {
-      const { data: job, error: fetchError } = await supabase
-        .from("job_listing")
-        .select("*")
-        .eq("jobid", selectedjoblisting)
-        .single();
-
-      if (fetchError) {
-        throw fetchError;
-      }
-
-      if (job.jobstatus === "In Progress") {
-        // Show an alert if deletion is not allowed
-        Alert.alert(
-          "Deletion Not Allowed",
-          "This job listing cannot be deleted because its status is 'In Progress'.",
-          [{ text: "OK" }]
-        );
-      } else {
-        const { error: deleteError } = await supabase
-          .from("job_listing")
-          .delete()
-          .eq("jobid", selectedjoblisting);
-
-        if (deleteError) {
-          throw deleteError;
+  // Function to handle deletion of the listing with user confirmation
+  const handleDeleteListing = () => {
+    // First, fetch the job details
+    supabase
+      .from("job_listing")
+      .select("*")
+      .eq("jobid", selectedjoblisting)
+      .single()
+      .then(async ({ data: job, error: fetchError }) => {
+        if (fetchError) {
+          console.error("Error fetching job details:", fetchError);
+          return;
         }
 
-        Alert.alert(
-          "Listing Deleted",
-          "The job listing has been successfully deleted.",
-          [
-            {
-              text: "OK",
-              onPress: () => {
-                router.push("/(tabs)/client/myjoblistings");
+        // Check if the job status is "In Progress" before confirming deletion
+        if (job.jobstatus === "In Progress") {
+          // Show an alert if deletion is not allowed due to job status
+          Alert.alert(
+            "Deletion Not Allowed",
+            "This job listing cannot be deleted because its status is 'In Progress'.",
+            [{ text: "OK" }]
+          );
+        } else {
+          // Ask for confirmation before proceeding with the deletion
+          Alert.alert(
+            "Confirm Deletion",
+            "Are you sure you want to delete this job listing?",
+            [
+              {
+                text: "Cancel",
+                style: "cancel", // Allows the user to cancel the operation
               },
-            },
-          ]
+              {
+                text: "Delete",
+                style: "destructive", // The destructive style to indicate a dangerous action
+                onPress: async () => {
+                  try {
+                    const { error: deleteError } = await supabase
+                      .from("job_listing")
+                      .delete()
+                      .eq("jobid", selectedjoblisting);
+
+                    if (deleteError) {
+                      throw deleteError;
+                    }
+
+                    // Success alert after deletion
+                    Alert.alert(
+                      "Listing Deleted",
+                      "The job listing has been successfully deleted.",
+                      [
+                        {
+                          text: "OK",
+                          onPress: () => {
+                            router.push("/(tabs)/client/myjoblistings");
+                          },
+                        },
+                      ]
+                    );
+                  } catch (err) {
+                    console.error("Error deleting job listing:", err);
+                    Alert.alert(
+                      "Error",
+                      "An error occurred while trying to delete the listing."
+                    );
+                  }
+                },
+              },
+            ]
+          );
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching job listing:", err);
+        Alert.alert(
+          "Error",
+          "An error occurred while trying to fetch the job listing."
         );
-      }
-    } catch (err) {
-      console.error("Error deleting job listing:", err);
-      Alert.alert(
-        "Error",
-        "An error occurred while trying to delete the listing."
-      );
-    }
+      });
   };
 
   return (
