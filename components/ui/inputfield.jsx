@@ -1,7 +1,13 @@
 import { View, Text, TextInput, StyleSheet } from "react-native";
 import React from "react";
 
-const InputField = ({ title, size, value, onChangeText }) => {
+const InputField = ({
+  title,
+  size,
+  value,
+  onChangeText,
+  secureTextEntry = false,
+}) => {
   const inputStyle = () => {
     switch (size) {
       case "small":
@@ -28,6 +34,7 @@ const InputField = ({ title, size, value, onChangeText }) => {
           textAlign="left"
           value={value} // Controlled by parent
           onChangeText={onChangeText} // Updates parent when changed
+          secureTextEntry={secureTextEntry} // Make the text hidden for passwords
         />
       </View>
     </View>

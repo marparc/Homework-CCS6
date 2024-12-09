@@ -133,6 +133,7 @@ const LoginStudent = () => {
           size="medium"
           value={password}
           onChangeText={setPassword}
+          secureTextEntry={true}
         />
         {passwordError ? (
           <Text style={styles.errorText}>{passwordError}</Text>
