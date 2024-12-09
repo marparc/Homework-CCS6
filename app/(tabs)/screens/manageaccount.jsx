@@ -1,7 +1,7 @@
 import { SafeAreaView, ScrollView, Text, StyleSheet } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { supabase } from "../../../../lib/supabase";
+import { supabase } from "../../../lib/supabase";
 import * as Location from "expo-location";
 
 const ManageAccount = () => {

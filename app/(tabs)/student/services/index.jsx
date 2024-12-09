@@ -1,47 +1,13 @@
-import { ScrollView, StyleSheet } from "react-native";
+import { ScrollView, StyleSheet, Text } from "react-native";
 import React, { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import JobCard from "@/components/ui/jobcard";
 import { useRouter } from "expo-router";
-
 import { supabase } from "../../../../lib/supabase";
-// Sample data
-const jobData = [
-  {
-    id: 1,
-    title: "aa Editing Job",
-    description:
-      "Edit a 10-minute video for a YouTube channel, ensuring transitions and effects are smooth.",
-  },
-  {
-    id: 2,
-    title: "Graphic Design Work",
-    description:
-      "Create a promotional poster for a local event, using provided brand guidelines.",
-  },
-  {
-    id: 3,
-    title: "Content Writing Task",
-    description:
-      "Write a 500-word blog post about sustainable energy trends in 2024.",
-  },
-  {
-    id: 4,
-    title: "Social Media Management",
-    description:
-      "Schedule and post content for a week, ensuring captions match the brand voice.",
-  },
-  {
-    id: 5,
-    title: "Photography Session",
-    description: "Capture headshots for a company’s team members in Dumaguete.",
-  },
-];
 
 const RequestLists = () => {
   const router = useRouter();
   const [accountId, setAccountId] = useState(null);
-
   const [serviceRequests, setServiceRequests] = useState([]);
 
   // to get account id
@@ -167,11 +133,6 @@ const RequestLists = () => {
         }
         onPress={() => {
           router.push(`/screens/viewrequest?requestid=${request.requestid}`);
-          /*
-          router.push({
-            pathname: "/screens/viewrequest",
-            query: { requestId: request.requestid },
-          });*/
         }}
       />
     ));
@@ -179,7 +140,11 @@ const RequestLists = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {renderJobCards(jobData)}
+      {serviceRequests.length === 0 ? (
+        <Text>No service requests have been made.</Text> // Display this message if there are no service requests
+      ) : (
+        renderJobCards() // Render job cards if there are service requests
+      )}
     </ScrollView>
   );
 };

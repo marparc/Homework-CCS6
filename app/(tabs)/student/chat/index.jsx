@@ -222,40 +222,41 @@ const ChatList = () => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20 }}>
-        {chatData.map((chat) => (
-          <Chat
-            key={chat.chatid}
-            receiver={chat.user.firstname + " " + chat.user.lastname}
-            sender={chat.user.firstname + " " + chat.user.lastname}
-            onPress={async () => {
-              try {
-                // Store sender and receiver names and IDs in AsyncStorage
-                await AsyncStorage.setItem(
-                  "sender",
-                  `${chat.user.firstname} ${chat.user.lastname}`
-                );
-                await AsyncStorage.setItem(
-                  "senderUserId",
-                  chat.senderUserId.toString()
-                );
+        {chatData
+          .slice()
+          .reverse()
+          .map((chat) => (
+            <Chat
+              key={chat.chatid}
+              receiver={chat.user.firstname + " " + chat.user.lastname}
+              sender={chat.user.firstname + " " + chat.user.lastname}
+              onPress={async () => {
+                try {
+                  await AsyncStorage.setItem(
+                    "sender",
+                    `${chat.user.firstname} ${chat.user.lastname}`
+                  );
+                  await AsyncStorage.setItem(
+                    "senderUserId",
+                    chat.senderUserId.toString()
+                  );
 
-                await AsyncStorage.setItem(
-                  "receiver",
-                  `${chat.user.firstname} ${chat.user.lastname}`
-                );
-                await AsyncStorage.setItem(
-                  "receiverUserId",
-                  chat.receiverUserId.toString()
-                );
+                  await AsyncStorage.setItem(
+                    "receiver",
+                    `${chat.user.firstname} ${chat.user.lastname}`
+                  );
+                  await AsyncStorage.setItem(
+                    "receiverUserId",
+                    chat.receiverUserId.toString()
+                  );
 
-                // Navigate to the convo screen with chatid
-                router.push(`/screens/convo?chatid=${chat.chatid}`);
-              } catch (err) {
-                console.error("Failed to store data in AsyncStorage:", err);
-              }
-            }}
-          />
-        ))}
+                  router.push(`/screens/convo?chatid=${chat.chatid}`);
+                } catch (err) {
+                  console.error("Failed to store data in AsyncStorage:", err);
+                }
+              }}
+            />
+          ))}
       </ScrollView>
     </SafeAreaView>
   );
