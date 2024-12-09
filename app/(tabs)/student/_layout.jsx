@@ -2,13 +2,27 @@ import { router, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Alert, TouchableOpacity } from "react-native";
 import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Layout() {
   const handleLogout = async () => {
     // Add your logout logic here
     Alert.alert("Logout", "You have logged out successfully!");
-    await AsyncStorage.removeItem("accountId");
-    await AsyncStorage.removeItem("password");
+
+    try {
+      await AsyncStorage.removeItem("accountId");
+      console.log("Removed accountId");
+    } catch (error) {
+      console.error("Error removing accountId:", error);
+    }
+
+    try {
+      await AsyncStorage.removeItem("password");
+      console.log("Removed password");
+    } catch (error) {
+      console.error("Error removing password:", error);
+    }
+    console.log("Logout successful");
     router.replace("/studentlogin");
   };
 
