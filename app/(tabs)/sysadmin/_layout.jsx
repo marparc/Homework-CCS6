@@ -114,7 +114,7 @@ const AccountRequests = () => {
                 router.push(
                   `/screens/manageaccount?selectedaccount=${account.accountid}`
                 );
-              }}
+              }}a
             />
           ))
         ) : (
