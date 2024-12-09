@@ -109,12 +109,12 @@ const AccountRequests = () => {
               key={account.accountid}
               title={account.account_name}
               description={`Status: ${account.account_status}`}
-              /*onPress={() => {
+              onPress={() => {
                 console.log("ROUTER:", account.accountid);
                 router.push(
                   `/screens/manageaccount?selectedaccount=${account.accountid}`
                 );
-              }}*/
+              }}
             />
           ))
         ) : (
