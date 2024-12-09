@@ -3,24 +3,25 @@ import { ScrollView, View, Text, StyleSheet, Dimensions } from "react-native";
 import PortfolioCard from "@/components/ui/portfoliocard";
 import Button from "@/components/ui/buttons";
 import { supabase } from "../../../lib/supabase";
-import { useLocalSearchParams } from "expo-router"; // Use expo-router to access params
+import { useLocalSearchParams } from "expo-router";
 import PopUp from "@/components/ui/popup";
 
 const ViewApplication = () => {
-  const { studentid, jobid } = useLocalSearchParams(); // Get jobid and studentid from route params
+  const { studentid, jobid } = useLocalSearchParams();
   const [studentData, setStudentData] = useState(null);
   const [jobData, setJobData] = useState(null);
   const [applicationData, setApplicationData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [portfolios, setPortfolios] = useState([]);
   const [isPopUpVisible, setPopUpVisible] = useState(false);
+  const [popUpMessage, setPopUpMessage] = useState("");
+  const [popUpRoute, setPopUpRoute] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
 
       try {
-        // Fetch student details based on studentid
         const { data: student, error: studentError } = await supabase
           .from("student")
           .select("*")
@@ -29,16 +30,13 @@ const ViewApplication = () => {
 
         if (studentError) throw studentError;
 
-        // Fetch user details based on userid from the student table
         const { data: user, error: userError } = await supabase
-          .from("user_table") // Assuming the table name is user_table
+          .from("user_table")
           .select("firstname, lastname, birthdate")
-          .eq("userid", student.userid) // Use the userid from the student table to fetch user data
+          .eq("userid", student.userid)
           .single();
 
         if (userError) throw userError;
-
-        // Fetch job details based on jobid
         const { data: job, error: jobError } = await supabase
           .from("job_listing")
           .select("*")
@@ -47,7 +45,6 @@ const ViewApplication = () => {
 
         if (jobError) throw jobError;
 
-        // Fetch application details using both studentid and jobid from application table
         const { data: application, error: applicationError } = await supabase
           .from("application")
           .select("applicationmessage, applicationstatus")
@@ -57,7 +54,6 @@ const ViewApplication = () => {
 
         if (applicationError) throw applicationError;
 
-        // Fetch portfolio details based on studentid
         const { data: portfolios, error: portfolioError } = await supabase
           .from("portfolio")
           .select("portfolioname, portfoliodesc")
@@ -65,7 +61,6 @@ const ViewApplication = () => {
 
         if (portfolioError) throw portfolioError;
 
-        // Update state with all the fetched data
         setStudentData({
           ...student,
           firstname: user.firstname,
@@ -84,16 +79,15 @@ const ViewApplication = () => {
       } catch (error) {
         console.error("Error fetching data:", error.message);
       } finally {
-        setLoading(false); // Set loading state to false after data is fetched
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, [studentid, jobid]); // Re-run effect when studentid or jobid changes
+  }, [studentid, jobid]);
 
   const handleReject = async () => {
     try {
-      // Update the application status to "Rejected"
       const { error } = await supabase
         .from("application")
         .update({ applicationstatus: "Rejected" })
@@ -105,17 +99,91 @@ const ViewApplication = () => {
         return;
       }
 
-      // Update the local state to reflect the change
       setApplicationData((prevData) => ({
         ...prevData,
         applicationstatus: "Rejected",
       }));
 
-      // Show the popup
+      setPopUpMessage("Job Application Rejected!");
+      setPopUpRoute("/(tabs)/client/myjoblistings");
       setPopUpVisible(true);
     } catch (error) {
       console.error("Error rejecting application:", error.message);
       alert("Failed to reject the application.");
+    }
+  };
+
+  const handleAccept = async () => {
+    try {
+      const { error: applicationError } = await supabase
+        .from("application")
+        .update({ applicationstatus: "Approved" })
+        .eq("studentid", studentid)
+        .eq("jobid", jobid);
+
+      if (applicationError) {
+        console.error("Error updating application:", applicationError.message);
+        return;
+      }
+
+      const { error: jobError } = await supabase
+        .from("job_listing")
+        .update({ jobstatus: "In Progress" })
+        .eq("jobid", jobid);
+
+      if (jobError) {
+        console.error("Error updating job:", jobError.message);
+        return;
+      }
+
+      const { data: jobData, error: jobDataError } = await supabase
+        .from("job_listing")
+        .select("clientid")
+        .eq("jobid", jobid)
+        .single();
+
+      if (jobDataError) {
+        console.error("Error fetching job client:", jobDataError.message);
+        return;
+      }
+
+      const clientid = jobData.clientid;
+
+      const { data: chats, error: chatError } = await supabase
+        .from("chat")
+        .select("chatid");
+
+      if (chatError) {
+        console.error("Error fetching chats:", chatError.message);
+        return;
+      }
+
+      const nextChatid =
+        chats.length > 0
+          ? Math.max(...chats.map((chat) => chat.chatid)) + 1
+          : 1;
+
+      const { error: chatInsertError } = await supabase.from("chat").insert([
+        {
+          chatid: nextChatid,
+          clientid: clientid,
+          studentid: studentid,
+        },
+      ]);
+
+      if (chatInsertError) {
+        console.error("Error inserting chat:", chatInsertError.message);
+        return;
+      }
+
+      setPopUpMessage(
+        "Job Application Accepted! You can now start messaging the student."
+      );
+      setPopUpRoute("/(tabs)/client/chat");
+      setPopUpVisible(true);
+    } catch (error) {
+      console.error("Error processing accept action:", error.message);
+      alert("Failed to accept the application.");
     }
   };
 
@@ -132,18 +200,15 @@ const ViewApplication = () => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
           <View style={styles.circle}>
-            {/* Display the first letter of the student's first name */}
             <Text style={styles.circleText}>
               {studentData?.firstname ? studentData.firstname[0] : ""}
             </Text>
           </View>
           <View style={styles.infoContainer}>
-            {/* Display the student's full name */}
             <Text style={styles.name}>
               {studentData?.firstname} {studentData?.lastname}
             </Text>
             <Text style={styles.type}>Student</Text>
-            {/* Display the student ID */}
             <Text style={styles.id}>Student ID: {studentData?.studentid}</Text>
           </View>
         </View>
@@ -163,17 +228,13 @@ const ViewApplication = () => {
           </Text>
         </View>
 
-        {/* Application Details (optional) */}
         <View style={styles.applicationContainer}>
           <Text style={styles.detailsHeader}>Application Message:</Text>
-
-          {/* Display application message from applicationData */}
           <Text style={styles.details}>
             {applicationData?.applicationmessage || "No message provided"}
           </Text>
         </View>
 
-        {/* Portfolios Section (optional) */}
         <View style={styles.portfolioContainer}>
           <Text style={styles.detailsHeader}>Samples of My Work</Text>
           {portfolios && portfolios.length > 0 ? (
@@ -199,9 +260,14 @@ const ViewApplication = () => {
           )}
         </View>
 
-        {/* Button Section */}
         <View style={styles.buttonContainer}>
-          <Button title="Accept" type="dark" size="small" onPress={""} />
+          <Button
+            title="Accept"
+            type="dark"
+            size="small"
+            onPress={handleAccept}
+          />
+
           <Button
             title="Reject"
             type="light"
@@ -211,12 +277,11 @@ const ViewApplication = () => {
         </View>
       </ScrollView>
 
-      {/* Show the PopUp when isPopUpVisible is true */}
       {isPopUpVisible && (
         <PopUp
           icon="checkmark-circle-outline"
-          text="Job Application Rejected!"
-          route="/(tabs)/client/myjoblistings"
+          text={popUpMessage}
+          route={popUpRoute}
         />
       )}
     </>
