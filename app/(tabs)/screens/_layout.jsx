@@ -127,7 +127,7 @@ const Layout = () => {
       <Stack.Screen
         name="todo"
         options={{
-          title: "To do",
+          title: "To Do",
           headerTitleAlign: "center", // Center the header title
           headerLeft: () => (
             <TouchableOpacity
@@ -378,6 +378,29 @@ const Layout = () => {
           ),
         }}
       />
+
+      <Stack.Screen
+        name="viewapplication"
+        options={{
+          title: "Student Application",
+          headerTitleAlign: "center", // Center the header title
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => {
+                router.push("/(tabs)/client/myjoblistings"); // Navigate back when pressed
+              }}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color="black"
+                style={{ marginLeft: 10 }}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+
       <Stack.Screen
         name="manageapplications"
         options={{

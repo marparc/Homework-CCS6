@@ -171,51 +171,63 @@ const ManageJobListing = () => {
   };
 
   return (
-    <>
-      <View>
-        {jobData ? (
-          <ListingDetails
-            title={jobData.job.jobtitle || "Not available"}
-            jobType={jobData.job.jobtype || "Not available"}
-            posted={
-              jobData.job.dateposted
-                ? format(new Date(jobData.job.dateposted), "MMMM dd, yyyy")
-                : "Not available"
-            }
-            status={jobData.job.jobstatus || "Not available"}
-            client={
-              jobData?.client
-                ? jobData.client.client_organization
-                : "Not available"
-            }
-            location={location || "Location not available"}
-            description={
-              jobData.job.jobdescription || "No description available."
-            }
-            pay={jobData.job.jobpay || "Not available"}
-          />
-        ) : (
-          <Text>Loading job details...</Text>
-        )}
+    <View>
+      {jobData ? (
+        <ListingDetails
+          title={jobData.job.jobtitle || "Not available"}
+          jobType={jobData.job.jobtype || "Not available"}
+          posted={
+            jobData.job.dateposted
+              ? format(new Date(jobData.job.dateposted), "MMMM dd, yyyy")
+              : "Not available"
+          }
+          status={jobData.job.jobstatus || "Not available"}
+          client={
+            jobData?.client
+              ? jobData.client.client_organization
+              : "Not available"
+          }
+          location={location || "Location not available"}
+          description={
+            jobData.job.jobdescription || "No description available."
+          }
+          pay={jobData.job.jobpay || "Not available"}
+        />
+      ) : (
+        <Text>Loading job details...</Text>
+      )}
 
+      {jobData && jobData.job.jobstatus === "Open" && (
+        <>
+          <Button
+            title="Edit Listing"
+            type="light"
+            size="medium"
+            onPress={() => {
+              router.push(
+                `/screens/editjoblisting?selectedjoblisting=${selectedjoblisting}`
+              );
+            }}
+          />
+
+          <Button
+            title="Delete Listing"
+            type="dark"
+            size="medium"
+            onPress={handleDeleteListing}
+          />
+        </>
+      )}
+
+      {jobData && jobData.job.jobstatus === "In Progress" && (
         <Button
-          title="Edit Listing"
+          title="Back"
           type="light"
           size="medium"
-          onPress={() => {
-            router.push(
-              `/screens/editjoblisting?selectedjoblisting=${selectedjoblisting}`
-            );
-          }}
+          onPress={() => router.back()} // Go back to the previous screen
         />
+      )}
 
-        <Button
-          title="Delete Listing"
-          type="dark"
-          size="medium"
-          onPress={handleDeleteListing}
-        />
-      </View>
       {isPopUpVisible && (
         <PopUp
           icon="checkmark-circle-outline"
@@ -223,7 +235,7 @@ const ManageJobListing = () => {
           route="/(tabs)/client/myjoblistings" // Navigate to this route when the modal is closed
         />
       )}
-    </>
+    </View>
   );
 };
 

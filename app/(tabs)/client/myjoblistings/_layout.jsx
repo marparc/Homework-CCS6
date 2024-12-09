@@ -21,13 +21,6 @@ export default function Layout() {
           title: "My Job Listings", // Custom title
         }}
       />
-      {/* Add the manageapplications route */}
-      <Stack.Screen
-        name="manageapplications"
-        options={{
-          title: "Job Applications", // Custom title for this screen
-        }}
-      />
     </Stack>
   );
 }

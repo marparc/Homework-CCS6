@@ -30,13 +30,15 @@ const PortfolioCard = ({ title, description, link }) => {
 };
 
 export default PortfolioCard;
-
 const styles = StyleSheet.create({
   container: {
-    width: 320,
+    width: "100%",
     padding: 20,
     backgroundColor: "#FAF9F9",
     borderRadius: 16,
+    borderWidth: 1, // Adding border width
+    borderColor: "black", // Light grey border color
+    borderStyle: "solid", // Ensures the border is solid
   },
   header: {
     fontSize: 18,
@@ -48,7 +50,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   buttonContainer: {
-    alignItems: "flex-end",
+    alignSelf: "stretch", // Ensure the button container takes up the full width
+    alignItems: "flex-end", // Align the button to the right
+    marginTop: 10, // Optional: Add some space above the button
   },
   buttonContent: {
     flexDirection: "row",

@@ -77,7 +77,8 @@ const MyListings = () => {
       const { data: jobListingsData, error: jobListingsError } = await supabase
         .from("job_listing")
         .select("jobtitle, jobdescription, jobid")
-        .eq("clientid", clientId);
+        .eq("clientid", clientId)
+        .neq("jobstatus", "Completed");
 
       if (jobListingsError) {
         console.error("Error fetching job listings:", jobListingsError.message);
@@ -133,7 +134,8 @@ const MyListings = () => {
       const { data: jobData, error: jobError } = await supabase
         .from("job_listing")
         .select("jobid, jobtitle")
-        .eq("clientid", clientId);
+        .eq("clientid", clientId)
+        .eq("jobstatus", "Open");
 
       if (jobError || !jobData) {
         console.error(
@@ -150,7 +152,8 @@ const MyListings = () => {
             await supabase
               .from("application")
               .select("*", { count: "exact" })
-              .eq("jobid", job.jobid);
+              .eq("jobid", job.jobid)
+              .eq("applicationstatus", "Pending");
 
           if (applicationError) {
             console.error(

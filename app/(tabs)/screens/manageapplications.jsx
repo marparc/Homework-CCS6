@@ -3,8 +3,7 @@ import React, { useEffect, useState } from "react";
 import Button from "@/components/ui/buttons";
 import { supabase } from "../../../lib/supabase";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import ReqCard from "@/components/ui/request"; // Assuming you have a JobCard component
-
+import JobCard from "@/components/ui/jobcard";
 const ManageApplications = () => {
   const { selectedjobid } = useLocalSearchParams(); // Get jobid from route params
   const router = useRouter();
@@ -125,16 +124,15 @@ const ManageApplications = () => {
           {applications.length > 0 ? (
             applications.map((application) => (
               <View key={application.studentid}>
-                <ReqCard
-                  id={application.studentid}
-                  title={`${application.firstname} ${application.lastname}`} // Display the student's first and last name
-                  name={application.applicationmessage} // Display the application message as the name
-                  description={""} // Empty description
-                  stars={0} // Default stars to 0
-                  primaryButtonTitle="Approve" // Custom title for the first button
-                  secondaryButtonTitle="Reject" // Custom title for the second button
-                  primaryButtonRoute={`/screens/approveapplication?studentid=${application.studentid}`} // Route for the primary button
-                  secondaryButtonRoute={`/screens/rejectapplication?studentid=${application.studentid}`} // Route for the secondary button
+                <JobCard
+                  key={application.studentid}
+                  title={`${application.firstname} ${application.lastname}`}
+                  description={application.applicationmessage}
+                  onPress={() => {
+                    router.push(
+                      `/screens/viewapplications?studentid=${application.studentid}&jobid=${selectedjobid}`
+                    );
+                  }}
                 />
               </View>
             ))
