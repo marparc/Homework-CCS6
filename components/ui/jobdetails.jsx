@@ -45,7 +45,7 @@ export default JobDetails;
 
 const styles = StyleSheet.create({
   container: {
-    width: 300,
+    width: 330,
     padding: 20,
     backgroundColor: "#f9f9f9",
     borderRadius: 16,
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   detail: {
-    fontSize: 12,
+    fontSize: 16,
     color: "#434242",
     marginVertical: 2,
   },
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   },
   description: {
     marginTop: 10,
-    fontSize: 12,
+    fontSize: 16,
     color: "#161616",
     textAlign: "justify",
   },
