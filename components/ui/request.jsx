@@ -36,7 +36,14 @@ const ReqCard = (props) => {
               router.push(`/screens/requestservice?selectedrequest=${id}`);
             }}
           />
-          <Button title="View" type="light" size="small" />
+          <Button
+            title="View"
+            type="light"
+            size="small"
+            onPress={() => {
+              router.push(`/screens/viewstudentprofile?selectedrequest=${id}`);
+            }}
+          />
         </View>
       </View>
     </Pressable>
