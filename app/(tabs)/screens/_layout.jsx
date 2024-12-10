@@ -73,6 +73,11 @@ const Layout = () => {
       console.error("Unknown usertype:", usertype);
     }
   };
+
+  const handleJobPress = () => {
+    console.log("Job Clicked");
+    router.push("/(tabs)/screens/jobsubmission");
+  };
   return (
     <Stack
       screenOptions={{
@@ -89,6 +94,38 @@ const Layout = () => {
           headerTitleAlign: "center",
           headerLeft: () => (
             <TouchableOpacity onPress={handleBackPress}>
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color="black"
+                style={{ marginLeft: 10 }}
+              />
+            </TouchableOpacity>
+          ),
+          headerRight: () => (
+            <TouchableOpacity onPress={handleJobPress}>
+              <Ionicons
+                name="briefcase-outline"
+                size={24}
+                color="black"
+                style={{ marginRight: 10 }}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+
+      <Stack.Screen
+        name="jobsubmission"
+        options={{
+          title: "Job Submission",
+          headerTitleAlign: "center",
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => {
+                router.back();
+              }}
+            >
               <Ionicons
                 name="arrow-back"
                 size={24}

@@ -23,11 +23,6 @@ const ProfileCard = ({ profiletype, company, imageSrc, name }) => {
 
   return (
     <View style={styles.profileCard}>
-      {/* Render Text component only if profileTypeText returns a valid string */}
-      {profileTypeText() && (
-        <Text style={styles.type}>{profileTypeText()}</Text>
-      )}
-
       <View style={styles.detailsContainer}>
         {imageSrc ? (
           <Image source={{ uri: imageSrc }} style={styles.image} />
@@ -38,6 +33,10 @@ const ProfileCard = ({ profiletype, company, imageSrc, name }) => {
         )}
         <View>
           <Text style={styles.name}>{name}</Text>
+          {/* Render Text component only if profileTypeText returns a valid string */}
+          {profileTypeText() && (
+            <Text style={styles.type}>{profileTypeText()}</Text>
+          )}
           {/* Render Text component only if companyText returns a valid string */}
           {companyText() && (
             <Text style={{ color: "#434242", fontSize: 14 }}>
@@ -61,19 +60,16 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   type: {
-    fontWeight: "bold",
-    fontSize: 14,
-    textAlign: "center",
+    fontSize: 16,
   },
   detailsContainer: {
-    marginTop: 20,
     flexDirection: "row",
     alignItems: "center",
   },
   image: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     marginRight: 10,
   },
   imageFallback: {
@@ -87,11 +83,11 @@ const styles = StyleSheet.create({
   },
   initial: {
     color: "#fff",
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "bold",
   },
   name: {
     fontWeight: "bold",
-    fontSize: 14,
+    fontSize: 16,
   },
 });
