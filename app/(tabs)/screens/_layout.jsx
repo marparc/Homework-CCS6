@@ -488,6 +488,27 @@ const Layout = () => {
           ),
         }}
       />
+      <Stack.Screen
+        name="viewstudentprofile"
+        options={{
+          title: "View Profile",
+          headerTitleAlign: "center", // Center the header title
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => {
+                router.push("client/findservice"); // Navigate back when pressed
+              }}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color="black"
+                style={{ marginLeft: 10 }}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
     </Stack>
   );
 };
