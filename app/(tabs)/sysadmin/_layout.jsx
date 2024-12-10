@@ -76,6 +76,19 @@ const AccountRequests = () => {
     }
   };
 
+  // Navigate to the account details screen
+  const AccountDetails = (accountid, accountName) => {
+    console.log(
+      "Navigating with accountid:",
+      accountid,
+      "and accountName:",
+      accountName
+    );
+    router.push(
+      `/screens/manageaccount?selectedAccount=${accountid}&accountName=${accountName}`
+    ); // Navigate with both jobid and jobstatus
+  };
+
   return (
     <>
       <SafeAreaView>
@@ -110,11 +123,8 @@ const AccountRequests = () => {
               title={account.account_name}
               description={`Status: ${account.account_status}`}
               onPress={() => {
-                console.log("ROUTER:", account.accountid);
-                router.push(
-                  `/screens/manageaccount?selectedaccount=${account.accountid}`
-                );
-              }}a
+                AccountDetails(account.accountid, account.account_status);
+              }}
             />
           ))
         ) : (
