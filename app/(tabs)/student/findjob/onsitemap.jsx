@@ -17,7 +17,6 @@ export default function JobMap() {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        //get jobs from job_listing table from database
         const { data, error } = await supabase
           .from("job_listing")
           .select("jobid, jobtitle, jobdescription, locationlat, locationlong")
@@ -26,8 +25,8 @@ export default function JobMap() {
         if (error) {
           console.error("Error fetching jobs:", error.message);
         } else {
-          console.log("Fetched Jobs:", data); //data is the array where the fetched jobs are stored
-          setJobData(data); //transfer data to another array
+          console.log("Fetched Jobs:", data);
+          setJobData(data);
         }
       } catch (fetchError) {
         console.error("Unexpected error fetching jobs:", fetchError);
@@ -46,7 +45,6 @@ export default function JobMap() {
           return;
         }
 
-        //get user location
         const currentLocation = await Location.getCurrentPositionAsync({});
         setLocation({
           latitude: currentLocation.coords.latitude,
@@ -68,8 +66,11 @@ export default function JobMap() {
   const handleMapPress = () => setSelectedJob(null);
 
   const viewJobPress = () => {
-    if (selectedJob?.id) {
-      router.push(`/screens/viewjoblisting/${selectedJob.id}`);
+    if (selectedJob) {
+      console.log("Navigating to job:", selectedJob.jobid);
+      router.push(
+        `/screens/viewjoblisting?selectedJobListing=${selectedJob.jobid}`
+      );
     }
   };
 
@@ -90,10 +91,8 @@ export default function JobMap() {
               console.log(jobData);
             }}
           />
-          {/**this displays the onsite job listings */}
           {jobData.length > 0 ? (
             jobData.map((job) => (
-              //job is an object for the jobData array
               <Marker
                 key={job.jobid}
                 icon={require("../../student/findjob/HW.png")}
