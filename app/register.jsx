@@ -2,6 +2,7 @@ import { View, Text, SafeAreaView, StyleSheet, ScrollView } from "react-native";
 import React, { useState } from "react";
 import InputField from "@/components/ui/inputfield";
 import Button from "@/components/ui/buttons";
+import { supabase } from "../lib/supabase";
 import { Link, useRouter } from "expo-router";
 import DatePick from "@/components/ui/pickdate";
 
@@ -11,34 +12,76 @@ const Register = () => {
   const [contactNumber, setContactNumber] = useState("");
   const [birthdate, setBirthdate] = useState("");
   const [password, setPassword] = useState("");
+  const [contactNumberError, setContactNumberError] = useState("");
 
   const router = useRouter();
 
+  const checkContactNum = async (contactNumber) => {
+    try {
+      // Query the database for the contact number
+      const { data, error } = await supabase
+        .from("user_table") // Replace with your table name
+        .select("contactnumber")
+        .eq("contactnumber", contactNumber)
+        .single(); // Use `.single()` if you expect only one result
+
+      // Handle errors
+      if (error && error.code !== "PGRST116") {
+        // PGRST116 is "No rows found"
+        throw error;
+      }
+
+      // Check if the contact number exists
+      return !!data; // Return true if data exists, false otherwise
+    } catch (error) {
+      console.error("Error checking contact number:", error);
+      return null; // Handle unexpected errors gracefully
+    }
+  };
+
   // Pass the state via router.push()
-  const handleRegisterStudent = () => {
-    router.push({
-      pathname: "/registerstudent",
-      params: {
-        firstName,
-        lastName,
-        contactNumber,
-        birthdate,
-        password,
-      },
-    });
+  const handleRegisterStudent = async () => {
+    setContactNumberError("");
+    const exists = await checkContactNum(contactNumber);
+    if (exists) {
+      setContactNumberError("Contact number is already in use.");
+    } else if (exists === false) {
+      router.push({
+        pathname: "/registerstudent",
+        params: {
+          firstName,
+          lastName,
+          contactNumber,
+          birthdate,
+          password,
+        },
+      });
+    } else {
+      console.error("An error occurred during the contact number check.");
+    }
   };
-  const handleRegisterClient = () => {
-    router.push({
-      pathname: "/registerclient",
-      params: {
-        firstName,
-        lastName,
-        contactNumber,
-        birthdate,
-        password,
-      },
-    });
+
+  const handleRegisterClient = async () => {
+    setContactNumberError("");
+    const exists = await checkContactNum(contactNumber);
+    if (exists) {
+      setContactNumberError("Contact number is already in use.");
+    } else if (exists === false) {
+      router.push({
+        pathname: "/registerclient",
+        params: {
+          firstName,
+          lastName,
+          contactNumber,
+          birthdate,
+          password,
+        },
+      });
+    } else {
+      console.error("An error occurred during the contact number check.");
+    }
   };
+
   return (
     <SafeAreaView style={styles.pageContainer}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -66,6 +109,9 @@ const Register = () => {
             value={contactNumber}
             onChangeText={setContactNumber}
           />
+          {contactNumberError ? (
+            <Text style={styles.errorText}>{contactNumberError}</Text>
+          ) : null}
 
           <InputField
             title="Password"
@@ -128,5 +174,10 @@ const styles = StyleSheet.create({
   },
   btnContainer: {
     marginVertical: 5,
+  },
+  errorText: {
+    color: "red",
+    marginBottom: 5,
+    marginLeft: 15,
   },
 });

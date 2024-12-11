@@ -2,7 +2,6 @@ import { ScrollView, Text, StyleSheet, View } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { supabase } from "../../../lib/supabase";
-import * as Location from "expo-location";
 import Button from "@/components/ui/buttons";
 
 const ManageAccount = () => {
