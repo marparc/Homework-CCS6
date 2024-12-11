@@ -22,8 +22,8 @@ const Chat = ({ receiver, jobtitle, onPress }) => {
 
       {/* Mid Section */}
       <View style={styles.mid}>
-        <Text style={styles.receiver}>{receiver}</Text>
         <Text style={styles.jobtitle}>{jobtitle}</Text>
+        <Text style={styles.receiver}>{receiver}</Text>
       </View>
 
       {/* Right Section */}
@@ -66,10 +66,11 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     justifyContent: "center", // Vertically center the text
   },
-  receiver: {
+  jobtitle: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#333",
+    textTransform: "uppercase",
   },
   message: {
     fontSize: 14,
