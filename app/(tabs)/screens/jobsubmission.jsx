@@ -6,6 +6,7 @@ import Button from "@/components/ui/buttons";
 import { Checkbox } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import InputField from "@/components/ui/inputfield";
+import { router, useRouter } from "expo-router";
 
 const JobSubmission = () => {
   const [isHomeworkSubmitted, setIsHomeworkSubmitted] = useState(false);
@@ -13,6 +14,7 @@ const JobSubmission = () => {
   const [isPaymentReceived, setIsPaymentReceived] = useState(false);
   const [receiptNo, setReceiptNo] = useState(null);
   const myAccType = "Client"; // Example account type
+  const router = useRouter();
 
   return myAccType === "Student" ? (
     <ScrollView
@@ -158,7 +160,9 @@ const JobSubmission = () => {
             title="Confirm"
             type="dark"
             size="medium"
-            onPress={() => console.log("Payment confirmed")}
+            onPress={() => {
+              router.push("/screens/review");
+            }}
           />
         </View>
       )}
