@@ -17,6 +17,8 @@ const ViewApplication = () => {
   const [popUpMessage, setPopUpMessage] = useState("");
   const [popUpRoute, setPopUpRoute] = useState("");
 
+  console.log("JOBID: ", jobid);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -115,6 +117,7 @@ const ViewApplication = () => {
 
   const handleAccept = async () => {
     try {
+      // Update application status to "Approved"
       const { error: applicationError } = await supabase
         .from("application")
         .update({ applicationstatus: "Approved" })
@@ -126,6 +129,7 @@ const ViewApplication = () => {
         return;
       }
 
+      // Update job status to "In Progress"
       const { error: jobError } = await supabase
         .from("job_listing")
         .update({ jobstatus: "In Progress" })
@@ -136,6 +140,7 @@ const ViewApplication = () => {
         return;
       }
 
+      // Fetch client ID for the job
       const { data: jobData, error: jobDataError } = await supabase
         .from("job_listing")
         .select("clientid")
@@ -168,6 +173,7 @@ const ViewApplication = () => {
           chatid: nextChatid,
           clientid: clientid,
           studentid: studentid,
+          jobid: jobid,
         },
       ]);
 

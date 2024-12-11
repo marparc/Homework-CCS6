@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 
-const Chat = ({ receiver, onPress }) => {
+const Chat = ({ receiver, jobtitle, onPress }) => {
   // Get the first letter of the receiver's name
   const firstLetter = receiver.charAt(0).toUpperCase();
 
@@ -11,9 +11,9 @@ const Chat = ({ receiver, onPress }) => {
   return (
     <TouchableOpacity
       style={[styles.container, isHovered && styles.containerHovered]} // Change background color on hover
-      onMouseEnter={() => setIsHovered(true)} // When mouse enters, set hover to true (web only)
-      onMouseLeave={() => setIsHovered(false)} // When mouse leaves, set hover to false (web only)
-      onPress={onPress} // Handle press event
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onPress={onPress}
     >
       {/* Left Section */}
       <View style={styles.left}>
@@ -23,6 +23,7 @@ const Chat = ({ receiver, onPress }) => {
       {/* Mid Section */}
       <View style={styles.mid}>
         <Text style={styles.receiver}>{receiver}</Text>
+        <Text style={styles.jobtitle}>{jobtitle}</Text>
       </View>
 
       {/* Right Section */}

@@ -45,9 +45,8 @@ const ChatList = () => {
           );
         }
 
-        const { userid: currentUserId } = userAccountData; // Get the current user's userid
+        const { userid: currentUserId } = userAccountData;
 
-        // Check if the current user is a student
         const { data: studentData, error: studentError } = await supabase
           .from("student")
           .select("studentid")
@@ -57,14 +56,13 @@ const ChatList = () => {
         console.log("Checking for student data...");
 
         if (studentData) {
-          console.log("Current user is a student");
+          console.log("HERE STUDENT");
 
-          const { studentid } = studentData; // The student ID is the sender's ID
+          const { studentid } = studentData;
 
-          // Fetch chat data for the student
           const { data: chatData, error: chatError } = await supabase
             .from("chat")
-            .select("clientid, chatid, studentid")
+            .select("clientid, chatid, studentid, jobid")
             .eq("studentid", studentid);
 
           if (chatError) {
@@ -73,7 +71,6 @@ const ChatList = () => {
 
           const clientIds = chatData.map((chat) => chat.clientid);
 
-          // Fetch client data to find the user associated with each client ID
           const { data: clientData, error: clientError } = await supabase
             .from("client_table")
             .select("clientid, userid")
@@ -87,7 +84,6 @@ const ChatList = () => {
 
           const clientUserIds = clientData.map((client) => client.userid);
 
-          // Fetch user data for the clients to get first and last names
           const { data: userData, error: userError } = await supabase
             .from("user_table")
             .select("userid, firstname, lastname")
@@ -101,28 +97,45 @@ const ChatList = () => {
             return map;
           }, {});
 
-          const chatsWithUsers = chatData.map((chat) => {
-            const clientUser = userMap[chat.clientid] || {
-              firstname: "Unknown",
-              lastname: "",
-            };
+          const jobIds = chatData.map((chat) => chat.jobid);
+          const { data: jobData, error: jobError } = await supabase
+            .from("job_listing")
+            .select("jobid, jobstatus, jobtitle")
+            .in("jobid", jobIds);
 
-            return {
-              ...chat,
-              sender: studentid, // Sender is the studentid
-              senderUserId: accountId, // Store the sender's user ID (student)
-              receiver: accountId, // Receiver is the current user's accountId
-              receiverUserId: chat.clientid, // Store the client ID as receiver's user ID
-              user: clientUser,
-            };
-          });
+          if (jobError) {
+            throw new Error(jobError.message || "Error fetching job data.");
+          }
 
+          const jobMap = jobData.reduce((map, job) => {
+            map[job.jobid] = job;
+            return map;
+          }, {});
+
+          const chatsWithUsers = chatData
+            .map((chat) => {
+              const clientUser = userMap[chat.clientid] || {
+                firstname: "Unknown",
+                lastname: "",
+              };
+              const job = jobMap[chat.jobid] || { jobstatus: "", jobtitle: "" };
+
+              return {
+                ...chat,
+                sender: studentid,
+                senderUserId: accountId,
+                receiver: accountId,
+                receiverUserId: chat.clientid,
+                user: clientUser,
+                jobstatus: job.jobstatus,
+                jobtitle: job.jobtitle,
+              };
+            })
+            .filter((chat) => chat.jobstatus === "In Progress");
           setChatData(chatsWithUsers);
-          console.log("Chats with Sender (Student): ", chatsWithUsers);
         } else {
           console.log("Current user is a client");
 
-          // Fetch account_name and userid using the accountId from user_account table
           const { data: userAccountData, error: userAccountError } =
             await supabase
               .from("user_account")
@@ -138,7 +151,6 @@ const ChatList = () => {
 
           const { account_name, userid: clientUserid } = userAccountData;
 
-          // Fetch clientid using the client userid from client_table
           const { data: clientData, error: clientError } = await supabase
             .from("client_table")
             .select("clientid")
@@ -151,10 +163,9 @@ const ChatList = () => {
 
           const { clientid } = clientData;
 
-          // Fetch chat data related to the client
           const { data: chatData, error: chatError } = await supabase
             .from("chat")
-            .select("clientid, chatid, studentid")
+            .select("clientid, chatid, studentid, jobid")
             .eq("clientid", clientid);
 
           if (chatError) {
@@ -163,7 +174,6 @@ const ChatList = () => {
 
           const studentIds = chatData.map((chat) => chat.studentid);
 
-          // Fetch student data for all the student IDs involved in the chat
           const { data: studentData, error: studentError } = await supabase
             .from("student")
             .select("studentid, userid")
@@ -176,14 +186,12 @@ const ChatList = () => {
           }
 
           const studentUserIds = studentData.map((student) => student.userid);
-          console.log("studentUserIds: ", studentUserIds);
 
-          // Fetch user data for the students to get first and last names
           const { data: userData, error: userError } = await supabase
             .from("user_table")
             .select("userid, firstname, lastname")
             .in("userid", studentUserIds);
-          console.log("userData firstname: ", userData);
+
           const userMap = studentData.reduce((map, student) => {
             const user = userData.find((u) => u.userid === student.userid);
             if (user) {
@@ -191,23 +199,42 @@ const ChatList = () => {
             }
             return map;
           }, {});
-          console.log("MAP:   ", userMap);
-          console.log("chatData.clientid: ", chatData.clientid);
-          const chatsWithUsers = chatData.map((chat) => {
-            const studentUser = userMap[chat.studentid] || {
-              firstname: "Unknown",
-              lastname: "",
-            };
-            console.log("chatData.clientid: ", chat.clientid);
-            return {
-              ...chat,
-              sender: account_name, // Sender is the account_name (client)
-              senderUserId: chat.clientid, // Store the client user ID as sender's user ID
-              receiver: `${studentUser.firstname} ${studentUser.lastname}`, // Receiver is the student's name
-              receiverUserId: accountId, // Store the student ID as receiver's user ID\
-            };
-          });
-          console.log("ERROR HERE SURE SURE");
+
+          const jobIds = chatData.map((chat) => chat.jobid);
+          const { data: jobData, error: jobError } = await supabase
+            .from("job_listing")
+            .select("jobid, jobstatus, jobtitle")
+            .in("jobid", jobIds);
+
+          if (jobError) {
+            throw new Error(jobError.message || "Error fetching job data.");
+          }
+
+          const jobMap = jobData.reduce((map, job) => {
+            map[job.jobid] = job;
+            return map;
+          }, {});
+
+          const chatsWithUsers = chatData
+            .map((chat) => {
+              const studentUser = userMap[chat.studentid] || {
+                firstname: "Unknown",
+                lastname: "",
+              };
+              const job = jobMap[chat.jobid] || { jobstatus: "", jobtitle: "" };
+
+              return {
+                ...chat,
+                sender: account_name,
+                senderUserId: chat.clientid,
+                receiver: `${studentUser.firstname} ${studentUser.lastname}`,
+                receiverUserId: accountId,
+                jobstatus: job.jobstatus,
+                jobtitle: job.jobtitle,
+              };
+            })
+            .filter((chat) => chat.jobstatus === "In Progress");
+
           setChatData(chatsWithUsers);
           console.log("Chats with Sender (Client): ", chatsWithUsers);
         }
@@ -226,30 +253,27 @@ const ChatList = () => {
         {chatData.map((chat) => (
           <Chat
             key={chat.chatid}
-            receiver={chat.receiver} // Dynamically set receiver name (e.g., "John Doe")
-            sender={chat.sender} // Dynamically set sender name (e.g., account_name)
+            receiver={chat.receiver}
+            jobtitle={chat.jobtitle}
             onPress={async () => {
               try {
-                // Ensure sender and receiver exist
                 if (!chat.sender || !chat.receiver) {
                   console.error("Sender or Receiver information is missing");
                   return;
                 }
 
-                // Store sender and receiver names and IDs in AsyncStorage
-                await AsyncStorage.setItem("sender", chat.sender); // Store sender name (e.g., account_name)
+                await AsyncStorage.setItem("sender", chat.sender);
                 await AsyncStorage.setItem(
                   "senderUserId",
                   chat.senderUserId.toString()
-                ); // Convert sender user ID to string
+                );
 
-                await AsyncStorage.setItem("receiver", chat.receiver); // Store receiver name (e.g., "John Doe")
+                await AsyncStorage.setItem("receiver", chat.receiver);
                 await AsyncStorage.setItem(
                   "receiverUserId",
                   chat.receiverUserId.toString()
-                ); // Convert receiver user ID to string
+                );
 
-                // Debugging logs (optional)
                 console.log("Chat details stored successfully:", {
                   sender: chat.sender,
                   senderUserId: chat.senderUserId,
@@ -257,10 +281,8 @@ const ChatList = () => {
                   receiverUserId: chat.receiverUserId,
                 });
 
-                // Navigate to the conversation screen with chatid
                 router.push(`/screens/convo?chatid=${chat.chatid}`);
               } catch (err) {
-                // Improved error handling
                 console.error(
                   "Failed to store chat data or navigate:",
                   err.message
