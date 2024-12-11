@@ -136,6 +136,12 @@ const Layout = () => {
           ),
         }}
       />
+      <Stack.Screen
+        name="review"
+        options={{
+          headerShown: false, // Hides the header
+        }}
+      />
 
       {/* Screen for Job Listing */}
       <Stack.Screen
