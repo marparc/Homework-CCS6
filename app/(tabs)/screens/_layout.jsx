@@ -546,6 +546,28 @@ const Layout = () => {
           ),
         }}
       />
+
+      <Stack.Screen
+        name="manageaccount"
+        options={{
+          title: "Account Details",
+          headerTitleAlign: "center", // Center the header title
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => {
+                router.back(); // Navigate back when pressed
+              }}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color="black"
+                style={{ marginLeft: 10 }}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
     </Stack>
   );
 };

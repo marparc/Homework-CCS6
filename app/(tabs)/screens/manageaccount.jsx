@@ -158,9 +158,6 @@ const ManageAccount = () => {
     <>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <View>
-          <Text style={styles.sectionTitle}>Account Details</Text>
-        </View>
-        <View>
           <Text style={styles.detailTitle}>First Name:</Text>
           {accountDetails && accountDetails.user ? (
             <Text style={styles.accountDetail}>
