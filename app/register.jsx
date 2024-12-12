@@ -73,6 +73,12 @@ const Register = () => {
     setAgeCheckError("");
 
     if (!validateFields()) return;
+    if (contactNumber.length !== 11) {
+      setContactNumberError(
+        "Contact number must be exactly 11 characters long."
+      );
+      return; // Stop further processing
+    }
 
     const isValidAge = ageCheck();
     if (!isValidAge) {
@@ -96,6 +102,12 @@ const Register = () => {
   const handleRegisterClient = async () => {
     setContactNumberError("");
     if (!validateFields()) return;
+    if (contactNumber.length !== 11) {
+      setContactNumberError(
+        "Contact number must be exactly 11 characters long."
+      );
+      return; // Stop further processing
+    }
 
     const exists = await checkContactNum(contactNumber);
 
