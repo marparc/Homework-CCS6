@@ -21,6 +21,7 @@ const JobSubmission = () => {
   const [myAccType, setMyAccType] = useState(null);
   const router = useRouter();
   const [accountId, setAccountId] = useState(null);
+  const [StudentBankDetails, setStudentBankDetails] = useState(null);
 
   useEffect(() => {
     const getJobId = async () => {
@@ -89,19 +90,60 @@ const JobSubmission = () => {
   useEffect(() => {
     const getJobData = async () => {
       if (!selectedjobid) return;
+
       try {
-        const { data, error } = await supabase
+        const { data: jobData, error: jobError } = await supabase
           .from("job_listing")
           .select("*")
           .eq("jobid", selectedjobid)
           .single();
 
-        if (error) {
-          console.error("Error fetching job data:", error.message);
+        if (jobError) {
+          console.error("Error fetching job data:", jobError.message);
           return;
         }
 
-        setJobData(data);
+        const clientid = jobData?.clientid;
+        if (!clientid) {
+          console.error("Client ID not found in job data.");
+          return;
+        }
+
+        const { data: clientData, error: clientError } = await supabase
+          .from("client_table")
+          .select("client_organization, userid")
+          .eq("clientid", clientid)
+          .single();
+
+        if (clientError) {
+          console.error("Error fetching client data:", clientError.message);
+          return;
+        }
+
+        const userid = clientData?.userid;
+        if (!userid) {
+          console.error("User ID not found in client data.");
+          return;
+        }
+
+        const { data: userData, error: userError } = await supabase
+          .from("user_table")
+          .select("firstname, lastname")
+          .eq("userid", userid)
+          .single();
+
+        if (userError) {
+          console.error("Error fetching user data:", userError.message);
+          return;
+        }
+
+        const fullClientData = {
+          jobData,
+          clientOrganization: clientData?.client_organization,
+          clientName: `${userData?.firstname} ${userData?.lastname}`,
+        };
+
+        setJobData(fullClientData);
       } catch (err) {
         console.error("Failed to fetch job data:", err.message);
       }
@@ -110,10 +152,76 @@ const JobSubmission = () => {
     getJobData();
   }, [selectedjobid]);
 
+  useEffect(() => {
+    const getStudentBankDetails = async () => {
+      if (!selectedjobid) return;
+
+      try {
+        const { data: chatData, error: chatError } = await supabase
+          .from("chat")
+          .select("studentid")
+          .eq("jobid", selectedjobid)
+          .single();
+        console.log("chatDatachatData:", chatData);
+        if (chatError) {
+          console.error("Error fetching chat data:", chatError.message);
+          return;
+        }
+
+        if (!chatData || !chatData.studentid) {
+          console.error("Student ID not found in chat data.");
+          return;
+        }
+
+        const studentid = chatData.studentid;
+
+        const { data: studentData, error: studentError } = await supabase
+          .from("student")
+          .select("studentid, bankname, accountnumber, userid")
+          .eq("studentid", studentid)
+          .single();
+
+        if (studentError) {
+          console.error("Error fetching student data:", studentError.message);
+          return;
+        }
+
+        if (!studentData) {
+          console.error("Student data not found.");
+          return;
+        }
+
+        const { data: userData, error: userError } = await supabase
+          .from("user_table")
+          .select("firstname, lastname")
+          .eq("userid", studentData.userid)
+          .single();
+
+        if (userError) {
+          console.error("Error fetching user data:", userError.message);
+          return;
+        }
+
+        if (userData) {
+          setStudentBankDetails({
+            studentid: studentData.studentid,
+            bankname: studentData.bankname,
+            accountnumber: studentData.accountnumber,
+            studentName: `${userData.firstname} ${userData.lastname}`,
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching student bank details:", err.message);
+      }
+    };
+
+    getStudentBankDetails();
+  }, [selectedjobid]);
+
   console.log("User Typesssss:", userType);
   console.log("Job Data:", jobData);
   console.log("Account Type (myAccType):", myAccType);
-
+  console.log("StudentBankDetails:", StudentBankDetails);
   if (!jobData) {
     return (
       <View style={styles.container}>
@@ -130,38 +238,48 @@ const JobSubmission = () => {
       {!isSubmitted ? (
         <>
           <JobDetails
-            title={jobData.jobtitle || "N/A"}
-            jobType={jobData.jobtype || "N/A"}
+            title={jobData?.jobData?.jobtitle || "N/A"}
+            jobType={jobData?.jobData?.jobtype || "N/A"}
             posted={
-              jobData.dateposted
-                ? new Date(jobData.dateposted).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "2-digit",
-                  })
+              jobData?.jobData?.dateposted
+                ? new Date(jobData.jobData.dateposted).toLocaleDateString(
+                    "en-US",
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "2-digit",
+                    }
+                  )
                 : "N/A"
             }
-            status={jobData.jobstatus || "N/A"}
+            status={jobData?.jobData?.jobstatus || "N/A"}
             location={
-              `${jobData.locationlat}, ${jobData.locationlong}` ||
+              `${jobData?.jobData?.locationlat}, ${jobData?.jobData?.locationlong}` ||
               "Location not available"
             }
-            pay={jobData.jobpay ? `$${jobData.jobpay}` : "N/A"}
+            pay={
+              jobData?.jobData?.jobpay ? `$${jobData.jobData.jobpay}` : "N/A"
+            }
             deadline={
-              jobData.duedate
-                ? new Date(jobData.duedate).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "2-digit",
-                  })
+              jobData?.jobData?.duedate
+                ? new Date(jobData.jobData.duedate).toLocaleDateString(
+                    "en-US",
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "2-digit",
+                    }
+                  )
                 : "N/A"
             }
-            description={jobData.jobdescription || "No description available."}
+            description={
+              jobData?.jobData?.jobdescription || "No description available."
+            }
           />
           <ProfileCard
             profiletype="C"
-            name="Marc Partosa"
-            company="Silliman University"
+            name={jobData?.clientName || "N/A"}
+            company={jobData?.clientOrganization || "N/A"}
           />
           <View style={styles.checkboxContainer}>
             <Checkbox
@@ -209,7 +327,9 @@ const JobSubmission = () => {
             title="Confirm"
             type="dark"
             size="medium"
-            onPress={() => console.log("Payment confirmed")}
+            onPress={() => {
+              router.push("/(tabs)/student/jobstodo");
+            }}
           />
         </View>
       )}
@@ -222,38 +342,48 @@ const JobSubmission = () => {
       {!isSubmitted ? (
         <>
           <JobDetails
-            title={jobData.jobtitle || "N/A"}
-            jobType={jobData.jobtype || "N/A"}
+            title={jobData?.jobData?.jobtitle || "N/A"}
+            jobType={jobData?.jobData?.jobtype || "N/A"}
             posted={
-              jobData.dateposted
-                ? new Date(jobData.dateposted).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "2-digit",
-                  })
+              jobData?.jobData?.dateposted
+                ? new Date(jobData.jobData.dateposted).toLocaleDateString(
+                    "en-US",
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "2-digit",
+                    }
+                  )
                 : "N/A"
             }
-            status={jobData.jobstatus || "N/A"}
+            status={jobData?.jobData?.jobstatus || "N/A"}
             location={
-              `${jobData.locationlat}, ${jobData.locationlong}` ||
+              `${jobData?.jobData?.locationlat}, ${jobData?.jobData?.locationlong}` ||
               "Location not available"
             }
-            pay={jobData.jobpay ? `$${jobData.jobpay}` : "N/A"}
+            pay={
+              jobData?.jobData?.jobpay ? `$${jobData.jobData.jobpay}` : "N/A"
+            }
             deadline={
-              jobData.duedate
-                ? new Date(jobData.duedate).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "2-digit",
-                  })
+              jobData?.jobData?.duedate
+                ? new Date(jobData.jobData.duedate).toLocaleDateString(
+                    "en-US",
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "2-digit",
+                    }
+                  )
                 : "N/A"
             }
-            description={jobData.jobdescription || "No description available."}
+            description={
+              jobData?.jobData?.jobdescription || "No description available."
+            }
           />
           <ProfileCard
-            profiletype="S"
-            name="Marc Partosa"
-            company="Silliman University"
+            profiletype="C"
+            name={jobData?.clientName || "N/A"} // Dynamically set client name
+            company={jobData?.clientOrganization || "N/A"} // Dynamically set client organization
           />
           <View style={styles.checkboxContainer}>
             <Checkbox
@@ -276,9 +406,15 @@ const JobSubmission = () => {
         <View style={styles.paymentReceivedContainer}>
           <View style={styles.bankInfoContainer}>
             <Text style={styles.header}>Bank Details</Text>
-            <Text style={styles.successText}>Bank Name: </Text>
-            <Text style={styles.successText}>Account Name:</Text>
-            <Text style={styles.successText}>Account Number:</Text>
+            <Text style={styles.successText}>
+              Bank Name: {StudentBankDetails.bankname}
+            </Text>
+            <Text style={styles.successText}>
+              Account Name: {StudentBankDetails.accountnumber}
+            </Text>
+            <Text style={styles.successText}>
+              Account Number: {StudentBankDetails.studentName}
+            </Text>
           </View>
           <Text style={styles.successText}>
             After sending the payment to the student freelancer, please enter
@@ -288,7 +424,7 @@ const JobSubmission = () => {
             title="Bank Receipt"
             size="medium"
             value={receiptNo}
-            onChangeText={setReceiptNo} // Pass the function reference directly
+            onChangeText={setReceiptNo}
           />
 
           <View style={styles.checkboxContainer}>
@@ -306,8 +442,27 @@ const JobSubmission = () => {
             title="Confirm"
             type="dark"
             size="medium"
-            onPress={() => {
-              router.push("/screens/review");
+            onPress={async () => {
+              try {
+                const { error: updateError } = await supabase
+                  .from("job_listing")
+                  .update({ jobstatus: "Completed" })
+                  .eq("jobid", selectedjobid);
+
+                if (updateError) {
+                  console.error(
+                    "Error updating job status:",
+                    updateError.message
+                  );
+                  return;
+                }
+
+                router.push(
+                  `/screens/review?selectedstudentid=${StudentBankDetails.studentid}&selectedclientid=${jobData.jobData.clientid}`
+                );
+              } catch (error) {
+                console.error("Error during job status update:", error.message);
+              }
             }}
           />
         </View>

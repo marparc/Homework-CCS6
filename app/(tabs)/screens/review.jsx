@@ -1,15 +1,96 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Rating } from "react-native-ratings";
 import ProfileCard from "@/components/ui/profilecard";
 import InputField from "@/components/ui/inputfield";
 import Button from "@/components/ui/buttons";
+import { useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
+import { supabase } from "../../../lib/supabase";
 
 const Review = () => {
+  const router = useRouter();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
-  const [myAccType, setMyAccType] = useState(null);
+  const [studentName, setStudentName] = useState("");
+  const [currentSchool, setCurrentSchool] = useState("");
+  const { selectedstudentid, selectedclientid } = useLocalSearchParams();
+
+  console.log("selectedclientid: ", selectedclientid);
+
+  useEffect(() => {
+    const fetchStudentData = async () => {
+      if (!selectedstudentid) return;
+
+      try {
+        const { data: studentData, error: studentError } = await supabase
+          .from("student")
+          .select("currentschool, userid")
+          .eq("studentid", selectedstudentid)
+          .single();
+
+        if (studentError) {
+          console.error("Error fetching student data:", studentError.message);
+          return;
+        }
+
+        if (studentData) {
+          setCurrentSchool(studentData.currentschool);
+
+          const { data: userData, error: userError } = await supabase
+            .from("user_table")
+            .select("firstname, lastname")
+            .eq("userid", studentData.userid)
+            .single();
+
+          if (userError) {
+            console.error("Error fetching user data:", userError.message);
+            return;
+          }
+
+          if (userData) {
+            setStudentName(`${userData.firstname} ${userData.lastname}`);
+          }
+        }
+      } catch (error) {
+        console.error("Error in fetchStudentData:", error.message);
+      }
+    };
+
+    fetchStudentData();
+  }, [selectedstudentid]);
+
+  const handleSubmitRating = async () => {
+    console.log("Rating:", rating);
+    console.log("Comment:", comment);
+
+    try {
+      const { error: insertError } = await supabase
+        .from("stud_evaluation")
+        .insert([
+          {
+            rating: rating,
+            usercomment: comment,
+            clientid: selectedclientid,
+            studentid: selectedstudentid,
+          },
+        ]);
+
+      if (insertError) {
+        console.error(
+          "Error inserting into stud_evaluation:",
+          insertError.message
+        );
+        return;
+      }
+
+      console.log("Rating and comment successfully inserted.");
+      router.push("/(tabs)/student/jobstodo");
+    } catch (error) {
+      console.error("Error during rating submission:", error.message);
+    }
+  };
 
   return (
     <ScrollView>
@@ -19,8 +100,8 @@ const Review = () => {
 
         <ProfileCard
           profiletype="S"
-          name="Marc Partosa"
-          company="Silliman University"
+          name={studentName || "N/A"}
+          company={currentSchool || "N/A"}
         />
 
         <Text>
@@ -30,7 +111,7 @@ const Review = () => {
         <Rating
           onFinishRating={setRating}
           startingValue={rating}
-          imageSize={30} // Size of stars
+          imageSize={30}
           style={styles.rating}
         />
 
@@ -41,7 +122,12 @@ const Review = () => {
           onChangeText={setComment}
         />
 
-        <Button title="Submit Rating" type="dark" size="medium" />
+        <Button
+          title="Submit Rating"
+          type="dark"
+          size="medium"
+          onPress={handleSubmitRating} // Add onPress handler to log values
+        />
       </View>
     </ScrollView>
   );
