@@ -20,7 +20,8 @@ export default function JobMap() {
         const { data, error } = await supabase
           .from("job_listing")
           .select("jobid, jobtitle, jobdescription, locationlat, locationlong")
-          .eq("jobtype", "Onsite");
+          .eq("jobtype", "Onsite")
+          .eq("jobstatus", "Open");
 
         if (error) {
           console.error("Error fetching jobs:", error.message);
@@ -83,6 +84,7 @@ export default function JobMap() {
           showsUserLocation={true}
           loadingEnabled={true}
           onPress={handleMapPress}
+          provider={MapView.PROVIDER_GOOGLE}
         >
           <Marker
             coordinate={location}
@@ -91,7 +93,7 @@ export default function JobMap() {
               console.log(jobData);
             }}
           />
-          {jobData.length > 0 ? (
+          {jobData.length != null ? (
             jobData.map((job) => (
               <Marker
                 key={job.jobid}
