@@ -135,7 +135,7 @@ const ChatList = () => {
           setChatData(chatsWithUsers);
         } else {
           console.log("Current user is a client");
-
+          console.log("SURE");
           const { data: userAccountData, error: userAccountError } =
             await supabase
               .from("user_account")
