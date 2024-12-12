@@ -261,9 +261,9 @@ const MyClientProfile = () => {
       <View style={styles.reviewsContainer}>
         <Text style={styles.reviewsHeader}>Reviews</Text>
         {ratings.length > 0 ? (
-          ratings.map((rating) => (
+          ratings.map((rating, index) => (
             <Rating
-              key={rating.id}
+              key={index} // Use index as key to ensure uniqueness
               stars={rating.stars.toString()} // Ensure stars are passed as a string
               comment={rating.comment}
               rateFrom={rating.rateFrom} // Match the prop name used in the Rating component

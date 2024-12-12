@@ -161,15 +161,17 @@ const ToDoDetails = () => {
       {/* Conditionally render buttons based on jobstatus */}
       {jobstatus === "In Progress" ? (
         <>
+          {/* 
           <Button
             title="Confirm"
             type="dark"
             size="medium"
             onPress={() => console.log("Confirmed")}
           />
+          */}
           <Button
             title="Go to Messages"
-            type="light"
+            type="dark"
             size="medium"
             onPress={() => router.push("/(tabs)/student/chat")}
           />

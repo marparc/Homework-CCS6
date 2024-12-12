@@ -516,9 +516,9 @@ const ProfileHeader = () => {
         {ratings.length === 0 ? (
           <Text style={styles.noReviewsText}>No reviews made yet.</Text> // Show message if no reviews
         ) : (
-          ratings.map((rating) => (
+          ratings.map((rating, index) => (
             <Rating
-              key={rating.id}
+              key={`${rating.id}-${index}`} // Combining clientid and index to ensure uniqueness
               stars={rating.stars.toString()} // Ensure stars are passed as a string
               comment={rating.comment}
               rateFrom={rating.rateFrom} // Match the prop name used in the Rating component
