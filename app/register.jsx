@@ -13,6 +13,7 @@ const Register = () => {
   const [birthdate, setBirthdate] = useState("");
   const [password, setPassword] = useState("");
   const [contactNumberError, setContactNumberError] = useState("");
+  const [ageCheckError, setAgeCheckError] = useState("");
 
   const router = useRouter();
 
@@ -39,47 +40,91 @@ const Register = () => {
     }
   };
 
+  const validateFields = () => {
+    if (!firstName || !lastName || !contactNumber || !birthdate || !password) {
+      alert("Please fill out all fields.");
+      return false;
+    }
+    return true;
+  };
+
+  const ageCheck = () => {
+    if (!birthdate) {
+      return false;
+    }
+
+    const today = new Date();
+    const birthDate = new Date(birthdate);
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+
+    return !(
+      age < 16 ||
+      (age === 16 && monthDifference < 0) ||
+      (age === 16 &&
+        monthDifference === 0 &&
+        today.getDate() < birthDate.getDate())
+    );
+  };
+
   // Pass the state via router.push()
   const handleRegisterStudent = async () => {
     setContactNumberError("");
+    setAgeCheckError("");
+
+    if (!validateFields()) return;
+    if (contactNumber.length !== 11) {
+      setContactNumberError(
+        "Contact number must be exactly 11 characters long."
+      );
+      return; // Stop further processing
+    }
+
+    const isValidAge = ageCheck();
+    if (!isValidAge) {
+      setAgeCheckError("You must be 16 years or older to register.");
+      return;
+    }
+
     const exists = await checkContactNum(contactNumber);
     if (exists) {
       setContactNumberError("Contact number is already in use.");
-    } else if (exists === false) {
-      router.push({
-        pathname: "/registerstudent",
-        params: {
-          firstName,
-          lastName,
-          contactNumber,
-          birthdate,
-          password,
-        },
-      });
-    } else {
-      console.error("An error occurred during the contact number check.");
+      console.log("Something went wrong during contactNumber checking");
+      return;
     }
+
+    router.push({
+      pathname: "/registerstudent",
+      params: { firstName, lastName, contactNumber, birthdate, password },
+    });
   };
 
   const handleRegisterClient = async () => {
     setContactNumberError("");
+    if (!validateFields()) return;
+    if (contactNumber.length !== 11) {
+      setContactNumberError(
+        "Contact number must be exactly 11 characters long."
+      );
+      return; // Stop further processing
+    }
+
     const exists = await checkContactNum(contactNumber);
+
     if (exists) {
       setContactNumberError("Contact number is already in use.");
-    } else if (exists === false) {
-      router.push({
-        pathname: "/registerclient",
-        params: {
-          firstName,
-          lastName,
-          contactNumber,
-          birthdate,
-          password,
-        },
-      });
-    } else {
-      console.error("An error occurred during the contact number check.");
     }
+
+    router.push({
+      pathname: "/registerclient",
+      params: {
+        firstName,
+        lastName,
+        contactNumber,
+        birthdate,
+        password,
+      },
+    });
   };
 
   return (
@@ -128,6 +173,9 @@ const Register = () => {
             maxDate={new Date()} // Ensure dates are only in the past
             onDateChange={(date) => setBirthdate(date)}
           />
+          {ageCheckError ? (
+            <Text style={styles.errorText}>{ageCheckError}</Text>
+          ) : null}
 
           <View style={styles.btnContainer}>
             <Button
