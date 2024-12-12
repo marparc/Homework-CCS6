@@ -15,14 +15,15 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { getDate } from "date-fns";
 
 const Convo = () => {
+  //const { selectedjobid } = useLocalSearchParams();
   const [messages, setMessages] = useState([]); // the messages that have been sent
   const [message, setMessage] = useState(""); // a new message to be sent
   const scrollViewRef = useRef(null);
-
   const [accountId, setAccountId] = useState();
   const [myTypeId, setmyTypeId] = useState();
   const [myAccType, setMyAccType] = useState();
 
+  //console.log("selectedjobid: ", selectedjobid);
   //get chat id from async storage
   const { chatid } = useLocalSearchParams();
   //console.log("CHATID RECEIVE ROUTER: ", chatid);
@@ -32,7 +33,7 @@ const Convo = () => {
         const storedAccountId = await AsyncStorage.getItem("accountId");
         setAccountId(storedAccountId ? parseInt(storedAccountId, 10) : null);
       } catch (err) {
-        console.error("Failed to retrieve account ID:", err);
+        //console.error("Failed to retrieve account ID:", err);
       }
     };
 
@@ -42,7 +43,7 @@ const Convo = () => {
   useEffect(() => {
     const fetchAndStoreUserType = async () => {
       if (!accountId) {
-        console.warn("Account ID is not set");
+        //console.warn("Account ID is not set");
         return;
       }
       try {
@@ -73,7 +74,7 @@ const Convo = () => {
         setMyAccType(userType); // Update state with user type
         await AsyncStorage.setItem("userType", userType); // Store user type locally
       } catch (error) {
-        console.error("Error fetching or storing data:", error);
+        //console.error("Error fetching or storing data:", error);
       }
     };
 
@@ -102,7 +103,7 @@ const Convo = () => {
         }
 
         if (error) {
-          console.error("Error fetching data:", error);
+          //console.error("Error fetching data:", error);
           return; // Exit early if there's an error
         }
 
@@ -111,10 +112,10 @@ const Convo = () => {
         if (id) {
           setmyTypeId(id);
         } else {
-          console.warn("ID not found in the response data.");
+          //console.warn("ID not found in the response data.");
         }
       } catch (err) {
-        console.error("Unexpected error:", err);
+        //console.error("Unexpected error:", err);
       }
     };
 
@@ -132,7 +133,7 @@ const Convo = () => {
         .order("timesent", { ascending: true });
 
       if (error) {
-        console.error("Error fetching messages:", error);
+        //console.error("Error fetching messages:", error);
         return;
       }
 
@@ -147,10 +148,10 @@ const Convo = () => {
 
         setMessages(formattedMessages);
       } else {
-        console.warn("No messages found for chatid = ", chatid);
+        //console.warn("No messages found for chatid = ", chatid);
       }
     } catch (err) {
-      console.error("Error fetching messages:", err);
+      //console.error("Error fetching messages:", err);
     }
   };
 
@@ -173,7 +174,7 @@ const Convo = () => {
 
   const handleSend = async (message) => {
     if (!message.trim()) {
-      console.warn("Message cannot be empty.");
+      //console.warn("Message cannot be empty.");
       return;
     }
 
@@ -189,14 +190,14 @@ const Convo = () => {
       ]);
 
       if (error) {
-        console.error("Error sending message:", error);
+        //console.error("Error sending message:", error);
         return;
       }
 
-      console.log("Message sent successfully:", data);
+      //console.log("Message sent successfully:", data);
       setMessage(""); // Clear the input field
     } catch (err) {
-      console.error("Unexpected error while sending message:", err);
+      //console.error("Unexpected error while sending message:", err);
     }
   };
 
@@ -211,7 +212,7 @@ const Convo = () => {
         "postgres_changes",
         { event: "*", schema: "public", table: "message_logs" },
         (payload) => {
-          console.log("Real-time change received:", payload);
+          //console.log("Real-time change received:", payload);
 
           // Check if the change is related to the current chat ID
           if (payload.new && payload.new.chatid === chatid) {

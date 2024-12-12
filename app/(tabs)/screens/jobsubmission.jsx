@@ -1,20 +1,39 @@
 import { View, Text, StyleSheet, ScrollView } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import JobDetails from "@/components/ui/jobdetails";
 import ProfileCard from "@/components/ui/profilecard";
 import Button from "@/components/ui/buttons";
 import { Checkbox } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import InputField from "@/components/ui/inputfield";
-import { router, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const JobSubmission = () => {
+  //const { selectedjobid } = useLocalSearchParams();
   const [isHomeworkSubmitted, setIsHomeworkSubmitted] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isPaymentReceived, setIsPaymentReceived] = useState(false);
   const [receiptNo, setReceiptNo] = useState(null);
   const myAccType = "Client"; // Example account type
   const router = useRouter();
+
+  const [selectedjobid, setselectedjobid] = useState();
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const storedjobid = await AsyncStorage.getItem("jobid");
+        setselectedjobid(storedjobid);
+        //console.log(storedjobid);
+      } catch (err) {
+        console.error("Failed to retrieve data from AsyncStorage:", err);
+      }
+    };
+
+    getData();
+  }, []);
+  console.log("JOBID: ", selectedjobid);
 
   return myAccType === "Student" ? (
     <ScrollView

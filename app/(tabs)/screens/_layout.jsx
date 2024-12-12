@@ -2,11 +2,12 @@ import { Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 import React, { useEffect, useState } from "react";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../../../lib/supabase";
 
 const Layout = () => {
+  const { selectedjobid } = useLocalSearchParams();
   const router = useRouter();
   const [sender, setSender] = useState(null);
   const [receiver, setReceiver] = useState(null);
@@ -23,8 +24,8 @@ const Layout = () => {
         setSender(sender);
         setReceiver(receiver);
         setReceiverID(receiverid);
-        console.log("receiverreceiver: ", receiver);
-        console.log("receiverUserIdreceiverUserId: ", receiverid);
+        //console.log("receiverreceiver: ", receiver);
+        //console.log("receiverUserIdreceiverUserId: ", receiverid);
 
         if (receiver) {
           const { data: userAccountData, error: userAccountError } =
@@ -54,10 +55,10 @@ const Layout = () => {
 
           const { usertype } = userData;
           setUsertype(usertype);
-          console.log("HEREHERHERHER: ", usertype);
+          //console.log("HEREHERHERHER: ", usertype);
         }
       } catch (err) {
-        console.error("Failed to retrieve data or navigate:", err.message);
+        //console.error("Failed to retrieve data or navigate:", err.message);
       }
     };
 
@@ -76,7 +77,9 @@ const Layout = () => {
 
   const handleJobPress = () => {
     console.log("Job Clicked");
-    router.push("/(tabs)/screens/jobsubmission");
+    //router.push("/(tabs)/screens/jobsubmission");
+    //`/screens/convo?chatid=${chat.chatid}&selectedjobid=${chat.jobid}`
+    router.push(`/(tabs)/screens/jobsubmission?selectedjobid=${selectedjobid}`);
   };
   return (
     <Stack

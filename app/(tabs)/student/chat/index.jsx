@@ -1,7 +1,7 @@
 import { View, Text, SafeAreaView, ScrollView, StyleSheet } from "react-native";
 import React, { useEffect, useState } from "react";
-import Chat from "@/components/ui/chatcard"; // Assuming ChatCard supports `onPress`
-import { supabase } from "../../../../lib/supabase"; // Ensure Supabase client is correctly imported
+import Chat from "@/components/ui/chatcard";
+import { supabase } from "../../../../lib/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 
@@ -58,7 +58,6 @@ const ChatList = () => {
         if (studentData) {
           console.log("HERE STUDENT");
 
-          // Fetch additional user account data
           const { data: userAccountData, error: userAccountError } =
             await supabase
               .from("user_account")
@@ -118,7 +117,7 @@ const ChatList = () => {
           const userMap = clientDataWithUser.reduce((map, client) => {
             const user = userData.find((u) => u.userid === client.userid);
             if (user) {
-              map[client.clientid] = user; // Map by clientid instead of studentid
+              map[client.clientid] = user;
             }
             return map;
           }, {});
@@ -146,14 +145,13 @@ const ChatList = () => {
                 lastname: "",
               };
 
-              // Access user information using the clientid in the userMap
-              const clientUser = userMap[chat.clientid]; // This accesses the user data for the client
+              const clientUser = userMap[chat.clientid];
 
               const job = jobMap[chat.jobid] || { jobstatus: "", jobtitle: "" };
 
               return {
                 ...chat,
-                sender: userAccountData.account_name, // Use account_name from the fetched userAccountData
+                sender: userAccountData.account_name,
                 senderUserId: chat.clientid,
                 receiver: clientUser
                   ? `${clientUser.firstname} ${clientUser.lastname}`
@@ -309,6 +307,8 @@ const ChatList = () => {
                   chat.receiverUserId.toString()
                 );
 
+                await AsyncStorage.setItem("jobid", chat.jobid.toString());
+
                 console.log("Chat details stored successfully:", {
                   sender: chat.sender,
                   senderUserId: chat.senderUserId,
@@ -316,7 +316,10 @@ const ChatList = () => {
                   receiverUserId: chat.receiverUserId,
                 });
 
-                router.push(`/screens/convo?chatid=${chat.chatid}`);
+                router.push(
+                  `/screens/convo?chatid=${chat.chatid}&selectedjobid=${chat.jobid}`
+                );
+                //router.push(`/screens/_layout?selectedjobid=${chat.jobid}`);
               } catch (err) {
                 console.error(
                   "Failed to store chat data or navigate:",
