@@ -424,7 +424,7 @@ const Layout = () => {
           ),
         }}
       />
-
+      {/* 
       <Stack.Screen
         name="viewapplication"
         options={{
@@ -446,7 +446,7 @@ const Layout = () => {
           ),
         }}
       />
-
+*/}
       <Stack.Screen
         name="manageapplications"
         options={{

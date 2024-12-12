@@ -273,7 +273,9 @@ const ChatList = () => {
                   "receiverUserId",
                   chat.receiverUserId.toString()
                 );
+                await AsyncStorage.setItem("jobid", chat.jobid.toString());
 
+                console.log("ssschatjobid:", chat.jobid);
                 console.log("Chat details stored successfully:", {
                   sender: chat.sender,
                   senderUserId: chat.senderUserId,
@@ -281,7 +283,9 @@ const ChatList = () => {
                   receiverUserId: chat.receiverUserId,
                 });
 
-                router.push(`/screens/convo?chatid=${chat.chatid}`);
+                router.push(
+                  `/screens/convo?chatid=${chat.chatid}&selectedjobid=${chat.jobid}`
+                );
               } catch (err) {
                 console.error(
                   "Failed to store chat data or navigate:",

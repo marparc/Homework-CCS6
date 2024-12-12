@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, SafeAreaView } from "react-native";
 import React, { useState, useEffect } from "react";
 import JobDetails from "@/components/ui/jobdetails";
 import ProfileCard from "@/components/ui/profilecard";
@@ -6,34 +6,121 @@ import Button from "@/components/ui/buttons";
 import { Checkbox } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import InputField from "@/components/ui/inputfield";
-import { useLocalSearchParams, useRouter, router } from "expo-router";
+import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "../../../lib/supabase";
 
 const JobSubmission = () => {
-  //const { selectedjobid } = useLocalSearchParams();
   const [isHomeworkSubmitted, setIsHomeworkSubmitted] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isPaymentReceived, setIsPaymentReceived] = useState(false);
   const [receiptNo, setReceiptNo] = useState(null);
-  const myAccType = "Client"; // Example account type
-  const router = useRouter();
-
   const [selectedjobid, setselectedjobid] = useState();
+  const [jobData, setJobData] = useState(null);
+  const [userType, setUserType] = useState(null);
+  const [myAccType, setMyAccType] = useState(null);
+  const router = useRouter();
+  const [accountId, setAccountId] = useState(null);
 
   useEffect(() => {
-    const getData = async () => {
+    const getJobId = async () => {
       try {
         const storedjobid = await AsyncStorage.getItem("jobid");
+        const storedAccountId = await AsyncStorage.getItem("accountId");
+        setAccountId(storedAccountId);
         setselectedjobid(storedjobid);
-        //console.log(storedjobid);
+        console.log("storedjobidstoredjobid:", storedjobid);
+        console.log("storedAccountIdstoredAccountId:", storedjobid);
       } catch (err) {
-        console.error("Failed to retrieve data from AsyncStorage:", err);
+        console.error("Failed to retrieve job id from AsyncStorage:", err);
       }
     };
 
-    getData();
+    getJobId();
   }, []);
-  console.log("JOBID: ", selectedjobid);
+
+  useEffect(() => {
+    const getUserType = async () => {
+      if (!accountId) return;
+      try {
+        const { data: userAccount, error: userAccountError } = await supabase
+          .from("user_account")
+          .select("userid")
+          .eq("accountid", accountId)
+          .single();
+
+        if (userAccountError) {
+          console.error(
+            "Error fetching user account:",
+            userAccountError.message
+          );
+          return;
+        }
+
+        if (userAccount) {
+          const { data: user, error: userError } = await supabase
+            .from("user_table")
+            .select("usertype")
+            .eq("userid", userAccount.userid)
+            .single();
+
+          if (userError) {
+            console.error("Error fetching user type:", userError.message);
+            return;
+          }
+
+          if (user) {
+            setUserType(user.usertype);
+            if (user.usertype === "Student") {
+              setMyAccType("Student");
+            } else if (user.usertype === "Client") {
+              setMyAccType("Client");
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch user type:", err.message);
+      }
+    };
+
+    getUserType();
+  }, [accountId]);
+
+  useEffect(() => {
+    const getJobData = async () => {
+      if (!selectedjobid) return;
+      try {
+        const { data, error } = await supabase
+          .from("job_listing")
+          .select("*")
+          .eq("jobid", selectedjobid)
+          .single();
+
+        if (error) {
+          console.error("Error fetching job data:", error.message);
+          return;
+        }
+
+        setJobData(data);
+      } catch (err) {
+        console.error("Failed to fetch job data:", err.message);
+      }
+    };
+
+    getJobData();
+  }, [selectedjobid]);
+
+  console.log("User Typesssss:", userType);
+  console.log("Job Data:", jobData);
+  console.log("Account Type (myAccType):", myAccType);
+
+  if (!jobData) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading job data...</Text>
+      </View>
+    );
+  }
 
   return myAccType === "Student" ? (
     <ScrollView
@@ -43,13 +130,33 @@ const JobSubmission = () => {
       {!isSubmitted ? (
         <>
           <JobDetails
-            title="Video Editor"
-            jobType="Onsite"
-            posted="December 3, 2024"
-            status="Open"
-            location="Silliman University, Dumaguete City"
-            pay="5500"
-            description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id imperdiet magna, a finibus magna. Sed sodales et nisl at ultrices. Sed nec ante ornare, tempor quam in, eleifend velit. Duis ut accumsan libero, a consectetur velit. Integer at tempor lectus, ut laoreet neque."
+            title={jobData.jobtitle || "N/A"}
+            jobType={jobData.jobtype || "N/A"}
+            posted={
+              jobData.dateposted
+                ? new Date(jobData.dateposted).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "2-digit",
+                  })
+                : "N/A"
+            }
+            status={jobData.jobstatus || "N/A"}
+            location={
+              `${jobData.locationlat}, ${jobData.locationlong}` ||
+              "Location not available"
+            }
+            pay={jobData.jobpay ? `$${jobData.jobpay}` : "N/A"}
+            deadline={
+              jobData.duedate
+                ? new Date(jobData.duedate).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "2-digit",
+                  })
+                : "N/A"
+            }
+            description={jobData.jobdescription || "No description available."}
           />
           <ProfileCard
             profiletype="C"
@@ -115,13 +222,33 @@ const JobSubmission = () => {
       {!isSubmitted ? (
         <>
           <JobDetails
-            title="Video Editor"
-            jobType="Onsite"
-            posted="December 3, 2024"
-            status="Open"
-            location="Silliman University, Dumaguete City"
-            pay="5500"
-            description="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id imperdiet magna, a finibus magna. Sed sodales et nisl at ultrices. Sed nec ante ornare, tempor quam in, eleifend velit. Duis ut accumsan libero, a consectetur velit. Integer at tempor lectus, ut laoreet neque."
+            title={jobData.jobtitle || "N/A"}
+            jobType={jobData.jobtype || "N/A"}
+            posted={
+              jobData.dateposted
+                ? new Date(jobData.dateposted).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "2-digit",
+                  })
+                : "N/A"
+            }
+            status={jobData.jobstatus || "N/A"}
+            location={
+              `${jobData.locationlat}, ${jobData.locationlong}` ||
+              "Location not available"
+            }
+            pay={jobData.jobpay ? `$${jobData.jobpay}` : "N/A"}
+            deadline={
+              jobData.duedate
+                ? new Date(jobData.duedate).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "2-digit",
+                  })
+                : "N/A"
+            }
+            description={jobData.jobdescription || "No description available."}
           />
           <ProfileCard
             profiletype="S"

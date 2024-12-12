@@ -36,7 +36,8 @@ const JobDetails = ({
       <Text style={styles.detail}>Deadline: {deadline}</Text>
 
       {/* Job Description */}
-      <Text style={styles.description}>{description}</Text>
+      <Text style={styles.description}>Description:</Text>
+      <Text style={[styles.description, { marginTop: 5 }]}>{description}</Text>
     </View>
   );
 };
@@ -54,6 +55,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 10,
+    textTransform: "uppercase",
   },
   detail: {
     fontSize: 16,
