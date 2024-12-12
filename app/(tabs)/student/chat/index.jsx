@@ -58,6 +58,22 @@ const ChatList = () => {
         if (studentData) {
           console.log("HERE STUDENT");
 
+          // Fetch additional user account data
+          const { data: userAccountData, error: userAccountError } =
+            await supabase
+              .from("user_account")
+              .select("account_name, userid")
+              .eq("accountid", accountId)
+              .single();
+          console.log("userAccountData:", userAccountData);
+          if (userAccountError || !userAccountData) {
+            throw new Error(
+              userAccountError?.message || "User account details not found."
+            );
+          }
+
+          console.log("User Account Data:", userAccountData);
+
           const { studentid } = studentData;
 
           const { data: chatData, error: chatError } = await supabase
@@ -71,41 +87,43 @@ const ChatList = () => {
 
           const clientIds = chatData.map((chat) => chat.clientid);
 
-          const { data: studentDataWithUser, error: studentUserError } =
+          const { data: clientDataWithUser, error: clientUserError } =
             await supabase
-              .from("student")
-              .select("studentid, userid")
+              .from("client_table")
+              .select("clientid, userid")
               .in(
-                "studentid",
-                chatData.map((chat) => chat.studentid)
+                "clientid",
+                chatData.map((chat) => chat.clientid)
               );
-
-          if (studentUserError) {
+          console.log("clientDataWithUser:", clientDataWithUser);
+          if (clientUserError) {
             throw new Error(
-              studentUserError.message || "Error fetching student user data."
+              clientUserError.message || "Error fetching client user data."
             );
           }
 
-          const studentUserIds = studentDataWithUser.map(
-            (student) => student.userid
+          const clientUserIds = clientDataWithUser.map(
+            (client) => client.userid
           );
+
           const { data: userData, error: userError } = await supabase
             .from("user_table")
             .select("userid, firstname, lastname")
-            .in("userid", studentUserIds);
+            .in("userid", clientUserIds);
 
           if (userError) {
             throw new Error(userError.message || "Error fetching user data.");
           }
 
-          const userMap = studentDataWithUser.reduce((map, student) => {
-            const user = userData.find((u) => u.userid === student.userid);
+          const userMap = clientDataWithUser.reduce((map, client) => {
+            const user = userData.find((u) => u.userid === client.userid);
             if (user) {
-              map[student.studentid] = user;
+              map[client.clientid] = user; // Map by clientid instead of studentid
             }
             return map;
           }, {});
 
+          console.log(userMap);
           const jobIds = chatData.map((chat) => chat.jobid);
           const { data: jobData, error: jobError } = await supabase
             .from("job_listing")
@@ -127,12 +145,19 @@ const ChatList = () => {
                 firstname: "Unknown",
                 lastname: "",
               };
+
+              // Access user information using the clientid in the userMap
+              const clientUser = userMap[chat.clientid]; // This accesses the user data for the client
+
               const job = jobMap[chat.jobid] || { jobstatus: "", jobtitle: "" };
 
               return {
                 ...chat,
+                sender: userAccountData.account_name, // Use account_name from the fetched userAccountData
                 senderUserId: chat.clientid,
-                receiver: `${studentUser.firstname} ${studentUser.lastname}`,
+                receiver: clientUser
+                  ? `${clientUser.firstname} ${clientUser.lastname}`
+                  : "Unknown User",
                 receiverUserId: accountId,
                 jobstatus: job.jobstatus,
                 jobtitle: job.jobtitle,
