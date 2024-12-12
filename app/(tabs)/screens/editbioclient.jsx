@@ -20,6 +20,20 @@ const EditBio = () => {
         const storedPassword = await AsyncStorage.getItem("password");
         setAccountId(storedAccountId);
         setPassword(storedPassword);
+
+        if (storedAccountId) {
+          const { data, error } = await supabase
+            .from("user_account")
+            .select("bio")
+            .eq("accountid", storedAccountId)
+            .single();
+
+          if (error) {
+            console.error("Error fetching bio:", error);
+          } else {
+            setBio(data?.bio || ""); // Update the `bio` state with the fetched value or set it to an empty string if null
+          }
+        }
       } catch (err) {
         console.error("Failed to retrieve data from AsyncStorage:", err);
       }
