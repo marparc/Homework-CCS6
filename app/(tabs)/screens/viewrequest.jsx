@@ -315,7 +315,7 @@ const ViewRequest = () => {
       ></TextCard>
 
       <Button
-        title="Approve"
+        title="Accept"
         type="dark"
         size="medium"
         onPress={handleApprove}
