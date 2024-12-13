@@ -23,6 +23,8 @@ const JobSubmission = () => {
   const [accountId, setAccountId] = useState(null);
   const [StudentBankDetails, setStudentBankDetails] = useState(null);
 
+  const [jobStatus, setJobStatus] = useState(null);
+
   useEffect(() => {
     const getJobId = async () => {
       try {
@@ -153,6 +155,46 @@ const JobSubmission = () => {
   }, [selectedjobid]);
 
   useEffect(() => {
+    const getJobStatus = async () => {
+      if (!selectedjobid) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("job_listing")
+          .select("jobstatus")
+          .eq("jobid", selectedjobid)
+          .single();
+
+        if (error) {
+          console.error("Error fetching job status:", error.message);
+          return;
+        }
+
+        setJobStatus(data?.jobstatus); // Correct usage
+      } catch (err) {
+        console.error("Error during job status fetch:", err.message);
+      }
+    };
+
+    getJobStatus();
+  }, [selectedjobid]);
+
+  const updateJobStatus = async (status) => {
+    try {
+      const { error } = await supabase
+        .from("job_listing")
+        .update({ jobstatus: status })
+        .eq("jobid", selectedjobid);
+
+      if (error) {
+        throw error;
+      }
+    } catch (err) {
+      console.error("Error updating job status:", err.message);
+    }
+  };
+
+  useEffect(() => {
     const getStudentBankDetails = async () => {
       if (!selectedjobid) return;
 
@@ -235,7 +277,7 @@ const JobSubmission = () => {
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
     >
-      {!isSubmitted ? (
+      {!isSubmitted && jobStatus == "In Progress" ? (
         <>
           <JobDetails
             title={jobData?.jobData?.jobtitle || "N/A"}
@@ -295,7 +337,10 @@ const JobSubmission = () => {
             title="Submit"
             type="dark"
             size="medium"
-            onPress={() => setIsSubmitted(true)}
+            onPress={() => {
+              setIsSubmitted(true);
+              updateJobStatus("Submitted");
+            }}
           />
         </>
       ) : (
@@ -328,6 +373,7 @@ const JobSubmission = () => {
             type="dark"
             size="medium"
             onPress={() => {
+              updateJobStatus("Completed");
               router.push("/(tabs)/student/jobstodo");
             }}
           />
@@ -399,7 +445,10 @@ const JobSubmission = () => {
             title="Submit"
             type="dark"
             size="medium"
-            onPress={() => setIsSubmitted(true)}
+            onPress={() => {
+              setIsSubmitted(true);
+              updateJobStatus("Approved");
+            }}
           />
         </>
       ) : (
@@ -444,19 +493,7 @@ const JobSubmission = () => {
             size="medium"
             onPress={async () => {
               try {
-                const { error: updateError } = await supabase
-                  .from("job_listing")
-                  .update({ jobstatus: "Completed" })
-                  .eq("jobid", selectedjobid);
-
-                if (updateError) {
-                  console.error(
-                    "Error updating job status:",
-                    updateError.message
-                  );
-                  return;
-                }
-
+                updateJobStatus("Paid");
                 router.push(
                   `/screens/review?selectedstudentid=${StudentBankDetails.studentid}&selectedclientid=${jobData.jobData.clientid}`
                 );

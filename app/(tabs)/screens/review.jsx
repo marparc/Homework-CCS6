@@ -16,6 +16,7 @@ const Review = () => {
   const [studentName, setStudentName] = useState("");
   const [currentSchool, setCurrentSchool] = useState("");
   const { selectedstudentid, selectedclientid } = useLocalSearchParams();
+  const [myAccType, setMyAccType] = useState();
 
   console.log("selectedclientid: ", selectedclientid);
 
@@ -99,15 +100,17 @@ const Review = () => {
         <Ionicons name="happy-outline" size={150} color="black" />
 
         <ProfileCard
-          profiletype="S"
+          profiletype={myAccType === "Client" ? "S" : "C"} // Dynamically set profile type
           name={studentName || "N/A"}
           company={currentSchool || "N/A"}
         />
 
         <Text>
-          Rate the student freelancer and share your experience working
-          together.
+          {myAccType === "Client"
+            ? "Rate the student freelancer and share your experience working together."
+            : "Rate your client and share your experience working together."}
         </Text>
+
         <Rating
           onFinishRating={setRating}
           startingValue={rating}
@@ -126,7 +129,7 @@ const Review = () => {
           title="Submit Rating"
           type="dark"
           size="medium"
-          onPress={handleSubmitRating} // Add onPress handler to log values
+          onPress={handleSubmitRating}
         />
       </View>
     </ScrollView>
