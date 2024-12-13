@@ -8,6 +8,7 @@ import Button from "@/components/ui/buttons";
 import { useLocalSearchParams } from "expo-router";
 import { useRouter } from "expo-router";
 import { supabase } from "../../../lib/supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Review = () => {
   const router = useRouter();
@@ -18,27 +19,56 @@ const Review = () => {
   const [clientName, setClientName] = useState("");
   const [organization, setOrganization] = useState("");
   const { selectedstudentid, selectedclientid } = useLocalSearchParams();
-  const [myAccType, setMyAccType] = useState("Student");
-
+  const [myAccType, setMyAccType] = useState("");
+  const [accountId, setAccountId] = useState(null);
   console.log("selectedclientid: ", selectedclientid);
 
   useEffect(() => {
-    const fetchAccountType = async () => {
-      // Assuming you can fetch account type based on the user’s ID or from a similar source
+    const getData = async () => {
       try {
-        const { data, error } = await supabase
-          .from("user_table")
-          .select("usertype")
-          .eq("userid", selectedclientid || selectedstudentid)
+        const storedAccountId = await AsyncStorage.getItem("accountId");
+        setAccountId(storedAccountId);
+      } catch (err) {
+        console.error("Failed to retrieve data from AsyncStorage:", err);
+      }
+    };
+
+    getData();
+  }, []);
+
+  useEffect(() => {
+    const fetchAccountType = async () => {
+      if (!accountId) return;
+
+      try {
+        const { data: accountData, error: accountError } = await supabase
+          .from("user_account")
+          .select("userid")
+          .eq("accountid", accountId)
           .single();
 
-        if (error) {
-          console.error("Error fetching account type:", error.message);
+        if (accountError) {
+          console.error("Error fetching account data:", accountError.message);
           return;
         }
 
-        if (data) {
-          setMyAccType(data.usertype); // Assume 'usertype' is either 'Student' or 'Client'
+        if (accountData) {
+          const { userid } = accountData;
+
+          const { data: userData, error: userError } = await supabase
+            .from("user_table")
+            .select("usertype")
+            .eq("userid", userid)
+            .single();
+
+          if (userError) {
+            console.error("Error fetching user type:", userError.message);
+            return;
+          }
+
+          if (userData) {
+            setMyAccType(userData.usertype);
+          }
         }
       } catch (error) {
         console.error("Error fetching account type:", error.message);
@@ -46,7 +76,7 @@ const Review = () => {
     };
 
     fetchAccountType();
-  }, [selectedstudentid, selectedclientid]);
+  }, [accountId]);
 
   const fetchStudentData = async () => {
     if (!selectedstudentid) return;
