@@ -82,7 +82,6 @@ const RequestServiceJob = () => {
 
   const handlePublish = async () => {
     try {
-      // Step 1: Fetch user data to get the user ID
       const { data: userData, error: userError } = await supabase
         .from("user_account")
         .select("userid")
@@ -99,7 +98,6 @@ const RequestServiceJob = () => {
 
       const userid = userData.userid;
 
-      // Step 2: Fetch client data to get the client ID
       const { data: clientData, error: clientError } = await supabase
         .from("client_table")
         .select("clientid")
@@ -115,48 +113,47 @@ const RequestServiceJob = () => {
       }
 
       const clientid = clientData.clientid;
-
-      // Step 3: Get the service request ID (from selectedrequest param)
       const serviceId = selectedrequest;
-
-      // Step 4: Get the current date for 'dateposted'
       const dateposted = new Date().toISOString();
 
-      // Step 5: Get the location details if the job is onsite
       let locationlat = null;
       let locationlong = null;
 
       if (jobType === "Onsite" && isLocationRetrieved) {
-        // If the job is onsite, use the retrieved location coordinates
         const currentLocation = await Location.getCurrentPositionAsync({});
         locationlat = currentLocation.coords.latitude;
         locationlong = currentLocation.coords.longitude;
       }
 
-      // Step 6: Get the new jobid by counting the number of records in job_listing
-      const { count, error: countError } = await supabase
+      const { data: lastJob, error: jobError } = await supabase
         .from("job_listing")
-        .select("jobid", { count: "exact" });
+        .select("jobid")
+        .order("jobid", { ascending: false })
+        .limit(1)
+        .single();
 
-      if (countError) {
-        throw new Error(`Failed to fetch job count: ${countError.message}`);
-      }
-
-      const newJobId = count + 1; // Increment the count by 1 to get the new jobid
-
-      // Step 7: Insert into the 'service_request' table
-      const { data: countData, error: countErrorServiceRequest } =
-        await supabase
-          .from("service_request")
-          .select("requestid", { count: "exact" });
-
-      if (countErrorServiceRequest) {
+      if (jobError || !lastJob) {
         throw new Error(
-          `Failed to fetch request count: ${countErrorServiceRequest.message}`
+          `Failed to fetch last job listing: ${jobError.message}`
         );
       }
 
-      const newRequestId = countData.length + 1;
+      const newJobId = lastJob.jobid + 1;
+
+      const { data: lastRequest, error: requestError } = await supabase
+        .from("service_request")
+        .select("requestid")
+        .order("requestid", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (requestError || !lastRequest) {
+        throw new Error(
+          `Failed to fetch last service request: ${requestError.message}`
+        );
+      }
+
+      const newRequestId = lastRequest.requestid + 1;
 
       const { data: serviceRequestData, error: serviceRequestError } =
         await supabase.from("service_request").insert([
@@ -179,21 +176,20 @@ const RequestServiceJob = () => {
         serviceRequestData
       );
 
-      // Step 8: Insert into the 'job_listing' table with the new jobid
       const { data: jobListingData, error: jobListingError } = await supabase
         .from("job_listing")
         .insert([
           {
-            jobid: newJobId, // Use the calculated jobid
+            jobid: newJobId,
             jobtitle: title,
             jobdescription: description,
             jobpay: pay,
             jobtype: jobType,
             locationlat: locationlat,
             locationlong: locationlong,
-            duedate: deadline, // Assuming 'deadline' is in the correct format
+            duedate: deadline,
             dateposted: dateposted,
-            jobstatus: "Private", // Job status is set to 'Private'
+            jobstatus: "Private",
             clientid: clientid,
             requestid: newRequestId,
           },
@@ -207,7 +203,6 @@ const RequestServiceJob = () => {
 
       console.log("Job listing inserted successfully:", jobListingData);
 
-      // Step 9: Navigate to the request sent screen
       router.push("/(tabs)/screens/requestsent");
     } catch (error) {
       console.error("Error publishing request:", error.message);
