@@ -449,7 +449,6 @@ const JobSubmission = () => {
             size="medium"
             onPress={() => {
               setIsSubmitted(true);
-              updateJobStatus("Approved");
             }}
           />
         </>
@@ -495,7 +494,6 @@ const JobSubmission = () => {
             size="medium"
             onPress={async () => {
               try {
-                updateJobStatus("Paid");
                 router.push(
                   `/screens/review?selectedstudentid=${StudentBankDetails.studentid}&selectedclientid=${jobData.jobData.clientid}`
                 );
