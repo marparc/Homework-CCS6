@@ -21,6 +21,7 @@ const Review = () => {
   const { selectedstudentid, selectedclientid } = useLocalSearchParams();
   const [myAccType, setMyAccType] = useState("");
   const [accountId, setAccountId] = useState(null);
+
   console.log("selectedclientid: ", selectedclientid);
 
   useEffect(() => {

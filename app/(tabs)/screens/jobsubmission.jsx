@@ -374,7 +374,9 @@ const JobSubmission = () => {
             size="medium"
             onPress={() => {
               updateJobStatus("Completed");
-              router.push("/screens/review");
+              router.push(
+                `/screens/review?selectedstudentid=${StudentBankDetails.studentid}&selectedclientid=${jobData.jobData.clientid}`
+              );
             }}
           />
         </View>
