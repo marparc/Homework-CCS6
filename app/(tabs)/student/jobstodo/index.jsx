@@ -7,14 +7,13 @@ import { supabase } from "../../../../lib/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const JobsToDo = () => {
-  const [isToDoActive, setIsToDoActive] = useState(true); // Track whether "To Do" tab is active
+  const [isToDoActive, setIsToDoActive] = useState(true);
   const router = useRouter();
-  const [myJobs, setMyJobs] = useState([]); // Store filtered jobs
-  const [error, setError] = useState(null); // Store error messages
-  const [accountId, setAccountId] = useState(null); // Store user account ID
-  const [password, setPassword] = useState(null); // Store password (optional for other features)
+  const [myJobs, setMyJobs] = useState([]);
+  const [error, setError] = useState(null);
+  const [accountId, setAccountId] = useState(null);
+  const [password, setPassword] = useState(null);
 
-  // Fetch accountId and password from AsyncStorage on component mount
   useEffect(() => {
     const getData = async () => {
       try {
@@ -30,89 +29,118 @@ const JobsToDo = () => {
     getData();
   }, []);
 
-  // Fetch filtered jobs based on job status ("In Progress" or "Completed")
   const fetchFilteredJobs = async (inputid, jobStatus) => {
     try {
       console.log("Fetching jobs with inputid:", inputid);
 
-      // Fetch jobs from job_listing table, filtering by jobStatus
-      const { data, error } = await supabase
+      const { data: jobData, error: jobError } = await supabase
         .from("job_listing")
-        .select(
-          `*, application (
-            applicationmessage,
-            applicationstatus,
-            studentid
-          )`
-        )
-        .eq("jobstatus", jobStatus); // Filter by "In Progress" or "Completed" job status
+        .select("*, requestid")
+        .eq("jobstatus", jobStatus);
 
-      if (error) {
-        console.error("Error fetching data:", error);
-        return null;
+      if (jobError) {
+        console.error("Error fetching job data:", jobError);
+        return;
       }
 
-      // Filter jobs based on student ID (inputid)
-      const filteredJobs = data.filter((job) =>
-        job.application.some((app) => app.studentid === inputid)
-      );
+      const { data: applicationData, error: applicationError } = await supabase
+        .from("application")
+        .select("applicationmessage, applicationstatus, studentid, jobid");
 
-      setMyJobs(filteredJobs); // Set filtered jobs to state
+      if (applicationError) {
+        console.error("Error fetching application data:", applicationError);
+        return;
+      }
+
+      const { data: serviceRequestData, error: serviceRequestError } =
+        await supabase.from("service_request").select("serviceid, requestid");
+
+      if (serviceRequestError) {
+        console.error(
+          "Error fetching service request data:",
+          serviceRequestError
+        );
+        return;
+      }
+
+      const { data: serviceData, error: serviceError } = await supabase
+        .from("services")
+        .select("serviceid, studentid");
+
+      if (serviceError) {
+        console.error("Error fetching service data:", serviceError);
+        return;
+      }
+
+      const filteredJobs = jobData.filter((job) => {
+        if (job.requestid) {
+          const serviceRequest = serviceRequestData.find(
+            (sr) => sr.requestid === job.requestid
+          );
+          if (serviceRequest) {
+            const service = serviceData.find(
+              (s) => s.serviceid === serviceRequest.serviceid
+            );
+            if (service && service.studentid === inputid) {
+              return true;
+            }
+          }
+        }
+        return applicationData.some(
+          (app) => app.studentid === inputid && app.jobid === job.jobid
+        );
+      });
+
+      setMyJobs(filteredJobs);
+      console.log("filteredJobs:", filteredJobs);
     } catch (err) {
       console.error("Error fetching jobs:", err.message);
-      setError(err.message); // Set error message in case of failure
+      setError(err.message);
     }
   };
 
-  // Fetch filtered jobs when accountId or isToDoActive changes
   useEffect(() => {
     if (accountId) {
       const parsedAccountId = parseInt(accountId, 10);
-      // Fetch jobs based on the current tab's status ("In Progress" for To Do or "Completed")
       fetchFilteredJobs(
         parsedAccountId,
         isToDoActive ? "In Progress" : "Completed"
       );
     }
-  }, [accountId, isToDoActive]); // Re-fetch when accountId or isToDoActive changes
+  }, [accountId, isToDoActive]);
 
-  // Handle "To Do" tab click
   const handleToDoClick = () => {
-    setIsToDoActive(true); // Show "To Do" jobs
+    setIsToDoActive(true);
   };
 
-  // Handle "Completed" tab click
   const handleCompletedClick = () => {
-    setIsToDoActive(false); // Show "Completed" jobs
+    setIsToDoActive(false);
   };
 
-  // Navigate to job details screen when job is clicked
   const JobListingDetails = (jobid, jobStatus) => {
     console.log("Navigating with jobid:", jobid, "and jobStatus:", jobStatus);
-    router.push(`/screens/todo?selectedjobid=${jobid}&jobstatus=${jobStatus}`); // Navigate with both jobid and jobstatus
+    router.push(`/screens/todo?selectedjobid=${jobid}&jobstatus=${jobStatus}`);
   };
 
   return (
     <>
       <SafeAreaView style={styles.header}>
-        {/* Tab buttons for "To Do" and "Completed" */}
         <Button
           title="To Do"
           type={isToDoActive ? "dark" : "light"}
           size="small"
           disabled={!isToDoActive}
-          onPress={handleToDoClick} // Handle click on "To Do" tab
+          onPress={handleToDoClick}
         />
         <Button
           title="Completed"
           type={isToDoActive ? "light" : "dark"}
           size="small"
-          onPress={handleCompletedClick} // Handle click on "Completed" tab
+          onPress={handleCompletedClick}
         />
       </SafeAreaView>
 
       <ScrollView contentContainerStyle={styles.jobList}>
-        {/* Display filtered jobs */}
         {myJobs.length > 0 ? (
           myJobs.map((job) => (
             <JobCard
@@ -120,12 +148,12 @@ const JobsToDo = () => {
               title={job.jobtitle}
               description={job.jobdescription}
               onPress={() => {
-                JobListingDetails(job.jobid, job.jobstatus); // Navigate to job details screen
+                JobListingDetails(job.jobid, job.jobstatus);
               }}
             />
           ))
         ) : (
-          <Text>{error || "No job listings available."}</Text> // Display error or no job message
+          <Text>{error || "No job listings available."}</Text>
         )}
       </ScrollView>
     </>
@@ -134,7 +162,7 @@ const JobsToDo = () => {
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: "row", // Aligns children horizontally
+    flexDirection: "row",
     paddingTop: 10,
     marginLeft: 20,
   },
