@@ -374,7 +374,7 @@ const JobSubmission = () => {
             size="medium"
             onPress={() => {
               updateJobStatus("Completed");
-              router.push("/(tabs)/student/jobstodo");
+              router.push("/screens/review");
             }}
           />
         </View>

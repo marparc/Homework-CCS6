@@ -15,52 +15,122 @@ const Review = () => {
   const [comment, setComment] = useState("");
   const [studentName, setStudentName] = useState("");
   const [currentSchool, setCurrentSchool] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [organization, setOrganization] = useState("");
   const { selectedstudentid, selectedclientid } = useLocalSearchParams();
-  const [myAccType, setMyAccType] = useState();
+  const [myAccType, setMyAccType] = useState("Student");
 
   console.log("selectedclientid: ", selectedclientid);
 
   useEffect(() => {
-    const fetchStudentData = async () => {
-      if (!selectedstudentid) return;
-
+    const fetchAccountType = async () => {
+      // Assuming you can fetch account type based on the user’s ID or from a similar source
       try {
-        const { data: studentData, error: studentError } = await supabase
-          .from("student")
-          .select("currentschool, userid")
-          .eq("studentid", selectedstudentid)
+        const { data, error } = await supabase
+          .from("user_table")
+          .select("usertype")
+          .eq("userid", selectedclientid || selectedstudentid)
           .single();
 
-        if (studentError) {
-          console.error("Error fetching student data:", studentError.message);
+        if (error) {
+          console.error("Error fetching account type:", error.message);
           return;
         }
 
-        if (studentData) {
-          setCurrentSchool(studentData.currentschool);
-
-          const { data: userData, error: userError } = await supabase
-            .from("user_table")
-            .select("firstname, lastname")
-            .eq("userid", studentData.userid)
-            .single();
-
-          if (userError) {
-            console.error("Error fetching user data:", userError.message);
-            return;
-          }
-
-          if (userData) {
-            setStudentName(`${userData.firstname} ${userData.lastname}`);
-          }
+        if (data) {
+          setMyAccType(data.usertype); // Assume 'usertype' is either 'Student' or 'Client'
         }
       } catch (error) {
-        console.error("Error in fetchStudentData:", error.message);
+        console.error("Error fetching account type:", error.message);
       }
     };
 
-    fetchStudentData();
-  }, [selectedstudentid]);
+    fetchAccountType();
+  }, [selectedstudentid, selectedclientid]);
+
+  const fetchStudentData = async () => {
+    if (!selectedstudentid) return;
+
+    try {
+      const { data: studentData, error: studentError } = await supabase
+        .from("student")
+        .select("currentschool, userid")
+        .eq("studentid", selectedstudentid)
+        .single();
+
+      if (studentError) {
+        console.error("Error fetching student data:", studentError.message);
+        return;
+      }
+
+      if (studentData) {
+        setCurrentSchool(studentData.currentschool);
+
+        const { data: userData, error: userError } = await supabase
+          .from("user_table")
+          .select("firstname, lastname")
+          .eq("userid", studentData.userid)
+          .single();
+
+        if (userError) {
+          console.error("Error fetching user data:", userError.message);
+          return;
+        }
+
+        if (userData) {
+          setStudentName(`${userData.firstname} ${userData.lastname}`);
+        }
+      }
+    } catch (error) {
+      console.error("Error in fetchStudentData:", error.message);
+    }
+  };
+
+  const fetchClientData = async () => {
+    if (!selectedclientid) return;
+
+    try {
+      const { data: clientData, error: clientError } = await supabase
+        .from("client_table")
+        .select("client_organization, userid")
+        .eq("clientid", selectedclientid)
+        .single();
+
+      if (clientError) {
+        console.error("Error fetching client data:", clientError.message);
+        return;
+      }
+
+      if (clientData) {
+        setOrganization(clientData.client_organization);
+
+        const { data: userData, error: userError } = await supabase
+          .from("user_table")
+          .select("firstname, lastname")
+          .eq("userid", clientData.userid)
+          .single();
+
+        if (userError) {
+          console.error("Error fetching user data:", userError.message);
+          return;
+        }
+
+        if (userData) {
+          setClientName(`${userData.firstname} ${userData.lastname}`);
+        }
+      }
+    } catch (error) {
+      console.error("Error in fetchClientData:", error.message);
+    }
+  };
+
+  useEffect(() => {
+    if (myAccType === "Student") {
+      fetchClientData();
+    } else if (myAccType === "Client") {
+      fetchStudentData();
+    }
+  }, [myAccType, selectedstudentid, selectedclientid]);
 
   const handleSubmitRating = async () => {
     console.log("Rating:", rating);
@@ -87,7 +157,11 @@ const Review = () => {
       }
 
       console.log("Rating and comment successfully inserted.");
-      router.push("/(tabs)/student/jobstodo");
+      if (myAccType === "Student") {
+        router.push("/(tabs)/student/chat");
+      } else {
+        router.push("/(tabs)/client/chat");
+      }
     } catch (error) {
       console.error("Error during rating submission:", error.message);
     }
@@ -100,15 +174,15 @@ const Review = () => {
         <Ionicons name="happy-outline" size={150} color="black" />
 
         <ProfileCard
-          profiletype={myAccType === "Client" ? "S" : "C"} // Dynamically set profile type
-          name={studentName || "N/A"}
-          company={currentSchool || "N/A"}
+          profiletype={myAccType === "Student" ? "C" : "S"} // Dynamically set profile type
+          name={myAccType === "Student" ? clientName : studentName}
+          company={myAccType === "Student" ? organization : currentSchool}
         />
 
         <Text>
-          {myAccType === "Client"
-            ? "Rate the student freelancer and share your experience working together."
-            : "Rate your client and share your experience working together."}
+          {myAccType === "Student"
+            ? "Rate your client and share your experience working together."
+            : "Rate the student freelancer and share your experience working together."}
         </Text>
 
         <Rating
