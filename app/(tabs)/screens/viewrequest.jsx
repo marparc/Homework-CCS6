@@ -237,6 +237,23 @@ const ViewRequest = () => {
                 throw new Error("Student ID not found in services table.");
               }
 
+              const { data: jobData, error: jobDataError } = await supabase
+                .from("job_listing")
+                .select("jobid")
+                .eq("requestid", requestid)
+                .single();
+
+              if (jobDataError) {
+                throw new Error(
+                  `Error fetching jobid: ${jobDataError.message}`
+                );
+              }
+
+              const jobid = jobData?.jobid;
+              if (!jobid) {
+                throw new Error("Job ID not found in job_listing table.");
+              }
+
               const { data: existingChats, error: chatError } = await supabase
                 .from("chat")
                 .select("chatid");
@@ -259,6 +276,7 @@ const ViewRequest = () => {
                     chatid: nextChatId,
                     clientid: jobDetails.clientid,
                     studentid: studentid,
+                    jobid: jobid,
                   },
                 ]);
 

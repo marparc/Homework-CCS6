@@ -6,6 +6,7 @@ import { useLocalSearchParams } from "expo-router";
 import { supabase } from "../lib/supabase";
 
 import { useRouter } from "expo-router";
+
 const Register = () => {
   const router = useRouter();
   const [organization, setOrganization] = useState("");
@@ -20,7 +21,7 @@ const Register = () => {
   } = params;
 
   console.log("params: ", params);
-
+  console.log("REGISTER client");
   // Convert birthdate to a valid ISO string
   const formattedBirthdate = birthdate
     ? new Date(birthdate).toISOString()

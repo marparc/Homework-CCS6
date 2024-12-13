@@ -16,7 +16,7 @@ const Register = () => {
   const [ageCheckError, setAgeCheckError] = useState("");
 
   const router = useRouter();
-
+  console.log("REGISTER");
   const checkContactNum = async (contactNumber) => {
     try {
       // Query the database for the contact number
@@ -77,7 +77,7 @@ const Register = () => {
       setContactNumberError(
         "Contact number must be exactly 11 characters long."
       );
-      return; // Stop further processing
+      return;
     }
 
     const isValidAge = ageCheck();
@@ -106,7 +106,7 @@ const Register = () => {
       setContactNumberError(
         "Contact number must be exactly 11 characters long."
       );
-      return; // Stop further processing
+      return;
     }
 
     const exists = await checkContactNum(contactNumber);
