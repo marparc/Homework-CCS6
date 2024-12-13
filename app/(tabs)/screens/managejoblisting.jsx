@@ -1,4 +1,4 @@
-import { View, Text, Alert } from "react-native"; // Import Alert for the confirmation message
+import { View, Text, Alert, StyleSheet } from "react-native"; // Import Alert for the confirmation message
 import React, { useEffect, useState } from "react";
 import ListingDetails from "@/components/ui/jobdetailsexpanded";
 import Button from "@/components/ui/buttons";
@@ -171,7 +171,7 @@ const ManageJobListing = () => {
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       {jobData ? (
         <ListingDetails
           title={jobData.job.jobtitle || "Not available"}
@@ -240,3 +240,12 @@ const ManageJobListing = () => {
 };
 
 export default ManageJobListing;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1, // Take up full height of the screen
+    justifyContent: "flex-start", // Align content at the top
+    alignItems: "center", // Center content horizontally
+    paddingTop: 20, // Optional: Adds top padding to give some space from the top
+    paddingHorizontal: 16, // Optional: Adds horizontal padding
+  },
+});
