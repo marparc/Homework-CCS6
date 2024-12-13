@@ -167,9 +167,10 @@ const Review = () => {
     console.log("Comment:", comment);
 
     try {
-      const { error: insertError } = await supabase
-        .from("stud_evaluation")
-        .insert([
+      let insertError;
+
+      if (myAccType === "Client") {
+        const { error } = await supabase.from("stud_evaluation").insert([
           {
             rating: rating,
             usercomment: comment,
@@ -177,21 +178,33 @@ const Review = () => {
             studentid: selectedstudentid,
           },
         ]);
+        insertError = error;
+      } else {
+        const { error } = await supabase.from("client_evaluation").insert([
+          {
+            rating: rating,
+            usercomment: comment,
+            clientid: selectedclientid,
+            studentid: selectedstudentid,
+          },
+        ]);
+        insertError = error;
+      }
 
       if (insertError) {
         console.error(
-          "Error inserting into stud_evaluation:",
+          `Error inserting into ${
+            myAccType === "Client" ? "stud_evaluation" : "client_evaluation"
+          }:`,
           insertError.message
         );
         return;
       }
 
       console.log("Rating and comment successfully inserted.");
-      if (myAccType === "Student") {
-        router.push("/(tabs)/student/chat");
-      } else {
-        router.push("/(tabs)/client/chat");
-      }
+      router.push(
+        myAccType === "Student" ? "/(tabs)/student/chat" : "/(tabs)/client/chat"
+      );
     } catch (error) {
       console.error("Error during rating submission:", error.message);
     }
