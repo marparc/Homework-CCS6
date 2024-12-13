@@ -239,6 +239,19 @@ const RegisterStudent = () => {
 
           registerUser(userData, studentData, accountData);
           router.push("/registersuccess");
+
+          console.log(
+            "userData:" +
+              userData.firstName +
+              userData.lastName +
+              userData.contactNumber
+          );
+          console.log("Education Level:" + studentData.educationLevel);
+          console.log("Degree:" + studentData.degree);
+          console.log("Current School:" + studentData.currentSchool);
+          console.log("Year level" + studentData.yearLevel);
+          console.log("Bank Name" + studentData.bankName);
+          console.log("Bank ACC No" + studentData.bankAccountNo);
         }}
       />
     </SafeAreaView>

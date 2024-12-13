@@ -97,7 +97,13 @@ export default function JobMap() {
             jobData.map((job) => (
               <Marker
                 key={job.jobid}
-                icon={require("../../student/findjob/HW.png")}
+                icon={{
+                  uri: Image.resolveAssetSource(
+                    require("../../student/findjob/HW.png")
+                  ).uri,
+                  width: 60, // Specify desired width
+                  height: 60, // Specify desired height
+                }}
                 coordinate={{
                   latitude: job.locationlat,
                   longitude: job.locationlong,

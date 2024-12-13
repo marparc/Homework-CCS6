@@ -18,9 +18,10 @@
       },
       "config": {
         "googleMaps": {
-        "apiKey": "AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao"
+          "apiKey": "AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao"
         }
-      }
+      },
+      "package": "com.marparc.Homework"
     },
     "web": {
       "bundler": "metro",
@@ -42,6 +43,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "ff19b5ab-80a5-4149-9083-a087bd3c7226"
+      }
     }
   }
 }
