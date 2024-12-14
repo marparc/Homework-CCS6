@@ -366,14 +366,12 @@ const styles = StyleSheet.create({
   },
   serviceCard: {
     maxWidth: 350,
-    backgroundColor: "#E0E0E0",
     margin: 10,
     borderRadius: 16,
     padding: 10,
   },
   portfolioCard: {
     maxWidth: 350,
-    backgroundColor: "#E0E0E0",
     margin: 10,
     borderRadius: 16,
     padding: 10,
@@ -385,15 +383,13 @@ const styles = StyleSheet.create({
   },
   serviceCard: {
     maxWidth: 350,
-    backgroundColor: "#E0E0E0",
     margin: 10,
     borderRadius: 16,
     padding: 10,
     alignSelf: "center",
   },
   selectedCard: {
-    borderWidth: 2,
-    borderColor: "black",
+    borderWidth: 0,
   },
   reviewsContainer: {
     marginTop: 20,

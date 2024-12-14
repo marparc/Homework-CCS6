@@ -25,7 +25,6 @@ export default function Layout() {
     console.log("Logout successful");
     router.replace("/studentlogin");
   };
-
   return (
     <Tabs
       screenOptions={{
@@ -36,8 +35,12 @@ export default function Layout() {
       <Tabs.Screen
         name="jobstodo"
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="briefcase-outline" color={color} size={size} />
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name="briefcase-outline"
+              color={focused ? "black" : color} // Change to black if focused
+              size={size}
+            />
           ),
           tabBarLabel: "", // Disable label by setting it to an empty string
         }}
@@ -46,8 +49,12 @@ export default function Layout() {
       <Tabs.Screen
         name="chat"
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble-outline" color={color} size={size} />
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name="chatbubble-outline"
+              color={focused ? "black" : color} // Change to black if focused
+              size={size}
+            />
           ),
           tabBarLabel: "", // Disable label
         }}
@@ -57,8 +64,12 @@ export default function Layout() {
       <Tabs.Screen
         name="findjob"
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search-outline" color={color} size={size} />
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name="search-outline"
+              color={focused ? "black" : color} // Change to black if focused
+              size={size}
+            />
           ),
           tabBarLabel: "", // Disable label
         }}
@@ -68,8 +79,12 @@ export default function Layout() {
       <Tabs.Screen
         name="services"
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="mail-open-outline" color={color} size={size} />
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name="mail-open-outline"
+              color={focused ? "black" : color} // Change to black if focused
+              size={size}
+            />
           ),
           tabBarLabel: "", // Disable label
         }}
@@ -79,8 +94,12 @@ export default function Layout() {
       <Tabs.Screen
         name="profile"
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" color={color} size={size} />
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name="person-outline"
+              color={focused ? "black" : color} // Change to black if focused
+              size={size}
+            />
           ),
           tabBarLabel: "", // Disable label
           headerShown: true, // Show header for this specific screen

@@ -242,7 +242,7 @@ const ViewApplication = () => {
         </View>
 
         <View style={styles.portfolioContainer}>
-          <Text style={styles.detailsHeader}>Samples of My Work</Text>
+          <Text style={styles.detailsHeader}>My Porfolios</Text>
           {portfolios && portfolios.length > 0 ? (
             portfolios.map((portfolioItem, index) => (
               <View
@@ -356,14 +356,14 @@ const styles = StyleSheet.create({
     justifyContent: "center", // Centers the content vertically (if there is enough space)
   },
   detailsHeader: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "bold",
     color: "black",
-    marginBottom: 6,
+    marginBottom: 10,
     textAlign: "center", // Centers the text horizontally
   },
   details: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#555555",
     marginBottom: 4,
     textAlign: "center", // Centers the text horizontally
@@ -379,7 +379,6 @@ const styles = StyleSheet.create({
   portfolioContainer: {
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: "#F7F7F7",
     borderRadius: 12,
     marginHorizontal: 16,
     marginTop: 20, // Ensures sufficient margin from the above section

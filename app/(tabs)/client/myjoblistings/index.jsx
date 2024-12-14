@@ -251,6 +251,7 @@ const styles = StyleSheet.create({
   jobList: {
     paddingHorizontal: 20,
     paddingBottom: 30,
+    alignItems: "center",
   },
   loadingText: {
     textAlign: "center",

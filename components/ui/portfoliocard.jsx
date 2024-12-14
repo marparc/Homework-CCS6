@@ -36,9 +36,6 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#FAF9F9",
     borderRadius: 16,
-    borderWidth: 1, // Adding border width
-    borderColor: "black", // Light grey border color
-    borderStyle: "solid", // Ensures the border is solid
   },
   header: {
     fontSize: 18,

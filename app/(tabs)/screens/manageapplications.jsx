@@ -1,9 +1,10 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 import React, { useEffect, useState } from "react";
 import Button from "@/components/ui/buttons";
 import { supabase } from "../../../lib/supabase";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import JobCard from "@/components/ui/jobcard";
+
 const ManageApplications = () => {
   const { selectedjobid } = useLocalSearchParams(); // Get jobid from route params
   const router = useRouter();
@@ -110,22 +111,29 @@ const ManageApplications = () => {
   }, [selectedjobid]);
 
   if (loading) {
-    return <Text>Loading...</Text>;
+    return (
+      <View style={styles.centeredContainer}>
+        <Text>Loading...</Text>
+      </View>
+    );
   }
 
   if (error) {
-    return <Text>{error}</Text>;
+    return (
+      <View style={styles.centeredContainer}>
+        <Text>{error}</Text>
+      </View>
+    );
   }
 
   return (
-    <View>
+    <View style={styles.container}>
       {jobData && (
-        <ScrollView>
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
           {applications.length > 0 ? (
             applications.map((application) => (
-              <View key={application.studentid}>
+              <View key={application.studentid} style={styles.cardContainer}>
                 <JobCard
-                  key={application.studentid}
                   title={`${application.firstname} ${application.lastname}`}
                   description={application.applicationmessage}
                   onPress={() => {
@@ -144,5 +152,24 @@ const ManageApplications = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  centeredContainer: {
+    flex: 1,
+    alignItems: "center",
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    alignItems: "center", // Center items horizontally
+    padding: 16,
+  },
+  cardContainer: {
+    marginBottom: 16,
+  },
+});
 
 export default ManageApplications;

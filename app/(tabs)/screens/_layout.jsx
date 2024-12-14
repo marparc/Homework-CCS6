@@ -424,29 +424,32 @@ const Layout = () => {
           ),
         }}
       />
-      {/* 
+
       <Stack.Screen
-        name="viewapplication"
+        name="viewapplications"
         options={{
-          title: "Student Application",
-          headerTitleAlign: "center", // Center the header title
+          title: "View Applicant",
+          headerTitleAlign: "center",
+          headerTintColor: "white", // Set text color to white
+          headerStyle: {
+            backgroundColor: "black",
+          },
+          headerTitleStyle: {
+            color: "white", // Explicitly set the title text color
+          },
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => {
-                router.push("/(tabs)/client/myjoblistings"); // Navigate back when pressed
+                router.back();
               }}
+              style={{ marginLeft: 10 }}
             >
-              <Ionicons
-                name="arrow-back"
-                size={24}
-                color="black"
-                style={{ marginLeft: 10 }}
-              />
+              <Ionicons name="arrow-back" size={24} color="white" />
             </TouchableOpacity>
           ),
         }}
       />
-*/}
+
       <Stack.Screen
         name="manageapplications"
         options={{
@@ -537,8 +540,12 @@ const Layout = () => {
       <Stack.Screen
         name="viewstudentprofile"
         options={{
-          title: "View Profile",
+          title: "View Profile", // Ensure the title is set correctly
           headerTitleAlign: "center", // Center the header title
+          headerStyle: {
+            backgroundColor: "black", // Set the background color to black
+          },
+          headerTintColor: "white", // Set text/icon color for better contrast
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => {
@@ -548,7 +555,7 @@ const Layout = () => {
               <Ionicons
                 name="arrow-back"
                 size={24}
-                color="black"
+                color="white"
                 style={{ marginLeft: 10 }}
               />
             </TouchableOpacity>
