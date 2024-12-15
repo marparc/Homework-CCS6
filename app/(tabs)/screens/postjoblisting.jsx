@@ -33,6 +33,12 @@ const PostJobListing = () => {
   const [isPopUpVisible, setPopUpVisible] = useState(false);
   const [accountId, setAccountId] = useState(null);
 
+  const [titleError, setTitleError] = useState(false);
+  const [descriptionError, setDescriptionError] = useState(false);
+  const [payError, setPayError] = useState(false);
+  const [jobTypeError, setJobTypeError] = useState(false);
+  const [locationError, setLocationError] = useState(false);
+  const [deadlineError, setDeadlineError] = useState(false);
   useEffect(() => {
     const fetchAccountId = async () => {
       try {
@@ -51,38 +57,37 @@ const PostJobListing = () => {
       const { data: userAccountData, error: userAccountError } = await supabase
         .from("user_account")
         .select("userid")
-        .eq("accountid", accountId) 
+        .eq("accountid", accountId)
         .single();
-  
+
       if (userAccountError) {
         throw new Error(`Error fetching userid: ${userAccountError.message}`);
       }
-  
+
       if (!userAccountData) {
         throw new Error(`No user found with accountId: ${accountId}`);
       }
-  
+
       const { userid } = userAccountData;
-      
+
       const { data: clientData, error: clientError } = await supabase
         .from("client_table")
         .select("clientid")
         .eq("userid", userid) // Matching the userid
         .single(); // We expect only one client record for the given userid
-  
+
       if (clientError) {
         throw new Error(`Error fetching clientid: ${clientError.message}`);
       }
-  
+
       if (!clientData) {
         throw new Error(`No client found for userid: ${userid}`);
       }
-  
+
       const { clientid } = clientData;
-  
+
       // Return the clientid
       return clientid;
-  
     } catch (error) {
       console.error(error.message);
       throw error; // Optionally rethrow or handle the error as needed
@@ -210,20 +215,29 @@ const PostJobListing = () => {
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
+        {/* Title Field */}
         <InputField
           title="Job Title"
           size="medium"
           value={title}
           onChangeText={setTitle}
         />
+        {titleError && (
+          <Text style={styles.errorText}>Job Title is required.</Text>
+        )}
 
+        {/* Description Field */}
         <InputField
           title="Description"
           size="large"
           value={description}
           onChangeText={setDescription}
         />
+        {descriptionError && (
+          <Text style={styles.errorText}>Description is required.</Text>
+        )}
 
+        {/* Pay Field */}
         <View style={{ width: "100%" }}>
           <InputField
             title="Pay"
@@ -231,8 +245,10 @@ const PostJobListing = () => {
             value={pay}
             onChangeText={setPay}
           />
+          {payError && <Text style={styles.errorText}>Pay is required.</Text>}
         </View>
 
+        {/* Job Type Section */}
         <View
           style={{ width: "100%", alignItems: "flex-start", paddingLeft: 10 }}
         >
@@ -269,7 +285,11 @@ const PostJobListing = () => {
             />
             <Text style={styles.radioText}>Remote</Text>
           </TouchableOpacity>
+          {jobTypeError && (
+            <Text style={styles.errorText}>Job Type is required.</Text>
+          )}
         </View>
+
         {/* Location Section (Visible Only When Onsite is Selected) */}
         {jobType === "Onsite" && (
           <>
@@ -291,31 +311,81 @@ const PostJobListing = () => {
                 onPress={handleGetLocation}
               />
             </View>
-            {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
+            {locationError && (
+              <Text style={styles.errorText}>
+                Location is required for Onsite jobs.
+              </Text>
+            )}
+            {errorMsg && <Text style={styles.errorText}>{errorMsg}</Text>}
           </>
         )}
 
+        {/* Deadline/Date Picker */}
         <Text style={styles.sectionTitle}>Select Deadline/Date</Text>
         <DatePick
           label="MM/DD/YY"
           mode="date"
-          minDate={new Date()} // Ensure dates are only in the past
+          minDate={new Date()}
           onDateChange={(date) => setDeadline(date)}
         />
+        {deadlineError && (
+          <Text style={styles.errorText}>Deadline is required.</Text>
+        )}
 
+        {/* Publish Button */}
         <Button
           type="dark"
           size="medium"
           title="Publish"
-          onPress={publishListing}
+          onPress={() => {
+            // Validation logic
+            let hasError = false;
+
+            if (!title.trim()) {
+              setTitleError(true);
+              hasError = true;
+            } else setTitleError(false);
+
+            if (!description.trim()) {
+              setDescriptionError(true);
+              hasError = true;
+            } else setDescriptionError(false);
+
+            if (!pay || pay.toString().trim() === "") {
+              setPayError(true);
+              hasError = true;
+            } else {
+              setPayError(false);
+            }
+
+            if (!jobType) {
+              setJobTypeError(true);
+              hasError = true;
+            } else setJobTypeError(false);
+
+            if (jobType === "Onsite" && !isLocationRetrieved) {
+              setLocationError(true);
+              hasError = true;
+            } else setLocationError(false);
+
+            if (!deadline) {
+              setDeadlineError(true);
+              hasError = true;
+            } else setDeadlineError(false);
+
+            if (!hasError) {
+              publishListing();
+            }
+          }}
         />
 
+        {/* Success Popup */}
         {isPopUpVisible && (
           <PopUp
             icon="checkmark-circle-outline"
             text="Published Successfully!"
-            route="/(tabs)/client/myjoblistings" // Navigate to this route when the modal is closed
-            onClose={() => setPopUpVisible(false)} // Assuming PopUp accepts an `onClose` prop
+            route="/(tabs)/client/myjoblistings"
+            onClose={() => setPopUpVisible(false)}
           />
         )}
       </View>
