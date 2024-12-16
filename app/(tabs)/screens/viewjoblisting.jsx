@@ -8,6 +8,7 @@ import { supabase } from "../../../lib/supabase";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ProfileCard from "@/components/ui/profilecard";
+import HandLoading from "@/components/ui/handloading";
 
 const ViewJobListing = () => {
   const router = useRouter();
@@ -17,6 +18,7 @@ const ViewJobListing = () => {
   const [userAccountName, setUserAccountName] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAccountId = async () => {
@@ -97,6 +99,7 @@ const ViewJobListing = () => {
                   0
                 ) / evaluations.length;
 
+              setLoading(false);
               setJobDetails((prevJobDetails) => ({
                 ...prevJobDetails,
                 clientOrganization: clientData.client_organization,
@@ -186,6 +189,10 @@ const ViewJobListing = () => {
     }
   };
 
+  if (loading) {
+    return <HandLoading></HandLoading>;
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -202,9 +209,7 @@ const ViewJobListing = () => {
             description={jobDetails.jobdescription}
             pay={jobDetails.jobpay}
           />
-        ) : (
-          <Text>Loading job details...</Text>
-        )}
+        ) : null}
 
         <ProfileCard
           profiletype="C"

@@ -43,14 +43,15 @@ const ProfileCard = ({ profiletype, company, imageSrc, name, stars }) => {
         )}
         <View>
           <Text style={styles.name}>{name}</Text>
+
           {/* Render Text component only if profileTypeText returns a valid string */}
           {profileTypeText() && (
             <Text style={styles.type}>{profileTypeText()}</Text>
           )}
+          <View style={styles.starContainer}>{renderStars()}</View>
           {/* Render Text component only if companyText returns a valid string */}
           {companyText() && <Text style={styles.company}>{companyText()}</Text>}
           {/* Render stars only if 'stars' prop is provided */}
-          <View style={styles.starContainer}>{renderStars()}</View>
         </View>
       </View>
     </View>
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
   },
   initial: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 24,
     fontWeight: "bold",
   },
   name: {

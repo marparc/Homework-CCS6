@@ -27,7 +27,6 @@ export default TextCard;
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    paddingHorizontal: 20,
     width: 320,
     borderRadius: 16,
     marginVertical: 10,

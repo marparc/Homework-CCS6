@@ -543,9 +543,12 @@ const Layout = () => {
           title: "View Profile", // Ensure the title is set correctly
           headerTitleAlign: "center", // Center the header title
           headerStyle: {
-            backgroundColor: "black", // Set the background color to black
+            backgroundColor: "black", // Set the header background color (optional)
           },
-          headerTintColor: "white", // Set text/icon color for better contrast
+          headerTitleStyle: {
+            color: "white", // Set the title font color to white
+            fontSize: 18, // (Optional) Adjust font size
+          },
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => {
@@ -555,7 +558,7 @@ const Layout = () => {
               <Ionicons
                 name="arrow-back"
                 size={24}
-                color="white"
+                color="white" // Ensure the back icon matches the header font color
                 style={{ marginLeft: 10 }}
               />
             </TouchableOpacity>
