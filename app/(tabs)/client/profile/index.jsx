@@ -241,7 +241,7 @@ const MyClientProfile = () => {
       <View style={styles.editContainer}>
         <Button
           title="Edit Bio"
-          type="light"
+          type="dark"
           size="small"
           onPress={() => {
             router.push("/screens/editbioclient");
@@ -349,26 +349,28 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   detailsHeader: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "bold",
     color: "black",
     marginBottom: 6,
   },
   details: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#555555",
     marginBottom: 4,
   },
   aboutContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: "#F7F7F7",
+    paddingVertical: 25,
+    backgroundColor: "white",
     display: "flex",
     alignItems: "center", // Centers horizontally
     justifyContent: "center", // Centers vertically
-    borderRadius: 12, // Optional: Add a nice rounded border effect
     width: "90%", // Optional: Make the width responsive
     alignSelf: "center", // Center the container within its parent
+    borderBottomWidth: 1,
+    borderBottomColor: "black",
+    marginBottom: 20,
   },
   tabsContainer: {
     flexDirection: "row", // Arrange items in a row
@@ -420,7 +422,7 @@ const styles = StyleSheet.create({
     borderColor: "black", // Blue color for selected state
   },
   reviewsContainer: {
-    marginTop: 20,
+    marginTop: 10,
     paddingHorizontal: 16,
     paddingBottom: 16,
     backgroundColor: "white",
@@ -428,7 +430,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // Centers the child components (ratings) horizontally
   },
   reviewsHeader: {
-    fontSize: 18,
+    fontSize: 24,
     color: "black",
     marginBottom: 10,
     textAlign: "center",

@@ -73,9 +73,13 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   message: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#666",
     marginTop: 2,
+  },
+  receiver: {
+    fontSize: 16,
+    color: "gray",
   },
   right: {
     width: 20,

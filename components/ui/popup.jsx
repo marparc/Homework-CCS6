@@ -4,7 +4,7 @@ import Button from "./buttons";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
-// Accept text and route as props
+// Accept text, route, and icon as props
 const PopUp = ({ text, route, icon }) => {
   const [isVisible, setIsVisible] = useState(true); // State to control modal visibility
   const router = useRouter();
@@ -24,7 +24,9 @@ const PopUp = ({ text, route, icon }) => {
             size="small"
             onPress={() => {
               setIsVisible(false); // Hide modal when button is pressed
-              router.push(route); // Navigate to the provided route
+              if (route) {
+                router.push(route); // Navigate to the provided route, if it exists
+              }
             }}
           />
         </View>

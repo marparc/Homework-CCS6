@@ -256,6 +256,7 @@ const Convo = () => {
             scrollViewRef.current.scrollToEnd({ animated: true });
           }
         }}
+        showsVerticalScrollIndicator={false}
       >
         {messages.map((msg, index) => (
           <Message

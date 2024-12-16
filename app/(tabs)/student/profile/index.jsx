@@ -286,7 +286,7 @@ const ProfileHeader = () => {
       >
         <Button
           title="Edit Bio"
-          type="light"
+          type="dark"
           size="small"
           onPress={() => {
             router.push("/screens/editbio");
@@ -594,26 +594,28 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   detailsHeader: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "bold",
     color: "black",
     marginBottom: 6,
   },
   details: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#555555",
     marginBottom: 4,
   },
   aboutContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: "#F7F7F7",
+    paddingVertical: 25,
+    backgroundColor: "white",
     display: "flex",
     alignItems: "center", // Centers horizontally
     justifyContent: "center", // Centers vertically
-    borderRadius: 12, // Optional: Add a nice rounded border effect
     width: "90%", // Optional: Make the width responsive
     alignSelf: "center", // Center the container within its parent
+    borderBottomWidth: 1,
+    borderBottomColor: "black",
+    marginBottom: 20,
   },
   tabsContainer: {
     flexDirection: "row", // Arrange items in a row
@@ -638,6 +640,11 @@ const styles = StyleSheet.create({
     justifyContent: "center", // Vertically center content
     alignItems: "center", // Horizontally center content
     paddingHorizontal: 20, // Add horizontal padding for spacing from screen edges
+    borderBottomWidth: 1,
+    borderBottomColor: "black",
+    width: "90%",
+    paddingBottom: 20,
+    marginHorizontal: "auto",
   },
   serviceCard: {
     maxWidth: 350, // Set a max width for the cards to avoid stretching too much on large screen
@@ -671,9 +678,10 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 12,
     alignItems: "center", // Centers the child components (ratings) horizontally
+    paddingTop: 20,
   },
   reviewsHeader: {
-    fontSize: 18,
+    fontSize: 24,
     color: "black",
     marginBottom: 10,
     textAlign: "center",

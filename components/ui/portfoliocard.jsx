@@ -34,21 +34,25 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     padding: 20,
-    backgroundColor: "#FAF9F9",
+    backgroundColor: "#f8f8f8",
+    borderWidth: 1,
+    borderColor: "#f8f8f8",
     borderRadius: 16,
   },
   header: {
     fontSize: 18,
     fontWeight: "bold",
+    textAlign: "center",
   },
   text: {
     fontSize: 14,
     color: "#555555",
     marginBottom: 10,
+    textAlign: "center",
   },
   buttonContainer: {
     alignSelf: "stretch", // Ensure the button container takes up the full width
-    alignItems: "flex-end", // Align the button to the right
+    alignItems: "center", // Align the button to the right
     marginTop: 10, // Optional: Add some space above the button
   },
   buttonContent: {
