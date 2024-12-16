@@ -1,4 +1,4 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import React, { useState, useEffect } from "react";
 import InputField from "@/components/ui/inputfield";
 import Button from "@/components/ui/buttons";
@@ -13,6 +13,8 @@ const AddService = () => {
   const [serviceName, setServiceName] = useState("");
   const [serviceDesc, setServiceDesc] = useState("");
   const router = useRouter();
+  const [serviceNameError, setServiceNameError] = useState(false);
+  const [serviceDescError, setServiceDescError] = useState(false);
 
   useEffect(() => {
     const getData = async () => {
@@ -115,32 +117,71 @@ const AddService = () => {
     router.push("/student/profile");
   };
 
+  const validateAndSubmit = () => {
+    let isValid = true;
+
+    if (!serviceName.trim()) {
+      setServiceNameError(true);
+      isValid = false;
+    } else {
+      setServiceNameError(false);
+    }
+
+    if (!serviceDesc.trim()) {
+      setServiceDescError(true);
+      isValid = false;
+    } else {
+      setServiceDescError(false);
+    }
+
+    if (isValid) {
+      handleAddService();
+    }
+  };
+
   return (
     <>
       <View style={styles.container}>
+        {/* Service Title Field */}
         <InputField
           title="Service Title"
           size="medium"
           value={serviceName}
-          onChangeText={setServiceName}
+          onChangeText={(text) => {
+            setServiceName(text);
+            if (text.trim()) setServiceNameError(false);
+          }}
         />
+        {serviceNameError && (
+          <Text style={styles.errorText}>Service Title is required.</Text>
+        )}
+
+        {/* Service Description Field */}
         <InputField
           title="Service Description"
           size="large"
           value={serviceDesc}
-          onChangeText={setServiceDesc}
+          onChangeText={(text) => {
+            setServiceDesc(text);
+            if (text.trim()) setServiceDescError(false);
+          }}
         />
+        {serviceDescError && (
+          <Text style={styles.errorText}>Service Description is required.</Text>
+        )}
 
+        {/* Add Service Button */}
         <View style={styles.buttonContainer}>
           <Button
             title="Add Service"
             type="dark"
             size="small"
-            onPress={handleAddService}
+            onPress={validateAndSubmit}
           />
         </View>
       </View>
 
+      {/* Success Pop-up */}
       {isPopUpVisible && (
         <PopUp
           icon="checkmark-circle-outline"
@@ -162,6 +203,11 @@ const styles = StyleSheet.create({
     width: "100%",
     display: "flex",
     alignItems: "flex-end",
+  },
+  errorText: {
+    color: "red", // Makes the text red
+    fontSize: 12,
+    marginTop: 5,
   },
 });
 
