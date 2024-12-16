@@ -18,7 +18,7 @@ const ViewJobListing = () => {
   const [message, setMessage] = useState(""); // For storing the input message
   const [error, setError] = useState(null); // For capturing error messages
 
-  console.log("selectedJobListing: ", selectedJobListing);
+  //console.log("selectedJobListing: ", selectedJobListing);
 
   useEffect(() => {
     const fetchAccountId = async () => {
@@ -41,6 +41,7 @@ const ViewJobListing = () => {
       }
 
       try {
+        // Fetch job details
         const { data: jobData, error: jobError } = await supabase
           .from("job_listing")
           .select("*")
@@ -56,12 +57,14 @@ const ViewJobListing = () => {
           console.log("Job data fetched:", job);
 
           const clientId = job.clientid;
+
+          // Fetch client data to get the organization name
           const { data: clientData, error: clientError } = await supabase
             .from("client_table")
-            .select("userid")
+            .select("client_organization, userid")
             .eq("clientid", clientId)
             .single();
-
+          console.log("clientData: ", clientData);
           if (clientError) {
             throw new Error(clientError.message);
           }
@@ -70,6 +73,8 @@ const ViewJobListing = () => {
             console.log("Client data fetched:", clientData);
 
             const userId = clientData.userid;
+
+            // Fetch account name from user_account table
             const { data: userData, error: userError } = await supabase
               .from("user_account")
               .select("account_name")
@@ -85,6 +90,36 @@ const ViewJobListing = () => {
               console.log("User account name fetched:", userData.account_name);
             } else {
               console.log("No user account found for the given userid.");
+            }
+
+            // Fetch client evaluations to calculate average rating
+            const { data: evaluations, error: evalError } = await supabase
+              .from("client_evaluation")
+              .select("rating")
+              .eq("clientid", clientId);
+            console.log("evaluations: ", evaluations);
+            if (evalError) {
+              throw new Error(evalError.message);
+            }
+
+            if (evaluations && evaluations.length > 0) {
+              // Calculate average rating
+              const averageRating =
+                evaluations.reduce(
+                  (sum, evaluation) => sum + evaluation.rating,
+                  0
+                ) / evaluations.length;
+
+              console.log("Average rating:", averageRating);
+
+              // Update job details with the calculated average rating
+              setJobDetails((prevJobDetails) => ({
+                ...prevJobDetails,
+                clientOrganization: clientData.client_organization, // Add this line
+                averageRating: averageRating.toFixed(1), // Optional: Limit to 1 decimal point
+              }));
+            } else {
+              console.log("No evaluations found for the given clientid.");
             }
           } else {
             console.log("No client data found for the given clientid.");
@@ -189,10 +224,13 @@ const ViewJobListing = () => {
         )}
 
         <ProfileCard
-          type="C"
+          profiletype="C"
           name={userAccountName || "Client Not Available"}
-          stars="5"
-        ></ProfileCard>
+          stars={jobDetails?.averageRating || 0} // Pass average rating here
+          company={
+            jobDetails?.clientOrganization || "No Organization Available"
+          }
+        />
 
         <TextCard
           type="light"
