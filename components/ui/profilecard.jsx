@@ -1,7 +1,8 @@
 import { View, Text, Image, StyleSheet } from "react-native";
 import React from "react";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
-const ProfileCard = ({ profiletype, company, imageSrc, name }) => {
+const ProfileCard = ({ profiletype, company, imageSrc, name, stars }) => {
   // Check profiletype and display appropriate text
   const profileTypeText = () => {
     if (profiletype === "S") {
@@ -18,7 +19,16 @@ const ProfileCard = ({ profiletype, company, imageSrc, name }) => {
     } else if (profiletype === "C") {
       return `Works at ${company}`;
     }
+    console.log("No company text: ", company); // Debugging log
     return null;
+  };
+
+  // Render star icons based on the stars prop
+  const renderStars = () => {
+    if (!stars) return null; // Only render stars if 'stars' is provided
+    return Array.from({ length: stars }).map((_, index) => (
+      <Ionicons key={index} name="star" size={16} color="#FFCE1B" />
+    ));
   };
 
   return (
@@ -38,11 +48,9 @@ const ProfileCard = ({ profiletype, company, imageSrc, name }) => {
             <Text style={styles.type}>{profileTypeText()}</Text>
           )}
           {/* Render Text component only if companyText returns a valid string */}
-          {companyText() && (
-            <Text style={{ color: "#434242", fontSize: 14 }}>
-              {companyText()}
-            </Text>
-          )}
+          {companyText() && <Text style={styles.company}>{companyText()}</Text>}
+          {/* Render stars only if 'stars' prop is provided */}
+          <View style={styles.starContainer}>{renderStars()}</View>
         </View>
       </View>
     </View>
@@ -53,7 +61,7 @@ export default ProfileCard;
 
 const styles = StyleSheet.create({
   profileCard: {
-    width: 330,
+    width: "100%",
     padding: 20,
     backgroundColor: "#FAF9F9",
     margin: 10,
@@ -67,9 +75,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   image: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     marginRight: 10,
   },
   imageFallback: {
@@ -89,5 +97,14 @@ const styles = StyleSheet.create({
   name: {
     fontWeight: "bold",
     fontSize: 16,
+  },
+  company: {
+    color: "#434242",
+    fontSize: 16,
+  },
+  starContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 5,
   },
 });

@@ -5,11 +5,11 @@ const Button = forwardRef(({ title, type, size, onPress }, ref) => {
   const getSizeStyle = () => {
     switch (size) {
       case "small":
-        return { width: 150, height: 40 };
+        return { width: 150, height: 45 };
       case "medium":
-        return { width: 330, height: 40 };
+        return { width: 330, height: 45 };
       default:
-        return { width: 330, height: 40 }; // Default size
+        return { width: 330, height: 45 }; // Default size
     }
   };
 
@@ -38,8 +38,9 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 16,
+    borderRadius: 21,
     alignItems: "center",
+    justifyContent: "center",
     margin: 5,
   },
   lightButton: {
@@ -55,8 +56,10 @@ const styles = StyleSheet.create({
   },
   lightText: {
     color: "black",
+    fontSize: 16,
   },
   darkText: {
     color: "#FFFFFF",
+    fontSize: 16,
   },
 });

@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   },
   content: {
     width: 300,
-    fontSize: 12,
+    fontSize: 16,
     textAlign: "center",
     color: "#555",
     lineHeight: 24, // Improve readability

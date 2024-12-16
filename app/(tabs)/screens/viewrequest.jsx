@@ -313,8 +313,6 @@ const ViewRequest = () => {
           jobType={jobDetails.jobtype}
           posted={jobDetails.dateposted}
           status={jobDetails.jobstatus}
-          client={jobDetails.accountName}
-          stars="5"
           location={location || "Location not available"}
           description={jobDetails.jobdescription}
           pay={jobDetails.jobpay}
@@ -322,23 +320,21 @@ const ViewRequest = () => {
       )}
 
       <ProfileCard
-        profiletype="C"
-        name={jobDetails.accountName || "No Name Available"}
-        company={jobDetails.clientOrganization || "No Organization Available"}
-      />
-
+        type="C"
+        name={jobDetails.accountName || "Client Not Available"}
+        stars="5"
+        comapny={jobDetails.clientOrganization || "No Organization Available"}
+      ></ProfileCard>
       <TextCard
         type="light"
         text="Once you click 'Accept,' a conversation will be created between you and the client to ensure the job goes smoothly."
       ></TextCard>
-
       <Button
         title="Accept"
         type="dark"
         size="medium"
         onPress={handleApprove}
       />
-
       <Button
         title="Decline"
         type="light"

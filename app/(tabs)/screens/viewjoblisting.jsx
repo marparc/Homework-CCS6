@@ -7,6 +7,7 @@ import Button from "@/components/ui/buttons";
 import { supabase } from "../../../lib/supabase";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import ProfileCard from "@/components/ui/profilecard";
 
 const ViewJobListing = () => {
   const router = useRouter();
@@ -169,15 +170,16 @@ const ViewJobListing = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
         {jobDetails ? (
           <ListingDetails
             title={jobDetails.jobtitle}
             jobType={jobDetails.jobtype}
             posted={jobDetails.dateposted}
             status={jobDetails.jobstatus}
-            client={userAccountName || "Client Not Available"}
-            stars="5"
             location="Dumaguete City"
             description={jobDetails.jobdescription}
             pay={jobDetails.jobpay}
@@ -186,10 +188,23 @@ const ViewJobListing = () => {
           <Text>Loading job details...</Text>
         )}
 
+        <ProfileCard
+          type="C"
+          name={userAccountName || "Client Not Available"}
+          stars="5"
+        ></ProfileCard>
+
         <TextCard
           type="light"
-          text="All personal information in your profile will be shared with the client. Once you click 'Send Application,' the client will review your profile. 
-          You will receive a notification if your application is accepted, and you will then be directed to a private conversation with the client."
+          text="All personal information in your profile will be shared with the client."
+        />
+        <TextCard
+          type="light"
+          text="Once you click 'Send Application,' the client will review your profile."
+        />
+        <TextCard
+          type="light"
+          text="You will receive a notification if your application is accepted, and you will then be directed to a private conversation with the client."
         />
 
         <InputField
@@ -223,7 +238,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   scrollContainer: {
-    padding: 16,
+    padding: 20,
     alignItems: "center",
   },
 });

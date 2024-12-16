@@ -17,7 +17,7 @@ export default function Layout() {
       <Stack.Screen
         name="index"
         options={{
-          title: "My Jobs", // Custom title
+          title: "My Homeworks", // Custom title
         }}
       />
     </Stack>

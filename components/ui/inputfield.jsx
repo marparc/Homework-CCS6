@@ -45,7 +45,7 @@ export default InputField;
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 14,
+    fontSize: 16,
     color: "black",
   },
   titleContainer: {

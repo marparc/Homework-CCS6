@@ -26,13 +26,14 @@ export default TextCard;
 
 const styles = StyleSheet.create({
   container: {
+    width: "100%",
     paddingHorizontal: 20,
     width: 320,
     borderRadius: 16,
-    padding: 15,
+    marginVertical: 10,
   },
   text: {
-    fontSize: 14,
+    fontSize: 16,
     textAlign: "justify",
   },
   lightBackground: {

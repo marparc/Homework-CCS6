@@ -156,7 +156,7 @@ export default RequestLists;
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 16,
+    flex: 1,
     paddingHorizontal: 8,
     alignItems: "center", // Center align the content inside the ScrollView
   },

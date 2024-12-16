@@ -3,13 +3,6 @@ import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 
 const ListingDetails = (props) => {
-  // Render star icons based on the stars prop
-  const renderStars = () => {
-    return Array.from({ length: props.stars }).map((_, index) => (
-      <Ionicons key={index} name="star-outline" size={12} color="black" />
-    ));
-  };
-
   return (
     <>
       {/* Details Section */}
@@ -30,27 +23,6 @@ const ListingDetails = (props) => {
           </View>
         )}
 
-        {/* Client Information */}
-        {props.client && (
-          <View style={styles.clientContainer}>
-            <Ionicons name="person-outline" size={12} color="#575757" />
-            <Text style={[styles.detail, styles.clientName]}>
-              {props.client}
-            </Text>
-          </View>
-        )}
-
-        {/* Client Ratings */}
-        {props.stars && (
-          <View style={styles.ratingsContainer}>
-            <Text style={styles.detail}>Client Ratings:</Text>
-            {renderStars()}
-          </View>
-        )}
-      </View>
-
-      {/* Description Section */}
-      <View style={styles.descriptionContainer}>
         {/* Job Description */}
         <Text style={styles.detail}>{props.description}</Text>
 
@@ -74,26 +46,26 @@ export default ListingDetails;
 const styles = StyleSheet.create({
   detailsContainer: {
     margin: 10,
-    width: 330,
+    width: "100%",
     backgroundColor: "#FAF9F9",
     padding: 20,
     borderRadius: 16,
   },
   descriptionContainer: {
     margin: 10,
-    width: 330,
+    width: "100%",
     backgroundColor: "#FAF9F9",
     padding: 20,
     borderRadius: 16,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
     textTransform: "uppercase",
   },
   detail: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#575757",
     margin: 2,
   },
@@ -103,7 +75,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   clientName: {
-    fontSize: 14,
+    fontSize: 16,
     marginLeft: 5,
     color: "black",
     textDecorationLine: "underline",

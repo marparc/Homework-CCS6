@@ -37,8 +37,8 @@ export default Chat;
 const styles = StyleSheet.create({
   container: {
     width: 350,
-    height: 80,
-    padding: 5,
+    height: 90,
+    paddingVertial: 20,
     flexDirection: "row", // Align items horizontally
     alignItems: "center", // Center items vertically
     borderBottomWidth: 1, // Correct property for bottom border
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     borderRadius: 30, // Makes it circular
   },
   iconText: {
-    fontSize: 24,
+    fontSize: 31,
     fontWeight: "bold",
     color: "white",
   },

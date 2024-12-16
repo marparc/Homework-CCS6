@@ -34,5 +34,6 @@ const styles = StyleSheet.create({
   searchField: {
     flex: 1,
     marginRight: 10,
+    fontSize: 16,
   },
 });
