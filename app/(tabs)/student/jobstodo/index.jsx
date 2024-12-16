@@ -5,6 +5,7 @@ import JobCard from "@/components/ui/jobcard";
 import { useRouter } from "expo-router";
 import { supabase } from "../../../../lib/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import HandLoading from "@/components/ui/handloading";
 
 const JobsToDo = () => {
   const [isToDoActive, setIsToDoActive] = useState(true);
@@ -13,6 +14,7 @@ const JobsToDo = () => {
   const [error, setError] = useState(null);
   const [accountId, setAccountId] = useState(null);
   const [password, setPassword] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const getData = async () => {
@@ -92,6 +94,7 @@ const JobsToDo = () => {
       });
 
       setMyJobs(filteredJobs);
+      setLoading(false);
       console.log("filteredJobs:", filteredJobs);
     } catch (err) {
       console.error("Error fetching jobs:", err.message);
@@ -111,16 +114,41 @@ const JobsToDo = () => {
 
   const handleToDoClick = () => {
     setIsToDoActive(true);
+    setLoading(true);
   };
 
   const handleCompletedClick = () => {
     setIsToDoActive(false);
+    setLoading(true);
   };
 
   const JobListingDetails = (jobid, jobStatus) => {
     console.log("Navigating with jobid:", jobid, "and jobStatus:", jobStatus);
     router.push(`/screens/todo?selectedjobid=${jobid}&jobstatus=${jobStatus}`);
   };
+
+  if (loading) {
+    return (
+      <>
+        <SafeAreaView style={styles.header}>
+          <Button
+            title="To Do"
+            type={isToDoActive ? "dark" : "light"}
+            size="small"
+            disabled={!isToDoActive}
+            onPress={handleToDoClick}
+          />
+          <Button
+            title="Completed"
+            type={isToDoActive ? "light" : "dark"}
+            size="small"
+            onPress={handleCompletedClick}
+          />
+        </SafeAreaView>
+        <HandLoading></HandLoading>
+      </>
+    );
+  }
 
   return (
     <>

@@ -9,6 +9,8 @@ import { useLocalSearchParams } from "expo-router";
 import { useRouter } from "expo-router";
 import { supabase } from "../../../lib/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import PopUp from "@/components/ui/popup";
+import HandLoading from "@/components/ui/handloading";
 
 const Review = () => {
   const router = useRouter();
@@ -21,6 +23,9 @@ const Review = () => {
   const { selectedstudentid, selectedclientid } = useLocalSearchParams();
   const [myAccType, setMyAccType] = useState("");
   const [accountId, setAccountId] = useState(null);
+  const [isPopUpVisible, setIsPopUpVisible] = useState(false);
+  const [reviewUploadedPopUp, setReviewUploadedPopUp] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   console.log("selectedclientid: ", selectedclientid);
 
@@ -110,6 +115,7 @@ const Review = () => {
 
         if (userData) {
           setStudentName(`${userData.firstname} ${userData.lastname}`);
+          setLoading(false);
         }
       }
     } catch (error) {
@@ -148,6 +154,7 @@ const Review = () => {
 
         if (userData) {
           setClientName(`${userData.firstname} ${userData.lastname}`);
+          setLoading(false);
         }
       }
     } catch (error) {
@@ -167,49 +174,59 @@ const Review = () => {
     console.log("Rating:", rating);
     console.log("Comment:", comment);
 
-    try {
-      let insertError;
+    if (rating == 0 || comment == "") {
+      setIsPopUpVisible(true);
 
-      if (myAccType === "Client") {
-        const { error } = await supabase.from("stud_evaluation").insert([
-          {
-            rating: rating,
-            usercomment: comment,
-            clientid: selectedclientid,
-            studentid: selectedstudentid,
-          },
-        ]);
-        insertError = error;
-      } else {
-        const { error } = await supabase.from("client_evaluation").insert([
-          {
-            rating: rating,
-            usercomment: comment,
-            clientid: selectedclientid,
-            studentid: selectedstudentid,
-          },
-        ]);
-        insertError = error;
+      // Hide the popup after 3 seconds
+      setTimeout(() => {
+        setIsPopUpVisible(false);
+      }, 3000); // Popup stays visible for 3 seconds
+    } else {
+      try {
+        let insertError;
+
+        if (myAccType === "Client") {
+          const { error } = await supabase.from("stud_evaluation").insert([
+            {
+              rating: rating,
+              usercomment: comment,
+              clientid: selectedclientid,
+              studentid: selectedstudentid,
+            },
+          ]);
+          insertError = error;
+        } else {
+          const { error } = await supabase.from("client_evaluation").insert([
+            {
+              rating: rating,
+              usercomment: comment,
+              clientid: selectedclientid,
+              studentid: selectedstudentid,
+            },
+          ]);
+          insertError = error;
+        }
+
+        if (insertError) {
+          console.error(
+            `Error inserting into ${
+              myAccType === "Client" ? "stud_evaluation" : "client_evaluation"
+            }:`,
+            insertError.message
+          );
+          return;
+        }
+      } catch (error) {
+        console.error("Error during rating submission:", error.message);
       }
 
-      if (insertError) {
-        console.error(
-          `Error inserting into ${
-            myAccType === "Client" ? "stud_evaluation" : "client_evaluation"
-          }:`,
-          insertError.message
-        );
-        return;
-      }
-
-      console.log("Rating and comment successfully inserted.");
-      router.push(
-        myAccType === "Student" ? "/(tabs)/student/chat" : "/(tabs)/client/chat"
-      );
-    } catch (error) {
-      console.error("Error during rating submission:", error.message);
+      setReviewUploadedPopUp(true);
     }
   };
+
+  if (loading) {
+    return <HandLoading></HandLoading>;
+  }
 
   return (
     <ScrollView>
@@ -242,6 +259,25 @@ const Review = () => {
           value={comment}
           onChangeText={setComment}
         />
+
+        {isPopUpVisible && (
+          <PopUp
+            icon="alert-outline"
+            text="Please double-check all fields to ensure none are empty."
+          />
+        )}
+
+        {reviewUploadedPopUp && (
+          <PopUp
+            icon="checkmark-outline"
+            text="Review was uploaded successfully!"
+            route={
+              myAccType === "Student"
+                ? "/(tabs)/student/chat"
+                : "/(tabs)/client/chat"
+            }
+          />
+        )}
 
         <Button
           title="Submit Rating"

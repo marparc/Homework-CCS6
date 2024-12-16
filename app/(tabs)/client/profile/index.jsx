@@ -17,6 +17,7 @@ import Rating from "@/components/ui/ratings";
 import { useRouter } from "expo-router";
 import DeleteService from "../../screens/deleteservice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import HandLoading from "@/components/ui/handloading";
 
 import { supabase } from "../../../../lib/supabase";
 
@@ -55,8 +56,6 @@ const MyClientProfile = () => {
 
   useEffect(() => {
     const fetchAccountData = async () => {
-      setLoading(true);
-
       try {
         console.log("accountId here: ", accountId);
 
@@ -107,8 +106,6 @@ const MyClientProfile = () => {
         setRatings(evaluations);
       } catch (error) {
         //console.error("Error fetching account data:", error.message);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -170,6 +167,8 @@ const MyClientProfile = () => {
     } catch (error) {
       console.error("Error fetching evaluations:", error.message);
       return [];
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -213,6 +212,9 @@ const MyClientProfile = () => {
     setSelectedPortfolioId(null);
   };
 
+  if (loading) {
+    return <HandLoading></HandLoading>;
+  }
   return (
     <ScrollView
       contentContainerStyle={styles.scrollContainer}

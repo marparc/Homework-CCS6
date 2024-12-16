@@ -19,6 +19,7 @@ import { useRouter } from "expo-router";
 import DeleteService from "../../screens/deleteservice";
 import { supabase } from "../../../../lib/supabase";
 import { Link } from "expo-router";
+import HandLoading from "@/components/ui/handloading";
 
 const ProfileHeader = () => {
   const [firstLetter, setFirstLetter] = useState("");
@@ -31,6 +32,7 @@ const ProfileHeader = () => {
   const router = useRouter();
   const [accountId, setAccountId] = useState(null);
   const [password, setPassword] = useState(null); //later to use
+  const [loading, setLoading] = useState(true);
 
   const { push } = useRouter();
 
@@ -213,7 +215,9 @@ const ProfileHeader = () => {
       }
 
       // Store the fetched portfolio data in the state
+
       setPortfolio(portfolioData);
+      setLoading(false);
     };
 
     fetchPortfolioData();
@@ -258,6 +262,10 @@ const ProfileHeader = () => {
     setSelectedServiceId(null);
     setSelectedPortfolioId(null);
   };
+
+  if (loading) {
+    return <HandLoading></HandLoading>;
+  }
 
   return (
     <ScrollView

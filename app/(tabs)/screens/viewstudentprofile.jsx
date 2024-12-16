@@ -133,6 +133,7 @@ const ViewStudentProfile = () => {
           })
         );
 
+        setLoading(false);
         setRatings(reviews); // Save the reviews in state
       } catch (error) {
         console.error("Error fetching data:", error.message);
@@ -157,6 +158,10 @@ const ViewStudentProfile = () => {
     setSelectedServiceId(null);
     setSelectedPortfolioId(null);
   };
+
+  if (loading) {
+    return <HandLoading></HandLoading>;
+  }
 
   return (
     <ScrollView
