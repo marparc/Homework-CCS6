@@ -77,6 +77,7 @@ const RequestLists = () => {
             `Service Request Error: ${serviceRequestError.message}`
           );
         console.log("serviceRequestData:", serviceRequestData);
+
         const enrichedRequests = await Promise.all(
           serviceRequestData.map(async (request) => {
             const { data: jobListingData, error: jobListingError } =
@@ -85,32 +86,37 @@ const RequestLists = () => {
                 .select("jobid, jobtitle, jobdescription")
                 .eq("requestid", request.requestid)
                 .single();
+
             console.log("jobListingData:", jobListingData);
             console.log("request.requestid:", request.requestid);
-            if (jobListingError)
-              throw new Error(`Job Listing Error: ${jobListingError.message}`);
+
+            if (jobListingError || !jobListingData) {
+              console.warn(
+                `Skipping request ${request.requestid} due to missing job listing data or error: ${jobListingError?.message}`
+              );
+              return null; // Skip this iteration by returning null
+            }
 
             const service = servicesData.find(
               (s) => s.serviceid === request.serviceid
             );
+            console.log("Matched service:", service);
 
             return {
               ...request,
               serviceTitle: service?.serviceTitle || "No Title",
               servicedesc: service?.servicedesc || "No Description",
-              jobid: jobListingData?.jobid || "No Job ID",
-              jobtitle: jobListingData?.jobtitle || "No Job Title",
-              jobdescription:
-                jobListingData?.jobdescription || "No Job Description",
+              jobid: jobListingData.jobid,
+              jobtitle: jobListingData.jobtitle,
+              jobdescription: jobListingData.jobdescription,
             };
           })
         );
 
-        setServiceRequests(enrichedRequests);
-        console.log(
-          "Enriched Service Requests with Job Listings:",
-          enrichedRequests
-        );
+        // Filter out any null entries before setting state
+        const validRequests = enrichedRequests.filter((req) => req !== null);
+        setServiceRequests(validRequests);
+        console.log("Valid Service Requests:", validRequests);
       } catch (error) {
         console.error("Error fetching account data:", error.message);
       }
