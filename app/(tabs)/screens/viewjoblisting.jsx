@@ -18,8 +18,6 @@ const ViewJobListing = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState(null);
 
-  //console.log("selectedJobListing: ", selectedJobListing);
-
   useEffect(() => {
     const fetchAccountId = async () => {
       try {
@@ -53,7 +51,6 @@ const ViewJobListing = () => {
         if (jobData && jobData.length > 0) {
           const job = jobData[0];
           setJobDetails(job);
-          console.log("Job data fetched:", job);
 
           const clientId = job.clientid;
 
@@ -62,14 +59,12 @@ const ViewJobListing = () => {
             .select("client_organization, userid")
             .eq("clientid", clientId)
             .single();
-          console.log("clientData: ", clientData);
+
           if (clientError) {
             throw new Error(clientError.message);
           }
 
           if (clientData) {
-            console.log("Client data fetched:", clientData);
-
             const userId = clientData.userid;
 
             const { data: userData, error: userError } = await supabase
@@ -84,16 +79,13 @@ const ViewJobListing = () => {
 
             if (userData) {
               setUserAccountName(userData.account_name);
-              console.log("User account name fetched:", userData.account_name);
-            } else {
-              console.log("No user account found for the given userid.");
             }
 
             const { data: evaluations, error: evalError } = await supabase
               .from("client_evaluation")
               .select("rating")
               .eq("clientid", clientId);
-            console.log("evaluations: ", evaluations);
+
             if (evalError) {
               throw new Error(evalError.message);
             }
@@ -105,22 +97,13 @@ const ViewJobListing = () => {
                   0
                 ) / evaluations.length;
 
-              console.log("Average rating:", averageRating);
-
               setJobDetails((prevJobDetails) => ({
                 ...prevJobDetails,
                 clientOrganization: clientData.client_organization,
                 averageRating: averageRating.toFixed(1),
               }));
-            } else {
-              console.log("No evaluations found for the given clientid.");
             }
-          } else {
-            console.log("No client data found for the given clientid.");
           }
-        } else {
-          console.log("No job listings found for the given ID.");
-          setJobDetails(null);
         }
       } catch (err) {
         console.error("Error fetching job data:", err.message);
@@ -132,6 +115,13 @@ const ViewJobListing = () => {
   }, [selectedJobListing]);
 
   const handleSendApplication = async () => {
+    if (message.trim() === "") {
+      setError("Message is required.");
+      return;
+    }
+
+    setError(null); // Clear previous error
+
     try {
       const { count, error: countError } = await supabase
         .from("application")
@@ -189,7 +179,6 @@ const ViewJobListing = () => {
 
       console.log("Application submitted successfully:", data);
 
-      // Redirect to the submitted application page
       router.push("/(tabs)/screens/submittedapplication");
     } catch (err) {
       console.error("Error submitting application:", err.message);
@@ -220,7 +209,7 @@ const ViewJobListing = () => {
         <ProfileCard
           profiletype="C"
           name={userAccountName || "Client Not Available"}
-          stars={jobDetails?.averageRating || 0} // Pass average rating here
+          stars={jobDetails?.averageRating || 0}
           company={
             jobDetails?.clientOrganization || "No Organization Available"
           }
@@ -246,18 +235,20 @@ const ViewJobListing = () => {
           onChangeText={(text) => setMessage(text)} // Update the message state
         />
 
+        {/* Display error message if validation fails */}
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
         <Button
           title="Send Application"
           type="dark"
           size="medium"
-          onPress={handleSendApplication} // Call the function to submit the application
+          onPress={handleSendApplication}
         />
-
         <Button
           title="Cancel"
           type="light"
           size="medium"
-          onPress={() => router.push("/(tabs)/student/findjob")} // Navigate to the "Find Jobs" screen
+          onPress={() => router.push("/(tabs)/student/findjob")}
         />
       </ScrollView>
     </View>
@@ -272,6 +263,12 @@ const styles = StyleSheet.create({
   scrollContainer: {
     padding: 20,
     alignItems: "center",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 16,
+    marginTop: 10,
+    textAlign: "center",
   },
 });
 
