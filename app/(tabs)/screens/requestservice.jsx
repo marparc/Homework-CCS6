@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { supabase } from "../../../lib/supabase";
+import PopUp from "@/components/ui/popup";
 
 const RequestServiceJob = () => {
   const [title, setTitle] = useState("");
@@ -29,9 +30,17 @@ const RequestServiceJob = () => {
   const [btnLocationType, setBtnLocationType] = useState("light");
   const [btnLocationTitle, setBtnLocationTitle] = useState("Get My Location");
   const { selectedrequest } = useLocalSearchParams();
+  const [errorInputPopUp, setErrorInputPopUp] = useState(false);
 
   const [accountId, setAccountId] = useState(null);
   console.log("FROM THE ROUrrrTER:", selectedrequest);
+
+  useEffect(() => {
+    if (errorInputPopUp) {
+      const timer = setTimeout(() => setErrorInputPopUp(false), 3000); // 3 seconds duration
+      return () => clearTimeout(timer); // Cleanup timeout to avoid memory leaks
+    }
+  }, [errorInputPopUp]);
 
   useEffect(() => {
     const fetchAccountId = async () => {
@@ -209,6 +218,10 @@ const RequestServiceJob = () => {
     }
   };
 
+  const handleErrorTrap = () => {
+    setErrorInputPopUp(true);
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
@@ -218,14 +231,12 @@ const RequestServiceJob = () => {
           value={title}
           onChangeText={setTitle}
         />
-
         <InputField
           title="Description"
           size="large"
           value={description}
           onChangeText={setDescription}
         />
-
         <View style={{ width: "100%" }}>
           <InputField
             title="Pay"
@@ -234,7 +245,6 @@ const RequestServiceJob = () => {
             onChangeText={setPay}
           />
         </View>
-
         <View
           style={{ width: "100%", alignItems: "flex-start", paddingLeft: 10 }}
         >
@@ -266,7 +276,6 @@ const RequestServiceJob = () => {
             <Text style={styles.radioText}>Remote</Text>
           </TouchableOpacity>
         </View>
-
         {jobType === "Onsite" && (
           <>
             <Text style={styles.sectionTitle}>
@@ -290,7 +299,6 @@ const RequestServiceJob = () => {
             {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
           </>
         )}
-
         <Text style={styles.sectionTitle}>Select Deadline/Date</Text>
         <DatePick
           label="MM/DD/YY"
@@ -299,11 +307,33 @@ const RequestServiceJob = () => {
           onDateChange={(date) => setDeadline(date)}
         />
 
+        {errorInputPopUp && (
+          <>
+            <PopUp
+              text="Please fill all required fields."
+              icon="alert-circle-outline"
+            />
+          </>
+        )}
+
         <Button
           type="dark"
           size="medium"
           title="Publish"
-          onPress={handlePublish}
+          onPress={() => {
+            if (
+              title === "" ||
+              description === "" ||
+              pay === "" ||
+              jobType === "" ||
+              (jobType === "Onsite" && location === "") ||
+              deadline === ""
+            ) {
+              handleErrorTrap();
+            } else {
+              handlePublish();
+            }
+          }}
         />
       </View>
     </ScrollView>

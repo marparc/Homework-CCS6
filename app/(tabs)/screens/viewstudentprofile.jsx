@@ -157,7 +157,10 @@ const ViewStudentProfile = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <ScrollView
+      contentContainerStyle={styles.scrollContainer}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.header}>
         <View style={styles.circle}>
           <Text style={styles.circleText}>

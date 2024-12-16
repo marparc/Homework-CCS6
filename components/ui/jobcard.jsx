@@ -28,25 +28,21 @@ export default JobCard;
 const styles = StyleSheet.create({
   card: {
     padding: 20,
-    backgroundColor: "#f8f8f8",
-    borderWidth: 1,
-    borderColor: "#f8f8f8",
-    borderRadius: 16,
-    marginVertical: 5,
-    width: 330,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f8f8f8",
+    width: "100%",
   },
   cardPressed: {
-    borderWidth: 1,
-    borderColor: "#000",
+    backgroundColor: "#f8f8f8",
   },
   title: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#000",
     textTransform: "uppercase",
   },
   description: {
-    fontSize: 12,
+    fontSize: 16,
     color: "#434242",
   },
 });

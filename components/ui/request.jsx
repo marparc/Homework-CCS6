@@ -37,7 +37,12 @@ const ReqCard = (props) => {
             }}
           />
           <Button
-            title="View"
+            title={
+              <View style={styles.buttonContent}>
+                <Text style={styles.buttonText}>View </Text>
+                <Ionicons name="person" size={16} color="black" />
+              </View>
+            }
             type="light"
             size="small"
             onPress={() => {
@@ -54,20 +59,14 @@ export default ReqCard;
 
 const styles = StyleSheet.create({
   card: {
-    width: 350,
+    width: "100%",
     padding: 20,
-    borderWidth: 1,
-    borderColor: "#f8f8f8",
-    backgroundColor: "#FAF9F9",
-    margin: 10,
-    borderRadius: 16,
-    marginVertical: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f8f8f8",
   },
-  cardPressed: {
-    borderColor: "#000", // Dark border when pressed
-  },
+  cardPressed: {},
   header: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#000",
   },
@@ -78,7 +77,7 @@ const styles = StyleSheet.create({
   },
   details: {
     marginTop: 10,
-    fontSize: 10,
+    fontSize: 16,
     color: "#8E8E8E",
     fontStyle: "italic",
     textAlign: "justify",
@@ -86,5 +85,14 @@ const styles = StyleSheet.create({
   btnContainer: {
     flexDirection: "row",
     marginTop: 10,
+  },
+
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  buttonText: {
+    marginRight: 4,
+    color: "black",
   },
 });
