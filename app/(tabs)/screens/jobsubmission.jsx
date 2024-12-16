@@ -333,15 +333,17 @@ const JobSubmission = () => {
               I have already finished my Homework
             </Text>
           </View>
-          <Button
-            title="Submit"
-            type="dark"
-            size="medium"
-            onPress={() => {
-              setIsSubmitted(true);
-              updateJobStatus("Submitted");
-            }}
-          />
+          {isHomeworkSubmitted ? (
+            <Button
+              title="Submit"
+              type="dark"
+              size="medium"
+              onPress={() => {
+                setIsSubmitted(true);
+                updateJobStatus("Submitted");
+              }}
+            />
+          ) : null}
         </>
       ) : (
         <View style={styles.paymentReceivedContainer}>
@@ -368,17 +370,19 @@ const JobSubmission = () => {
               I have received the payment from the client.
             </Text>
           </View>
-          <Button
-            title="Confirm"
-            type="dark"
-            size="medium"
-            onPress={() => {
-              updateJobStatus("Completed");
-              router.push(
-                `/screens/review?selectedstudentid=${StudentBankDetails.studentid}&selectedclientid=${jobData.jobData.clientid}`
-              );
-            }}
-          />
+          {isPaymentReceived ? (
+            <Button
+              title="Confirm"
+              type="dark"
+              size="medium"
+              onPress={() => {
+                updateJobStatus("Completed");
+                router.push(
+                  `/screens/review?selectedstudentid=${StudentBankDetails.studentid}&selectedclientid=${jobData.jobData.clientid}`
+                );
+              }}
+            />
+          ) : null}
         </View>
       )}
     </ScrollView>
@@ -443,14 +447,16 @@ const JobSubmission = () => {
               I have successfully received the project.
             </Text>
           </View>
-          <Button
-            title="Submit"
-            type="dark"
-            size="medium"
-            onPress={() => {
-              setIsSubmitted(true);
-            }}
-          />
+          {isHomeworkSubmitted ? (
+            <Button
+              title="Submit"
+              type="dark"
+              size="medium"
+              onPress={() => {
+                setIsSubmitted(true);
+              }}
+            />
+          ) : null}
         </>
       ) : (
         <View style={styles.paymentReceivedContainer}>
@@ -476,7 +482,6 @@ const JobSubmission = () => {
             value={receiptNo}
             onChangeText={setReceiptNo}
           />
-
           <View style={styles.checkboxContainer}>
             <Checkbox
               status={isPaymentReceived ? "checked" : "unchecked"}
@@ -488,20 +493,25 @@ const JobSubmission = () => {
               account and confirm that the bank receipt is valid.
             </Text>
           </View>
-          <Button
-            title="Confirm"
-            type="dark"
-            size="medium"
-            onPress={async () => {
-              try {
-                router.push(
-                  `/screens/review?selectedstudentid=${StudentBankDetails.studentid}&selectedclientid=${jobData.jobData.clientid}`
-                );
-              } catch (error) {
-                console.error("Error during job status update:", error.message);
-              }
-            }}
-          />
+          {isPaymentReceived ? (
+            <Button
+              title="Confirm"
+              type="dark"
+              size="medium"
+              onPress={async () => {
+                try {
+                  router.push(
+                    `/screens/review?selectedstudentid=${StudentBankDetails.studentid}&selectedclientid=${jobData.jobData.clientid}`
+                  );
+                } catch (error) {
+                  console.error(
+                    "Error during job status update:",
+                    error.message
+                  );
+                }
+              }}
+            />
+          ) : null}
         </View>
       )}
     </ScrollView>
