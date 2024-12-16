@@ -15,7 +15,7 @@ export default ServiceCard;
 
 const styles = StyleSheet.create({
   container: {
-    width: 320,
+    width: "100%",
     padding: 20,
     backgroundColor: "#FAF9F9",
     borderRadius: 16,

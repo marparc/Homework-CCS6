@@ -99,7 +99,10 @@ const ServiceListings = () => {
         placeholder="Search services..."
       />
 
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
         {filteredRequests.length > 0 ? (
           filteredRequests.map((request) => (
             <ReqCard
@@ -122,7 +125,7 @@ const ServiceListings = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 20,
   },
   scrollContainer: {
     flexGrow: 1,

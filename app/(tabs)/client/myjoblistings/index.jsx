@@ -207,7 +207,10 @@ const MyListings = () => {
       {loading ? (
         <Text style={styles.loadingText}>Loading...</Text>
       ) : (
-        <ScrollView contentContainerStyle={styles.jobList}>
+        <ScrollView
+          contentContainerStyle={styles.jobList}
+          showsVerticalScrollIndicator={false}
+        >
           {jobListings.length > 0 ? (
             jobListings.map((job) => (
               <JobCard

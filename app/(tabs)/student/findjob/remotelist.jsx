@@ -63,7 +63,10 @@ const RemoteLists = () => {
       />
 
       {/* Job Listings */}
-      <ScrollView contentContainerStyle={styles.jobList}>
+      <ScrollView
+        contentContainerStyle={styles.jobList}
+        showsVerticalScrollIndicator={false}
+      >
         {filteredJobs.length > 0 ? (
           filteredJobs.map((job) => (
             <JobCard

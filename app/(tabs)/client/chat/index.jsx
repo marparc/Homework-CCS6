@@ -249,7 +249,10 @@ const ChatList = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 20 }}>
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: 20 }}
+        showsVerticalScrollIndicator={false}
+      >
         {chatData.map((chat) => (
           <Chat
             key={chat.chatid}

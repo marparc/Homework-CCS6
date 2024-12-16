@@ -139,7 +139,10 @@ const RequestLists = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       {serviceRequests.length === 0 ? (
         <Text>No service requests have been made.</Text> // Display this message if there are no service requests
       ) : (

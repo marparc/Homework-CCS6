@@ -140,7 +140,10 @@ const JobsToDo = () => {
         />
       </SafeAreaView>
 
-      <ScrollView contentContainerStyle={styles.jobList}>
+      <ScrollView
+        contentContainerStyle={styles.jobList}
+        showsVerticalScrollIndicator={false}
+      >
         {myJobs.length > 0 ? (
           myJobs.map((job) => (
             <JobCard
