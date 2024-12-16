@@ -4,12 +4,14 @@ import Chat from "@/components/ui/chatcard";
 import { supabase } from "../../../../lib/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import HandLoading from "@/components/ui/handloading";
 
 const ChatList = () => {
   const [chatData, setChatData] = useState([]);
   const [error, setError] = useState(null);
   const [accountId, setAccountId] = useState(null);
   const router = useRouter();
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     const getData = async () => {
@@ -28,6 +30,7 @@ const ChatList = () => {
     const fetchChatData = async () => {
       if (!accountId) {
         console.log("Account ID is null or undefined, skipping fetch.");
+
         return;
       }
 
@@ -163,6 +166,7 @@ const ChatList = () => {
             })
             .filter((chat) => chat.jobstatus === "In Progress");
 
+          setLoading(false); // Set loading to false if no accountId
           setChatData(chatsWithUsers);
 
           console.log("HERE STUDENT 4");
@@ -269,6 +273,7 @@ const ChatList = () => {
             .filter((chat) => chat.jobstatus === "In Progress");
 
           setChatData(chatsWithUsers);
+
           console.log("Chats with Sender (Client): ", chatsWithUsers);
         }
       } catch (err) {
@@ -279,6 +284,10 @@ const ChatList = () => {
 
     fetchChatData();
   }, [accountId]);
+
+  if (loading) {
+    return <HandLoading></HandLoading>;
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>

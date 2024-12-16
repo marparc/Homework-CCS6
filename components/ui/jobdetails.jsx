@@ -46,7 +46,7 @@ export default JobDetails;
 
 const styles = StyleSheet.create({
   container: {
-    width: 330,
+    width: "100%",
     padding: 20,
     backgroundColor: "#f9f9f9",
     borderRadius: 16,

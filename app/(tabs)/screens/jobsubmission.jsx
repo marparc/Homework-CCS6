@@ -9,6 +9,7 @@ import InputField from "@/components/ui/inputfield";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../../../lib/supabase";
+import HandLoading from "@/components/ui/handloading";
 
 const JobSubmission = () => {
   const [isHomeworkSubmitted, setIsHomeworkSubmitted] = useState(false);
@@ -24,6 +25,8 @@ const JobSubmission = () => {
   const [StudentBankDetails, setStudentBankDetails] = useState(null);
 
   const [jobStatus, setJobStatus] = useState(null);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const getJobId = async () => {
@@ -145,6 +148,7 @@ const JobSubmission = () => {
           clientName: `${userData?.firstname} ${userData?.lastname}`,
         };
 
+        setLoading(false);
         setJobData(fullClientData);
       } catch (err) {
         console.error("Failed to fetch job data:", err.message);
@@ -260,16 +264,8 @@ const JobSubmission = () => {
     getStudentBankDetails();
   }, [selectedjobid]);
 
-  console.log("User Typesssss:", userType);
-  console.log("Job Data:", jobData);
-  console.log("Account Type (myAccType):", myAccType);
-  console.log("StudentBankDetails:", StudentBankDetails);
-  if (!jobData) {
-    return (
-      <View style={styles.container}>
-        <Text>Loading job data...</Text>
-      </View>
-    );
+  if (loading) {
+    return <HandLoading></HandLoading>;
   }
 
   return myAccType === "Student" ? (

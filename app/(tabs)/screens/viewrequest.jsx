@@ -8,6 +8,7 @@ import TextCard from "@/components/ui/textcard";
 import { supabase } from "../../../lib/supabase";
 import * as Location from "expo-location";
 import { Alert } from "react-native";
+import HandLoading from "@/components/ui/handloading";
 
 const ViewRequest = () => {
   const router = useRouter();
@@ -311,7 +312,7 @@ const ViewRequest = () => {
   };
 
   if (loading) {
-    return <Text>Loading...</Text>;
+    return <HandLoading></HandLoading>;
   }
 
   return (

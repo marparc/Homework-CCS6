@@ -1,14 +1,16 @@
-import { ScrollView, StyleSheet, Text } from "react-native";
 import React, { useState, useEffect } from "react";
+import { ScrollView, StyleSheet, Text } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import JobCard from "@/components/ui/jobcard";
 import { useRouter } from "expo-router";
 import { supabase } from "../../../../lib/supabase";
+import HandLoading from "@/components/ui/handloading";
 
 const RequestLists = () => {
   const router = useRouter();
   const [accountId, setAccountId] = useState(null);
   const [serviceRequests, setServiceRequests] = useState([]);
+  const [loading, setLoading] = useState(true); // Add loading state
 
   // to get account id
   useEffect(() => {
@@ -28,6 +30,8 @@ const RequestLists = () => {
   useEffect(() => {
     const fetchAccountData = async () => {
       try {
+        setLoading(true); // Set loading to true before starting the fetch
+
         const { data: userAccountData, error: userAccountError } =
           await supabase
             .from("user_account")
@@ -55,8 +59,9 @@ const RequestLists = () => {
 
         const { data: servicesData, error: servicesError } = await supabase
           .from("services")
-          .select("serviceid")
+          .select("serviceid, serviceTitle, servicedesc")
           .eq("studentid", studentId);
+
         console.log("servicesData: ", servicesData);
         if (servicesError)
           throw new Error(`Services Error: ${servicesError.message}`);
@@ -76,7 +81,6 @@ const RequestLists = () => {
           throw new Error(
             `Service Request Error: ${serviceRequestError.message}`
           );
-        console.log("serviceRequestData:", serviceRequestData);
 
         const enrichedRequests = await Promise.all(
           serviceRequestData.map(async (request) => {
@@ -86,9 +90,6 @@ const RequestLists = () => {
                 .select("jobid, jobtitle, jobdescription")
                 .eq("requestid", request.requestid)
                 .single();
-
-            console.log("jobListingData:", jobListingData);
-            console.log("request.requestid:", request.requestid);
 
             if (jobListingError || !jobListingData) {
               console.warn(
@@ -100,7 +101,6 @@ const RequestLists = () => {
             const service = servicesData.find(
               (s) => s.serviceid === request.serviceid
             );
-            console.log("Matched service:", service);
 
             return {
               ...request,
@@ -113,12 +113,13 @@ const RequestLists = () => {
           })
         );
 
-        // Filter out any null entries before setting state
         const validRequests = enrichedRequests.filter((req) => req !== null);
         setServiceRequests(validRequests);
         console.log("Valid Service Requests:", validRequests);
       } catch (error) {
         console.error("Error fetching account data:", error.message);
+      } finally {
+        setLoading(false); // Set loading to false after data is fetched
       }
     };
 
@@ -144,6 +145,10 @@ const RequestLists = () => {
     ));
   };
 
+  if (loading) {
+    return <HandLoading></HandLoading>; // Show loading screen while data is being fetched
+  }
+
   return (
     <ScrollView
       contentContainerStyle={styles.container}
@@ -164,6 +169,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 8,
-    alignItems: "center", // Center align the content inside the ScrollView
+    alignItems: "center",
   },
 });
