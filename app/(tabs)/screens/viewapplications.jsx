@@ -5,6 +5,8 @@ import Button from "@/components/ui/buttons";
 import { supabase } from "../../../lib/supabase";
 import { useLocalSearchParams } from "expo-router";
 import PopUp from "@/components/ui/popup";
+import HandLoading from "@/components/ui/handloading";
+import { Ionicons } from "@expo/vector-icons";
 
 const ViewApplication = () => {
   const { studentid, jobid } = useLocalSearchParams();
@@ -194,7 +196,7 @@ const ViewApplication = () => {
   };
 
   if (loading) {
-    return <Text>Loading...</Text>;
+    return <HandLoading></HandLoading>;
   }
 
   if (!studentData || !jobData) {
@@ -234,13 +236,6 @@ const ViewApplication = () => {
           </Text>
         </View>
 
-        <View style={styles.applicationContainer}>
-          <Text style={styles.detailsHeader}>Application Message:</Text>
-          <Text style={styles.details}>
-            {applicationData?.applicationmessage || "No message provided"}
-          </Text>
-        </View>
-
         <View style={styles.portfolioContainer}>
           <Text style={styles.detailsHeader}>My Porfolios</Text>
           {portfolios && portfolios.length > 0 ? (
@@ -266,9 +261,21 @@ const ViewApplication = () => {
           )}
         </View>
 
+        <View style={styles.applicationContainer}>
+          <Text style={styles.detailsHeader}>Application Message:</Text>
+          <Text style={styles.details}>
+            {applicationData?.applicationmessage || "No message provided"}
+          </Text>
+        </View>
+
         <View style={styles.buttonContainer}>
           <Button
-            title="Accept"
+            title={
+              <View style={styles.buttonContent}>
+                <Text style={styles.buttonText2}>Accept </Text>
+                <Ionicons name="checkmark-outline" size={16} color="white" />
+              </View>
+            }
             type="dark"
             size="small"
             onPress={handleAccept}
@@ -347,8 +354,7 @@ const styles = StyleSheet.create({
   },
   aboutContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: "#F7F7F7",
+    backgroundColor: "white",
     borderRadius: 12,
     width: "90%",
     alignSelf: "center",
@@ -356,11 +362,11 @@ const styles = StyleSheet.create({
     justifyContent: "center", // Centers the content vertically (if there is enough space)
   },
   detailsHeader: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "bold",
     color: "black",
-    marginBottom: 10,
-    textAlign: "center", // Centers the text horizontally
+    textAlign: "center", // Centers the text
+    marginBottom: 15,
   },
   details: {
     fontSize: 16,
@@ -370,9 +376,10 @@ const styles = StyleSheet.create({
   },
   applicationContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: "#F7F7F7",
-    borderRadius: 12,
+    paddingTop: 25,
+    backgroundColor: "white",
+    borderTopWidth: 1,
+    borderTopColor: "black",
     marginHorizontal: 16,
     marginTop: 20,
   },
@@ -381,7 +388,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     marginHorizontal: 16,
-    marginTop: 20, // Ensures sufficient margin from the above section
+    marginTop: 20, // Ensures sufficient margin from the above
+    borderTopWidth: 1,
+    borderTopColor: "black",
   },
   portfolioCardContainer: {
     marginBottom: 10, // Space between each PortfolioCard
@@ -396,6 +405,18 @@ const styles = StyleSheet.create({
     marginTop: 20, // Add margin top to provide space from the previous section
     gap: 16, // Adds space between the buttons
     marginBottom: 100,
+  },
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  buttonText: {
+    marginRight: 4,
+    color: "black",
+  },
+  buttonText2: {
+    marginRight: 4,
+    color: "white",
   },
 });
 

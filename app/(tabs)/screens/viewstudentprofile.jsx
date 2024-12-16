@@ -13,6 +13,7 @@ import { supabase } from "../../../lib/supabase";
 import Button from "@/components/ui/buttons";
 import ServiceCard from "@/components/ui/servicecard";
 import PortfolioCard from "@/components/ui/portfoliocard";
+import HandLoading from "@/components/ui/handloading";
 
 import Rating from "@/components/ui/ratings";
 const ViewStudentProfile = () => {
@@ -25,6 +26,7 @@ const ViewStudentProfile = () => {
   const [portfolios, setPortfolios] = useState([]);
   const { selectedrequest } = useLocalSearchParams();
   const [ratings, setRatings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -169,9 +171,7 @@ const ViewStudentProfile = () => {
         </View>
         <View style={styles.infoContainer}>
           <Text style={styles.name}>
-            {userData
-              ? `${userData.firstname} ${userData.lastname}`
-              : "Loading..."}
+            {userData ? `${userData.firstname} ${userData.lastname}` : null}
           </Text>
           <Text style={styles.type}>Student Freelancer</Text>
         </View>
@@ -179,7 +179,7 @@ const ViewStudentProfile = () => {
       <View style={styles.aboutContainer}>
         <Text style={styles.detailsHeader}>About Me:</Text>
         <Text style={styles.details}>
-          Birthdate: {userData ? formatDate(userData.birthdate) : "Loading..."}
+          Birthdate: {userData ? formatDate(userData.birthdate) : null}
         </Text>
         <Text style={styles.detailsHeader}>Education:</Text>
         {userEducation ? (
@@ -192,9 +192,7 @@ const ViewStudentProfile = () => {
               Studies at {userEducation.currentschool}
             </Text>
           </>
-        ) : (
-          <Text style={styles.details}>Loading...</Text>
-        )}
+        ) : null}
       </View>
       <View style={styles.tabsContainer}>
         <Button
@@ -333,14 +331,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   detailsHeader: {
-    fontSize: 14,
+    fontSize: 20,
     fontWeight: "bold",
     color: "black",
     marginBottom: 6,
     textAlign: "center", // Center-align header text
   },
   details: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#555555",
     marginBottom: 4,
     textAlign: "center", // Center-align details text
@@ -348,7 +346,7 @@ const styles = StyleSheet.create({
   aboutContainer: {
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: "#F7F7F7",
+    backgroundColor: "white",
     borderRadius: 12,
     width: "90%",
     alignSelf: "center",

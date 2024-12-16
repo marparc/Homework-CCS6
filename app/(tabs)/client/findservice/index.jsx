@@ -4,11 +4,13 @@ import Button from "@/components/ui/buttons";
 import ReqCard from "@/components/ui/request";
 import SearchBox from "@/components/ui/searchbox";
 import { supabase } from "../../../../lib/supabase";
+import HandLoading from "@/components/ui/handloading";
 
 const ServiceListings = () => {
   const [serviceRequests, setServiceRequests] = useState([]); // Full list of service requests
   const [search, setSearch] = useState(""); // Search text input
   const [filteredRequests, setFilteredRequests] = useState([]); // Filtered list
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchServiceData = async () => {
@@ -65,6 +67,7 @@ const ServiceListings = () => {
             })
           );
 
+          setLoading(false);
           setServiceRequests(
             servicesWithUserInfo.filter((service) => service !== null)
           );
@@ -90,6 +93,10 @@ const ServiceListings = () => {
     );
     setFilteredRequests(filtered);
   }, [search, serviceRequests]);
+
+  if (loading) {
+    return <HandLoading></HandLoading>;
+  }
 
   return (
     <SafeAreaView style={styles.container}>

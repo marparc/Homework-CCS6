@@ -5,6 +5,7 @@ import JobCard from "@/components/ui/jobcard";
 import { useRouter } from "expo-router";
 import { supabase } from "../../../../lib/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import HandLoading from "@/components/ui/handloading";
 
 const MyListings = () => {
   const [jobListings, setJobListings] = useState([]);
@@ -205,7 +206,7 @@ const MyListings = () => {
       )}
 
       {loading ? (
-        <Text style={styles.loadingText}>Loading...</Text>
+        <HandLoading></HandLoading>
       ) : (
         <ScrollView
           contentContainerStyle={styles.jobList}

@@ -4,6 +4,7 @@ import Button from "@/components/ui/buttons";
 import { supabase } from "../../../lib/supabase";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import JobCard from "@/components/ui/jobcard";
+import HandLoading from "@/components/ui/handloading";
 
 const ManageApplications = () => {
   const { selectedjobid } = useLocalSearchParams(); // Get jobid from route params
@@ -111,11 +112,7 @@ const ManageApplications = () => {
   }, [selectedjobid]);
 
   if (loading) {
-    return (
-      <View style={styles.centeredContainer}>
-        <Text>Loading...</Text>
-      </View>
-    );
+    return <HandLoading></HandLoading>;
   }
 
   if (error) {
@@ -165,11 +162,8 @@ const styles = StyleSheet.create({
   scrollViewContent: {
     flexGrow: 1,
     alignItems: "center", // Center items horizontally
-    padding: 16,
   },
-  cardContainer: {
-    marginBottom: 16,
-  },
+  cardContainer: {},
 });
 
 export default ManageApplications;

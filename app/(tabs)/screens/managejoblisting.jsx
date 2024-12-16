@@ -7,6 +7,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { format } from "date-fns"; // For formatting the date
 import * as Location from "expo-location"; // Import Location to use reverse geocode
 import PopUp from "@/components/ui/popup";
+import HandLoading from "@/components/ui/handloading";
 
 const ManageJobListing = () => {
   // Declare useState hooks inside the component
@@ -194,7 +195,7 @@ const ManageJobListing = () => {
           pay={jobData.job.jobpay || "Not available"}
         />
       ) : (
-        <Text>Loading job details...</Text>
+        <HandLoading></HandLoading>
       )}
 
       {jobData && jobData.job.jobstatus === "Open" && (
@@ -217,15 +218,6 @@ const ManageJobListing = () => {
             onPress={handleDeleteListing}
           />
         </>
-      )}
-
-      {jobData && jobData.job.jobstatus === "In Progress" && (
-        <Button
-          title="Back"
-          type="light"
-          size="medium"
-          onPress={() => router.back()} // Go back to the previous screen
-        />
       )}
 
       {isPopUpVisible && (
