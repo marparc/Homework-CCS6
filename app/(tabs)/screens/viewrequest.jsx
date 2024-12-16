@@ -6,22 +6,20 @@ import Button from "@/components/ui/buttons";
 import ProfileCard from "@/components/ui/profilecard";
 import TextCard from "@/components/ui/textcard";
 import { supabase } from "../../../lib/supabase";
-import * as Location from "expo-location"; // Import Location from expo-location
+import * as Location from "expo-location";
 import { Alert } from "react-native";
 
 const ViewRequest = () => {
   const router = useRouter();
-  const [jobDetails, setJobDetails] = useState(null); // State to store job details
-  const [clientDetails, setClientDetails] = useState(null); // State to store client details
+  const [jobDetails, setJobDetails] = useState(null);
+  const [clientDetails, setClientDetails] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [location, setLocation] = useState(null); // State to store location (city)
+  const [location, setLocation] = useState(null);
   const { requestid } = useLocalSearchParams();
-  console.log("HERE IN VIEW REQUEST: ", requestid);
 
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
-        // Step 1: Fetch job details
         const { data: jobData, error: jobError } = await supabase
           .from("job_listing")
           .select(
@@ -34,9 +32,6 @@ const ViewRequest = () => {
           throw new Error(`Error fetching job details: ${jobError.message}`);
         }
 
-        setJobDetails(jobData);
-
-        // Step 2: Fetch client details using clientid
         const { data: clientData, error: clientError } = await supabase
           .from("client_table")
           .select("client_organization, userid")
@@ -49,9 +44,6 @@ const ViewRequest = () => {
           );
         }
 
-        setClientDetails(clientData);
-
-        // Step 3: Fetch account name using userid
         const { data: accountData, error: accountError } = await supabase
           .from("user_account")
           .select("account_name")
@@ -64,17 +56,35 @@ const ViewRequest = () => {
           );
         }
 
-        // Step 4: Combine the job, client, and account data as needed
-        setJobDetails((prevData) => ({
-          ...prevData,
+        const { data: evaluations, error: evaluationsError } = await supabase
+          .from("client_evaluation")
+          .select("rating")
+          .eq("clientid", jobData.clientid);
+
+        if (evaluationsError) {
+          throw new Error(
+            `Error fetching client evaluations: ${evaluationsError.message}`
+          );
+        }
+
+        const averageRating = evaluations?.length
+          ? evaluations.reduce((sum, evalData) => sum + evalData.rating, 0) /
+            evaluations.length
+          : 0;
+
+        const combinedData = {
+          ...jobData,
           clientOrganization: clientData.client_organization,
           accountName: accountData.account_name,
-        }));
+          averageRating: averageRating.toFixed(1),
+        };
 
-        // Step 5: Fetch job location details (city name from latitude and longitude)
+        setJobDetails(combinedData);
+
         getJobLocationDetails(jobData.locationlat, jobData.locationlong);
 
         setLoading(false);
+        console.log("Job Details:", jobDetails);
       } catch (error) {
         console.error("Failed to fetch job details:", error.message);
         setLoading(false);
@@ -86,7 +96,6 @@ const ViewRequest = () => {
     }
   }, [requestid]);
 
-  // Function to fetch the city based on latitude and longitude
   const getJobLocationDetails = async (latitude, longitude) => {
     try {
       if (latitude && longitude) {
@@ -320,11 +329,12 @@ const ViewRequest = () => {
       )}
 
       <ProfileCard
-        type="C"
-        name={jobDetails.accountName || "Client Not Available"}
-        stars="5"
-        comapny={jobDetails.clientOrganization || "No Organization Available"}
-      ></ProfileCard>
+        profiletype="C"
+        name={jobDetails?.accountName || "Client Not Available"}
+        stars={jobDetails?.averageRating || 0} // Pass average rating here
+        company={jobDetails?.clientOrganization || "No Organization Available"}
+      />
+
       <TextCard
         type="light"
         text="Once you click 'Accept,' a conversation will be created between you and the client to ensure the job goes smoothly."
