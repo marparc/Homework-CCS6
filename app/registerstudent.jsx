@@ -260,6 +260,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center", // Centers content horizontally
     paddingVertical: 10,
+    paddingTop: 35,
   },
   formContainer: {
     width: "100%",
@@ -271,7 +272,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     textAlign: "left", // Align labels to the left
     width: "100%", // Ensures label spans full width
-    marginLeft: 35,
+    marginLeft: 75,
   },
   dropdownContainer: {
     height: 40,
