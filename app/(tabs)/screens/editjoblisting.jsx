@@ -214,6 +214,7 @@ const EditJobListing = () => {
         <DatePick
           label="MM/DD/YY"
           mode="date"
+          minDate={new Date()}
           onDateChange={(date) => setDeadline(date)}
         />
 
