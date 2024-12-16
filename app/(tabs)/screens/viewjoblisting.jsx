@@ -15,8 +15,8 @@ const ViewJobListing = () => {
   const [accountId, setAccountId] = useState(null);
   const [jobDetails, setJobDetails] = useState(null);
   const [userAccountName, setUserAccountName] = useState(null);
-  const [message, setMessage] = useState(""); // For storing the input message
-  const [error, setError] = useState(null); // For capturing error messages
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState(null);
 
   //console.log("selectedJobListing: ", selectedJobListing);
 
@@ -41,7 +41,6 @@ const ViewJobListing = () => {
       }
 
       try {
-        // Fetch job details
         const { data: jobData, error: jobError } = await supabase
           .from("job_listing")
           .select("*")
@@ -58,7 +57,6 @@ const ViewJobListing = () => {
 
           const clientId = job.clientid;
 
-          // Fetch client data to get the organization name
           const { data: clientData, error: clientError } = await supabase
             .from("client_table")
             .select("client_organization, userid")
@@ -74,7 +72,6 @@ const ViewJobListing = () => {
 
             const userId = clientData.userid;
 
-            // Fetch account name from user_account table
             const { data: userData, error: userError } = await supabase
               .from("user_account")
               .select("account_name")
@@ -92,7 +89,6 @@ const ViewJobListing = () => {
               console.log("No user account found for the given userid.");
             }
 
-            // Fetch client evaluations to calculate average rating
             const { data: evaluations, error: evalError } = await supabase
               .from("client_evaluation")
               .select("rating")
@@ -103,7 +99,6 @@ const ViewJobListing = () => {
             }
 
             if (evaluations && evaluations.length > 0) {
-              // Calculate average rating
               const averageRating =
                 evaluations.reduce(
                   (sum, evaluation) => sum + evaluation.rating,
@@ -112,11 +107,10 @@ const ViewJobListing = () => {
 
               console.log("Average rating:", averageRating);
 
-              // Update job details with the calculated average rating
               setJobDetails((prevJobDetails) => ({
                 ...prevJobDetails,
-                clientOrganization: clientData.client_organization, // Add this line
-                averageRating: averageRating.toFixed(1), // Optional: Limit to 1 decimal point
+                clientOrganization: clientData.client_organization,
+                averageRating: averageRating.toFixed(1),
               }));
             } else {
               console.log("No evaluations found for the given clientid.");
