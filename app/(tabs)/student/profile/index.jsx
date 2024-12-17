@@ -70,58 +70,94 @@ const ProfileHeader = () => {
   //to get student details
   useEffect(() => {
     const fetchAccountData = async () => {
-      const { data: studentData, error: studentError } = await supabase
-        .from("student")
-        .select("educationlevel, degree, currentschool, yearlevel, userid")
-        .eq("studentid", accountId)
-        .single();
+      try {
+        console.log("Starting fetchAccountData...");
 
-      if (studentError) {
-        console.log(inputData);
-        console.log(accountId);
-        console.log("error1");
-        console.error("Error fetching student data:", studentError.message);
-        return;
-      }
-      if (studentData) {
-        setUserEducation({
-          educationlevel: studentData.educationlevel,
-          degree: studentData.degree,
-          currentschool: studentData.currentschool,
-          yearlevel: studentData.yearlevel,
-        });
+        // Step 1: Fetch user_account to get userid based on accountId
+        const { data: accountData, error: accountError } = await supabase
+          .from("user_account")
+          .select("userid")
+          .eq("accountid", accountId)
+          .single();
 
-        const { userid } = studentData;
+        console.log("Account ID:", accountId);
 
-        const { data: userData, error: userError } = await supabase
-          .from("user_table")
-          .select("firstname, lastname, birthdate")
+        if (!accountData || !accountData.userid) {
+          console.log(
+            "No matching user found in user_account table for the given account ID."
+          );
+          return;
+        }
+
+        const { userid } = accountData;
+        console.log("Fetched UserID from user_account table:", userid);
+
+        // Step 2: Use userid to fetch student data
+        const { data: studentData, error: studentError } = await supabase
+          .from("student")
+          .select("educationlevel, degree, currentschool, yearlevel, userid")
           .eq("userid", userid)
           .single();
 
-        if (userError) {
-          console.log("error2");
-          console.error("Error fetching user data:", userError.message);
-        } else {
+        console.log("Fetched student data:", studentData);
+        if (studentError) {
+          console.error("Error fetching student data:", studentError.message);
+          return;
+        }
+
+        if (studentData) {
+          setUserEducation({
+            educationlevel: studentData.educationlevel,
+            degree: studentData.degree,
+            currentschool: studentData.currentschool,
+            yearlevel: studentData.yearlevel,
+          });
+
+          console.log("Student Data Set:", studentData);
+
+          // Step 3: Fetch user data from user_table using userid
+          const { data: userData, error: userError } = await supabase
+            .from("user_table")
+            .select("firstname, lastname, birthdate")
+            .eq("userid", userid)
+            .single();
+
+          if (userError) {
+            console.error("Error fetching user data:", userError.message);
+            return;
+          }
+          console.log("Fetched user data:", userData);
+
           setUserData({
             firstname: userData.firstname,
             lastname: userData.lastname,
             birthdate: userData.birthdate,
           });
+
           const firstLetter = userData.firstname.charAt(0).toUpperCase();
           setFirstLetter(firstLetter);
 
+          // Step 4: Fetch bio data from user_account using accountId
           const { data: userBio, error: bioError } = await supabase
             .from("user_account")
             .select("bio")
             .eq("accountid", accountId)
             .single();
+
+          if (bioError) {
+            console.error("Error fetching bio data:", bioError.message);
+            return;
+          }
+          console.log("Fetched bio data:", userBio);
+
           setuserBio({
             bio: userBio.bio,
           });
+        } else {
+          console.log("No student found for the given UserID.");
         }
-      } else {
-        console.log("No student found with the given student ID.");
+      } catch (error) {
+        console.error("Unexpected error in fetchAccountData:", error);
       }
     };
 
