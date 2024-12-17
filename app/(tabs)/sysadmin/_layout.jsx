@@ -144,7 +144,8 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   jobList: {
-    padding: 50,
+    flex: 1,
+    padding: 20,
     paddingTop: 10,
     alignItems: "center",
   },

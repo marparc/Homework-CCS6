@@ -6,6 +6,7 @@ import Button from "@/components/ui/buttons";
 import { useRouter } from "expo-router";
 import { supabase } from "../../../../lib/supabase";
 import { Image } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function JobMap() {
   const [location, setLocation] = useState(null);
@@ -89,6 +90,13 @@ export default function JobMap() {
           <Marker
             coordinate={location}
             title="You are here"
+            icon={{
+              uri: Image.resolveAssetSource(
+                require("../../student/findjob/You.png")
+              ).uri,
+              width: 60, // Specify desired width
+              height: 60, // Specify desired height
+            }}
             onPress={() => {
               console.log(jobData);
             }}
@@ -124,7 +132,12 @@ export default function JobMap() {
       {selectedJob && (
         <View style={styles.buttonContainer}>
           <Button
-            title="View Job Listing"
+            title={
+              <View style={styles.buttonContent}>
+                <Text style={styles.buttonText}>View Details </Text>
+                <Ionicons name="eye-outline" size={16} color="white" />
+              </View>
+            }
             type="dark"
             size="small"
             onPress={viewJobPress}
@@ -156,5 +169,13 @@ const styles = StyleSheet.create({
     top: 10,
     color: "black",
     fontSize: 16,
+  },
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  buttonText: {
+    marginRight: 4,
+    color: "white",
   },
 });

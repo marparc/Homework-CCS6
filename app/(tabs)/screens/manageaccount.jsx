@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { supabase } from "../../../lib/supabase";
 import Button from "@/components/ui/buttons";
+import HandLoading from "@/components/ui/handloading";
 
 const ManageAccount = () => {
   const { selectedAccount, accountStatus } = useLocalSearchParams();
@@ -146,7 +147,7 @@ const ManageAccount = () => {
   };
 
   if (loading) {
-    return <Text>Loading account details...</Text>;
+    return <HandLoading />;
   }
 
   if (error) {
@@ -196,7 +197,8 @@ const ManageAccount = () => {
         {accountDetails?.user?.usertype === "Student" && (
           <View>
             <View>
-              <Text style={styles.sectionTitle}>Student Details:</Text>
+              <Text style={styles.sectionTitle}>Account Type:</Text>
+              <Text style={styles.accountDetail}>Student</Text>
             </View>
             <View>
               <Text style={styles.detailTitle}>Current School: </Text>
@@ -246,7 +248,8 @@ const ManageAccount = () => {
         {accountDetails?.user?.usertype === "Client" && (
           <View>
             <View>
-              <Text style={styles.sectionTitle}>Client Details:</Text>
+              <Text style={styles.sectionTitle}>Account Type:</Text>
+              <Text style={styles.accountDetail}>Client</Text>
             </View>
             <View>
               <Text style={styles.detailTitle}>Organization: </Text>
@@ -297,21 +300,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 20,
     margin: 10,
-    width: 330,
-    backgroundColor: "#FAF9F9",
+    flez: 1,
     borderRadius: 16,
   },
   sectionTitle: {
     fontWeight: "bold",
-    fontSize: 24,
+    fontSize: 16,
     marginBottom: 5,
   },
   detailTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
   },
   accountDetail: {
-    fontSize: 15,
+    fontSize: 16,
     marginBottom: 10,
   },
   buttonRow: {

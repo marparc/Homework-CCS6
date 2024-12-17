@@ -99,7 +99,6 @@ const ViewJobListing = () => {
                   0
                 ) / evaluations.length;
 
-              setLoading(false);
               setJobDetails((prevJobDetails) => ({
                 ...prevJobDetails,
                 clientOrganization: clientData.client_organization,
@@ -114,6 +113,7 @@ const ViewJobListing = () => {
       }
     };
 
+    setLoading(false);
     fetchJobData();
   }, [selectedJobListing]);
 

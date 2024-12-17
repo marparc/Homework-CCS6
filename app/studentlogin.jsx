@@ -49,7 +49,7 @@ const LoginStudent = () => {
     }
     if (!rpcData) {
       console.log("User ID not found.");
-      setContactNumberError("Account ID does not exist.");
+      setContactNumberError("Contact Number does not exist.");
       return;
     }
 

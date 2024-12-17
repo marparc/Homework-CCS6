@@ -217,10 +217,10 @@ const ProfileHeader = () => {
       // Store the fetched portfolio data in the state
 
       setPortfolio(portfolioData);
-      setLoading(false);
     };
 
     fetchPortfolioData();
+    setLoading(false);
   }, [accountId]);
 
   // Handle service selection
