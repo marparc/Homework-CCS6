@@ -260,9 +260,9 @@ const ManageAccount = () => {
           </View>
         )}
 
-        {accountDetails && accountDetails.account && (
+        {accountDetails?.account && (
           <>
-            {accountDetails?.account?.account_status === "Pending" ? (
+            {accountDetails.account.account_status === "Pending" && (
               <View style={styles.buttonRow}>
                 <Button
                   title="Approve"
@@ -279,14 +279,7 @@ const ManageAccount = () => {
                   disabled={updateLoading}
                 />
               </View>
-            ) : accountDetails?.account?.account_status === "Verified" ? (
-              <Button
-                title="Back"
-                type="dark"
-                size="small"
-                onPress={handleBackClick}
-              />
-            ) : null}
+            )}
           </>
         )}
       </ScrollView>
