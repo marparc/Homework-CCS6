@@ -161,6 +161,7 @@ const ProfileHeader = () => {
       }
     };
 
+    setLoading(false);
     fetchAccountData();
   }, [accountId]);
 
@@ -256,7 +257,6 @@ const ProfileHeader = () => {
     };
 
     fetchPortfolioData();
-    setLoading(false);
   }, [accountId]);
 
   // Handle service selection
