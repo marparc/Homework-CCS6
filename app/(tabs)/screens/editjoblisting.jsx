@@ -29,9 +29,21 @@ const EditJobListing = () => {
   const [isPopUpVisible, setPopUpVisible] = useState(false);
   const [latitude, setLatitude] = useState(null); // To store latitude
   const [longitude, setLongitude] = useState(null); // To store longitude
+  const [isInputNullPopUp, setIsInputNullPopUp] = useState(false);
 
   const router = useRouter();
-  const { selectedjoblisting } = useLocalSearchParams(); // Get jobid from route params
+  const { selectedjoblisting } = useLocalSearchParams(); // Get jobid from route
+
+  useEffect(() => {
+    // Hide the null-input popup after 3 seconds
+    let timer;
+    if (isInputNullPopUp) {
+      timer = setTimeout(() => {
+        setIsInputNullPopUp(false);
+      }, 3000);
+    }
+    return () => clearTimeout(timer); // Cleanup to avoid memory leaks
+  }, [isInputNullPopUp]);
 
   useEffect(() => {
     // Fetch existing job listing data to populate the form if editing
@@ -98,6 +110,16 @@ const EditJobListing = () => {
   };
 
   const handlePublish = async () => {
+    if (
+      title == null ||
+      description == null ||
+      pay == null ||
+      deadline == null ||
+      location == null
+    ) {
+      setIsInputNullPopUp(true);
+      return;
+    }
     try {
       const jobData = {
         jobtitle: title,
@@ -230,10 +252,13 @@ const EditJobListing = () => {
             icon="checkmark-circle-outline"
             text="Job Edited Successfully!"
             route="/(tabs)/client/myjoblistings"
-            onClose={() => {
-              setPopUpVisible(false);
-              router.push("/(tabs)/client/myjoblistings");
-            }}
+          />
+        )}
+
+        {isInputNullPopUp && (
+          <PopUp
+            icon="alert-outline"
+            text="Please double-check all fields to ensure none are empty!"
           />
         )}
       </View>
