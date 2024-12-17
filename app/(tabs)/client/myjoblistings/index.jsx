@@ -263,8 +263,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   noJobsText: {
-    textAlign: "center",
-    marginTop: 20,
     fontSize: 16,
+    textAlign: "center",
+    margin: "auto",
   },
 });
