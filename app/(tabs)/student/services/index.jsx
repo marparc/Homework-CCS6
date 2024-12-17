@@ -155,7 +155,9 @@ const RequestLists = () => {
       showsVerticalScrollIndicator={false}
     >
       {serviceRequests.length === 0 ? (
-        <Text>No service requests have been made.</Text> // Display this message if there are no service requests
+        <Text style={styles.noJobsText}>
+          No service requests have been made.
+        </Text> // Display this message if there are no service requests
       ) : (
         renderJobCards() // Render job cards if there are service requests
       )}
@@ -170,5 +172,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 8,
     alignItems: "center",
+  },
+  noJobsText: {
+    fontSize: 16,
+    color: "#555", // A neutral color to keep it subtle
+    margin: "auto",
   },
 });

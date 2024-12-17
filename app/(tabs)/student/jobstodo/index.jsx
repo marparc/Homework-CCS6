@@ -184,7 +184,9 @@ const JobsToDo = () => {
             />
           ))
         ) : (
-          <Text>{error || "No job listings available."}</Text>
+          <Text style={styles.noJobsText}>
+            {error || "No job listings available."}
+          </Text>
         )}
       </ScrollView>
     </>
@@ -201,6 +203,12 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 10,
     alignItems: "center",
+  },
+  noJobsText: {
+    fontSize: 16,
+    color: "#555", // A neutral color to keep it subtle
+    textAlign: "center",
+    margin: "auto",
   },
 });
 
