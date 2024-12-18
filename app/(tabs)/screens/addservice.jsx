@@ -55,7 +55,7 @@ const AddService = () => {
     }
 
     const existingServicesCount = await checkExistingServices(accountId);
-
+    console.log("HERE");
     if (existingServicesCount >= 3) {
       console.log("You cannot add more than 3 services.");
       alert("You cannot add more than 3 services.");
@@ -79,12 +79,30 @@ const AddService = () => {
         maxServiceIdData && maxServiceIdData.length > 0
           ? maxServiceIdData[0].serviceid + 1
           : 1;
+      //console.log(newServiceId);
+      const { data: userAccountData, error: userAccountError } = await supabase
+        .from("user_account")
+        .select("userid")
+        .eq("accountid", accountId);
+
+      const userId = userAccountData[0].userid;
+
+      console.log("userID:", userId);
+
+      const { data: studentData, error: studentError } = await supabase
+        .from("student")
+        .select("studentid")
+        .eq("userid", userId);
+
+      const studentId = studentData[0].studentid;
+
+      console.log("studentId:", studentId);
 
       const { error } = await supabase.from("services").insert([
         {
           serviceid: newServiceId,
           servicedesc: servicedesc,
-          studentid: accountId,
+          studentid: studentId,
           price: 0,
           serviceTitle: serviceName,
         },

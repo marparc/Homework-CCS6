@@ -62,23 +62,21 @@ const AddPortfolio = () => {
 
       const userId = userAccountData.userid;
 
+      console.log("userID:", userId);
+
       const { data: studentData, error: studentError } = await supabase
         .from("student")
         .select("studentid")
-        .eq("userid", userId)
-        .single();
+        .eq("userid", userId);
 
-      if (studentError) {
-        throw new Error("Failed to fetch studentid: " + studentError.message);
-      }
+      const studentId = studentData[0].studentid;
 
-      const studentId = studentData.studentid;
+      console.log("studentId:", studentId);
 
       const { data: latestPortfolioData, error: latestPortfolioError } =
         await supabase
           .from("portfolio")
           .select("*")
-          .eq("studentid", studentId)
           .order("portfolioid", { ascending: false })
           .limit(1);
 
@@ -88,7 +86,7 @@ const AddPortfolio = () => {
             latestPortfolioError.message
         );
       }
-      console.log("latestPortfolioData: ", latestPortfolioData);
+      console.log("latestPortfolioData: ", latestPortfolioData[0]);
       let sequenceNumber = 1;
       if (latestPortfolioData && latestPortfolioData.length > 0) {
         sequenceNumber = latestPortfolioData[0].portfolioid + 1;

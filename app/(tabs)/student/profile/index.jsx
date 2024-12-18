@@ -170,10 +170,36 @@ const ProfileHeader = () => {
     const fetchEvaluationData = async () => {
       try {
         // Fetch evaluation data
+        const { data: userAccountData, error: userAccountError } =
+          await supabase
+            .from("user_account")
+            .select("userid")
+            .eq("accountid", accountId)
+            .single();
+
+        if (userAccountError) {
+          throw new Error(
+            "Failed to fetch userid: " + userAccountError.message
+          );
+        }
+
+        const userId = userAccountData.userid;
+
+        console.log("userID:", userId);
+
+        const { data: studentData, error: studentError } = await supabase
+          .from("student")
+          .select("studentid")
+          .eq("userid", userId);
+
+        const studentId = studentData[0].studentid;
+
+        console.log("studentId:", studentId);
+
         const { data: evaluationData, error: evaluationError } = await supabase
           .from("stud_evaluation")
           .select("rating, usercomment, clientid, studentid")
-          .eq("studentid", accountId);
+          .eq("studentid", studentId);
         //console.log("here");
         if (evaluationError) throw evaluationError;
 
@@ -221,10 +247,33 @@ const ProfileHeader = () => {
   //for services
   useEffect(() => {
     const fetchServicesData = async () => {
+      const { data: userAccountData, error: userAccountError } = await supabase
+        .from("user_account")
+        .select("userid")
+        .eq("accountid", accountId)
+        .single();
+
+      if (userAccountError) {
+        throw new Error("Failed to fetch userid: " + userAccountError.message);
+      }
+
+      const userId = userAccountData.userid;
+
+      console.log("userID:", userId);
+
+      const { data: studentData, error: studentError } = await supabase
+        .from("student")
+        .select("studentid")
+        .eq("userid", userId);
+
+      const studentId = studentData[0].studentid;
+
+      console.log("studentId:", studentId);
+
       const { data: servicesData, error: servicesError } = await supabase
         .from("services")
         .select("serviceid, servicedesc, studentid, serviceTitle") // Adjust columns as per your table structure
-        .eq("studentid", accountId);
+        .eq("studentid", studentId);
 
       if (servicesError) {
         //console.error("Error fetching services:", servicesError);
@@ -241,10 +290,34 @@ const ProfileHeader = () => {
   //for portfolio
   useEffect(() => {
     const fetchPortfolioData = async () => {
+      const { data: userAccountData, error: userAccountError } = await supabase
+        .from("user_account")
+        .select("userid")
+        .eq("accountid", accountId)
+        .single();
+
+      if (userAccountError) {
+        throw new Error("Failed to fetch userid: " + userAccountError.message);
+      }
+
+      const userId = userAccountData.userid;
+
+      console.log("userID:", userId);
+
+      const { data: studentData, error: studentError } = await supabase
+        .from("student")
+        .select("studentid")
+        .eq("userid", userId);
+
+      const studentId = studentData[0].studentid;
+
+      console.log("studentId:", studentId);
+
+      console.log("Fetching porfolio data.");
       const { data: portfolioData, error: portfolioError } = await supabase
         .from("portfolio")
         .select("portfolioid, portfolioname, portfoliodesc, link, studentid")
-        .eq("studentid", accountId);
+        .eq("studentid", studentId);
 
       if (portfolioError) {
         //console.error("Error fetching portfolio:", portfolioError);
@@ -252,8 +325,18 @@ const ProfileHeader = () => {
       }
 
       // Store the fetched portfolio data in the state
-
+      console.log("Fetched portfolio data:");
+      portfolioData.forEach((portfolio, index) => {
+        console.log(`Portfolio #${index + 1}:`);
+        console.log(`  ID: ${portfolio.portfolioid}`);
+        console.log(`  Name: ${portfolio.portfolioname}`);
+        console.log(`  Description: ${portfolio.portfoliodesc}`);
+        console.log(`  Link: ${portfolio.link}`);
+        console.log(`  Student ID: ${portfolio.studentid}`);
+      });
       setPortfolio(portfolioData);
+
+      console.log("Portfolio data:", portfolio);
     };
 
     fetchPortfolioData();
@@ -281,8 +364,9 @@ const ProfileHeader = () => {
     setSelectedPortfolioId(portfolioId);
   };
 
-  const isPortfolioSelected = (portfolioId) =>
+  const isPortfolioSelected = (portfolioId) => {
     selectedPortfolioId === portfolioId;
+  };
 
   // Handle press outside to deselect
   const handleOutsidePress = () => {
