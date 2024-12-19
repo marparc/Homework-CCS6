@@ -130,7 +130,7 @@ const Convo = () => {
         .from("message_logs")
         .select("studentid, clientid, timesent, messagecontent")
         .eq("chatid", chatid)
-        .order("timesent", { ascending: true });
+        .order("logid", { ascending: true });
 
       if (error) {
         //console.error("Error fetching messages:", error);
