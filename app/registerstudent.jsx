@@ -54,7 +54,7 @@ const RegisterStudent = () => {
             firstname: userData.firstName,
             lastname: userData.lastName,
             contactnumber: userData.contactNumber,
-            birthdate: utcDate,
+            birthdate: userData.birthdate,
             usertype: userData.userType,
           },
         ])
