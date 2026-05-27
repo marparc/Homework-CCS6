@@ -1,2 +1,4 @@
-# Homework-CCS6
- Official Reposity for CCS6 Final Project
+A mobile application inspired by Fiverr, designed to provide students with accessible job andfreelancing opportunities. The platform supports both student (freelancer) and client accounts,enabling clients to post job listings while allowing students to discover, apply for, and secure workthat matches their skills. It features an integrated Google Maps job view for onsite opportunities anda structured job list for remote work, helping students make informed decisions based on locationand availability. Clients can also directly book services from students, creating a seamless servicemarketplace. The application includes secure authentication, comprehensive profile and accountmanagement, instant messaging, and deliverable submission with confirmation, ensuring efficientcommunication, trust, and end-to-end workflow management between clients and students.
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/fbca2279-fe1d-43d0-be61-d7a5df3cadcc" />
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/96ea162f-77c6-435d-aa01-39261f4c06e4" />
